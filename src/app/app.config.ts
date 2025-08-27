@@ -1,12 +1,13 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import {ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection,} from "@angular/core";
+import {provideRouter, withViewTransitions} from "@angular/router";
+import Routes from "./app.routes";
+import {provideHttpClient, withFetch} from "@angular/common/http";
 
-import { routes } from './app.routes';
-
-export const appConfig: ApplicationConfig = {
+export default {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
-    provideRouter(routes)
-  ]
-};
+    provideRouter(Routes, withViewTransitions()),
+    provideHttpClient(withFetch()),
+  ],
+} as ApplicationConfig;

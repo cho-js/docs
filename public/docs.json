@@ -1,0 +1,18 @@
+[
+  {
+    "id": "introduction",
+    "title": "Introduction",
+    "items": [
+      {
+        "id": "getting-started",
+        "title": "Getting Started",
+        "path": "/docs/getting-started"
+      },
+      {
+        "id": "internals",
+        "title": "Internals",
+        "path": "/docs/internals"
+      }
+    ]
+  }
+]

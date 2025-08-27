@@ -1,16 +1,11 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component } from "@angular/core";
+import { RouterOutlet } from "@angular/router";
 
 @Component({
-  selector: 'cho-root',
+  selector: "cho-root",
   imports: [RouterOutlet],
-  template: `
-    <h1>Welcome to {{ title() }}!</h1>
-
-    <router-outlet />
-  `,
+  template: "<router-outlet />",
   styles: [],
 })
-export class App {
-  protected readonly title = signal('cho-docs');
+export default class App {
 }
