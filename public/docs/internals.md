@@ -96,8 +96,14 @@ class MyService {
 }
 
 @Module(
+  // or import module providing the token
   Provide("token", () => Promise.resolve("value")),
   Provide(MyService),
 )
 
 ```
+
+## Web
+
+### Transformations
+
