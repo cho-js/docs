@@ -1,55 +1,15 @@
 {
   "name": "cho-docs",
-  "version": "0.0.0",
-  "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test"
-  },
-  "prettier": {
-    "printWidth": 100,
-    "singleQuote": true,
-    "overrides": [
-      {
-        "files": "*.html",
-        "options": {
-          "parser": "angular"
-        }
-      }
-    ]
-  },
+  "version": "3.0.0",
   "private": true,
-  "dependencies": {
-    "@angular/common": "^20.2.0",
-    "@angular/compiler": "^20.2.0",
-    "@angular/core": "^20.2.0",
-    "@angular/forms": "^20.2.0",
-    "@angular/platform-browser": "^20.2.0",
-    "@angular/router": "^20.2.0",
-    "@shikijs/twoslash": "^3.11.0",
-    "@xprng/code": "^3.4.1",
-    "@xprng/common": "^2.0.0",
-    "@xprng/markdown": "^2.1.0",
-    "@xprng/vendor": "^2.3.1",
-    "marked-gfm-heading-id": "^4.1.2",
-    "rxjs": "~7.8.0",
-    "shiki": "^3.11.0",
-    "tslib": "^2.3.0",
-    "twoandhalfslash": "^0.1.1"
+  "type": "module",
+  "description": "Documentation of the CHO framework",
+  "scripts": {
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs"
   },
   "devDependencies": {
-    "@angular/build": "^20.2.0",
-    "@angular/cli": "^20.2.0",
-    "@angular/compiler-cli": "^20.2.0",
-    "@types/jasmine": "~5.1.0",
-    "jasmine-core": "~5.9.0",
-    "karma": "~6.4.0",
-    "karma-chrome-launcher": "~3.2.0",
-    "karma-coverage": "~2.2.0",
-    "karma-jasmine": "~5.1.0",
-    "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.9.2"
+    "vitepress": "^1.6.4"
   }
 }
