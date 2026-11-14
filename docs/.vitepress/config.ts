@@ -12,7 +12,24 @@ export default defineConfig({
   lang: "en-US",
   cleanUrls: true,
   lastUpdated: true,
-  head: [["link", { rel: "icon", href: `${base}favicon.ico` }]],
+  head: [
+    ["link", { rel: "icon", href: `${base}favicon.ico` }],
+    // Google Tag Manager (analytics): the snippet Google gives, on every page.
+    [
+      "script",
+      {
+        async: "",
+        src: "https://www.googletagmanager.com/gtm.js?id=GTM-T6PN74KC",
+      },
+    ],
+    [
+      "script",
+      {},
+      `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());`,
+    ],
+  ],
   markdown: {
     theme: { light: "github-light", dark: "github-dark" },
   },
