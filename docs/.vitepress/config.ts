@@ -2,7 +2,7 @@ import { defineConfig } from "vitepress";
 
 // The path the site is served under: "/" locally, "/cho-docs/" on GitHub
 // Pages (set by the deploy workflow through DOCS_BASE).
-const base = `${(process.env.DOCS_BASE ?? "").replace(/\/+$/, "")}/`;
+const base = '/'; // `${(process.env.DOCS_BASE ?? "").replace(/\/+$/, "")}/`;
 
 export default defineConfig({
   base,
