@@ -126,7 +126,10 @@ gtag('js', new Date());`,
         ],
       },
     ],
-    socialLinks: [{ icon: "github", link: "https://github.com/cho-js/cho" }],
+    socialLinks: [
+      { icon: "github", link: "https://github.com/cho-js/cho" },
+      { icon: "x", link: "https://x.com/cho_framework" },
+    ],
     editLink: {
       pattern: "https://github.com/cho-js/docs/edit/main/docs/:path",
       text: "Edit this page",
