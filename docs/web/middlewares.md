@@ -167,6 +167,46 @@ feature module. Its place among the others does not matter: validation always
 happens after every middleware of the route, just before the handler. See
 [Validation](/web/validation).
 
+## Middlewares of the HTTP library
+
+Hono and Fastify come with their own middlewares, written for their own
+context. Each adapter has a function that makes one a CHO middleware, so it can
+be declared on a handler, a controller or a feature like any other:
+
+::: code-group
+
+```ts [Hono]
+import { basicAuth } from "hono/basic-auth";
+import { fromHono } from "@chojs/vendor-hono";
+
+@Middlewares(fromHono(basicAuth({ username: "ada", password: "secret" })))
+@Controller({ route: "admin" })
+class AdminController {}
+```
+
+```ts [Fastify]
+import { fromFastify } from "@chojs/vendor-fastify";
+
+// a Fastify hook: fastify.basicAuth, fastify.rateLimit(), or your own
+@Middlewares(fromFastify(fastify.basicAuth))
+@Controller({ route: "admin" })
+class AdminController {}
+```
+
+:::
+
+They keep their place among the CHO middlewares of the route. A middleware
+made this way only runs on its own adapter: it ties the controller to it. See
+the [Hono](/adapters/hono#using-hono-middlewares) and
+[Fastify](/adapters/fastify#using-fastify-options-plugins-and-hooks) pages.
+
+## Ready-made middlewares
+
+For the built-in router, `@chojs/vendor-cho` has the middlewares an HTTP
+library would bring: `cors`, `bodyLimit`, `secureHeaders`, `logger`, `timeout`,
+`requestId`, `etag`, `basicAuth`, `bearerAuth` and `compress`. See
+[Middlewares](/adapters/middlewares).
+
 ## Application-wide middlewares
 
 There is no global CHO middleware, because features are independent. For
@@ -174,6 +214,15 @@ something that wraps every request, unmatched ones included, use the HTTP
 library through the adapter:
 
 ::: code-group
+
+```ts [Built-in router]
+import { ChoLinker, ChoWeb } from "@chojs/web";
+import { cors } from "@chojs/vendor-cho";
+
+const app = await ChoWeb.create(App, {
+  linker: new ChoLinker({ middlewares: [cors()] }),
+});
+```
 
 ```ts [Hono]
 import { Hono } from "hono";
@@ -208,6 +257,5 @@ await serve(handler); // from "@chojs/web/serve"
 
 :::
 
-Middlewares of the HTTP library (Hono's `cors()`, Fastify plugins) are written
-for that library's context, so they are not CHO middlewares and cannot be
-given to `@Middlewares`.
+This is the place for what must also run for the requests no route matches,
+such as CORS preflight requests.

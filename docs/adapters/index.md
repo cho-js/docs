@@ -66,6 +66,7 @@ What differs between them:
 | `HEAD` without `@Head` | `@Get`, without the body           | `@Get`, without the body                         | `@Get`, without the body                                   |
 | No route matches       | The `notFound` option; `404`       | `notFound` of the Hono application               | The not-found handler of the Fastify application           |
 | A route rejects        | Logged with `console.error`; `500` | `onError` of the Hono application; logged, `500` | The error handler of the Fastify application; `500`        |
+| Its own middlewares    | [`@chojs/vendor-cho`](/adapters/middlewares) | [`fromHono(middleware)`](/adapters/hono#using-hono-middlewares) | [`fromFastify(hook)`](/adapters/fastify#using-fastify-options-plugins-and-hooks) |
 
 "A route rejects" is what happens to an error that no `@Catch` and no
 `onError` handled ([Error handling](/web/error-handling)).

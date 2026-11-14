@@ -92,6 +92,7 @@ gtag('js', new Date());`,
         items: [
           { text: "Choosing an adapter", link: "/adapters/" },
           { text: "Built-in router", link: "/adapters/cho" },
+          { text: "Middlewares", link: "/adapters/middlewares" },
           { text: "Hono", link: "/adapters/hono" },
           { text: "Fastify", link: "/adapters/fastify" },
           { text: "Writing an adapter", link: "/adapters/custom" },

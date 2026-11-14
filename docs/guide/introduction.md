@@ -74,6 +74,7 @@ dependency, a duplicate route) never waits for the first request to show up.
 | ----------------------- | ------------------------------------------------------------------- |
 | `@chojs/web`            | HTTP applications                                                   |
 | `@chojs/command`        | Command-line applications                                           |
+| `@chojs/vendor-cho`     | Middlewares for the built-in router of `@chojs/web`, such as CORS  |
 | `@chojs/vendor-hono`    | Running `@chojs/web` on [Hono](https://hono.dev)                    |
 | `@chojs/vendor-fastify` | Running `@chojs/web` on [Fastify](https://fastify.dev), Node.js only |
 | `@chojs/core`           | The dependency injection engine underneath                          |

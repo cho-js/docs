@@ -63,9 +63,57 @@ export default {
 
 ## Using Hono middlewares
 
-Hono middlewares (`cors()`, `logger()`, …) are written for Hono's context, so
-they are not CHO middlewares. Add them to a Hono application and give it to
-the linker. The routes are registered after them, so they wrap every route:
+Hono middlewares (`cors()`, `basicAuth()`, `etag()`, …) are written for Hono's
+context. There are two ways to use them.
+
+### On a handler, a controller or a feature
+
+`fromHono` turns a Hono middleware into a CHO middleware, for
+[`@Middlewares`](/web/middlewares):
+
+```ts
+import { basicAuth } from "hono/basic-auth";
+import { etag } from "hono/etag";
+import { Controller, Get, Middlewares } from "@chojs/web";
+import { fromHono } from "@chojs/vendor-hono";
+
+@Middlewares(fromHono(basicAuth({ username: "ada", password: "secret" })))
+@Controller({ route: "admin" })
+class AdminController {
+  @Middlewares(fromHono(etag()))
+  @Get("report")
+  report() {
+    return { users: 3 };
+  }
+}
+```
+
+The Hono middleware runs with Hono's context, at its place among the CHO
+middlewares of the route:
+
+| In the Hono middleware            | What happens                                                   |
+| --------------------------------- | -------------------------------------------------------------- |
+| `await next()`                    | The rest of the CHO chain runs, and `c.res` is its response    |
+| Changing `c.res`, or `c.header()` | Changes the response, as in Hono                               |
+| Returning a `Response`            | Answers the request                                            |
+| Throwing an `HTTPException`       | Answers with the exception's response, as Hono does            |
+| Throwing anything else            | The error goes to the CHO [error handlers](/web/error-handling) |
+
+It can be mixed with CHO middlewares in the same `@Middlewares`, and what it
+sets on Hono's context (`c.set("user", …)`) is there for the handler, through
+`ctx.native`.
+
+::: warning Only on this adapter
+A middleware made with `fromHono` needs Hono's context: on another adapter it
+fails the request.
+:::
+
+### On every request
+
+Add the middleware to a Hono application and give it to the linker. The routes
+are registered after it, so it wraps every route, and it also runs for the
+requests no route matches. That is where a middleware such as `cors()` belongs,
+so that it answers preflight requests of every path:
 
 ```ts
 import { Hono } from "hono";

@@ -67,6 +67,7 @@ Runs a `fetch`-style handler on the server of the current runtime: `Deno.serve`,
 class ChoLinker implements Linker<ChoRouter> {
   constructor(options?: {
     notFound?: (req: Request) => Response | Promise<Response>;
+    middlewares?: readonly ChoWebMiddlewareFn[]; // run for every request
   });
   link(routes: readonly Route[]): Linked<ChoRouter>;
 }
@@ -174,6 +175,7 @@ type Route = {
     req: Request,
     params?: Readonly<Record<string, string>>,
     native?: unknown,
+    state?: Map<PropertyKey, unknown>, // the request's state, if it has one
   ): Promise<Response>;
 };
 
@@ -226,8 +228,9 @@ type ChoWebDoc = {
 
 | Package                 | Exports                                |
 | ----------------------- | -------------------------------------- |
-| `@chojs/vendor-hono`    | `HonoLinker`, `HonoLinked`             |
-| `@chojs/vendor-fastify` | `FastifyLinker`, `FastifyNative`       |
+| `@chojs/vendor-cho`     | The [middlewares](/adapters/middlewares) of the built-in router: `cors`, `bodyLimit`, `secureHeaders`, `logger`, `timeout`, `requestId`, `etag`, `basicAuth`, `bearerAuth`, `compress` |
+| `@chojs/vendor-hono`    | `HonoLinker`, `HonoLinked`, `fromHono` |
+| `@chojs/vendor-fastify` | `FastifyLinker`, `FastifyNative`, `FastifyHook`, `fromFastify` |
 
 ## Summary tables
 
