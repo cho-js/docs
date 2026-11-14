@@ -1,0 +1,41 @@
+/**
+ * The CHO colors: "Monarch", the orange and amber of the monarch butterfly.
+ *
+ * Only the brand colors of the default theme are replaced. Every text color
+ * has a contrast of at least 4.5:1 on the page and on the soft backgrounds,
+ * and so does white text on the brand buttons.
+ */
+
+:root {
+  /* text and links, their hover, and solid backgrounds */
+  --vp-c-brand-1: #b83c0a;
+  --vp-c-brand-2: #c2410c;
+  --vp-c-brand-3: #c9480e;
+  --vp-c-brand-soft: rgba(234, 88, 12, 0.14);
+
+  /* the name on the home page */
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(
+    120deg,
+    #c2410c 30%,
+    #e8a100
+  );
+}
+
+.dark {
+  --vp-c-brand-1: #ffa15c;
+  --vp-c-brand-2: #f97316;
+  --vp-c-brand-3: #c2410c;
+  --vp-c-brand-soft: rgba(251, 146, 60, 0.16);
+
+  --vp-home-hero-name-background: linear-gradient(
+    120deg,
+    #ffa15c 30%,
+    #ffd166
+  );
+
+  /* white text needs a darker button than the dark theme's link colors */
+  --vp-button-brand-bg: #c2410c;
+  --vp-button-brand-hover-bg: #b83c0a;
+  --vp-button-brand-active-bg: #a8370a;
+}

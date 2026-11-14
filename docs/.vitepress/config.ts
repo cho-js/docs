@@ -111,7 +111,7 @@ export default defineConfig({
     ],
     socialLinks: [{ icon: "github", link: "https://github.com/cho-js/cho" }],
     editLink: {
-      pattern: "https://github.com/cho-js/cho-docs/edit/main/docs/:path",
+      pattern: "https://github.com/cho-js/docs/edit/main/docs/:path",
       text: "Edit this page",
     },
     footer: {
