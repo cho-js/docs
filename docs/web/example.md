@@ -213,66 +213,26 @@ exports it. `readEnv` is the one runtime-specific line of the application.
 
 ::: code-group
 
-```ts [main.ts: Deno]
+```ts [main.ts]
 import { ChoWeb } from "@chojs/web";
-import { HonoLinker } from "@chojs/vendor-hono";
+import { serve } from "@chojs/web/serve";
 import { App, onError } from "./app.ts";
 
 const app = await ChoWeb.create(App, {
-  linker: new HonoLinker(),
   prefix: "api",
   onError,
 });
 
-const server = Deno.serve({ port: 3000 }, app.handler);
+// the same file runs on Deno, Node.js and Bun
+const server = await serve(app.handler, { port: 3000 });
 
-Deno.addSignalListener("SIGTERM", async () => {
-  await server.shutdown();
+process.once("SIGTERM", async () => {
+  await server.close();
   await app.close();
 });
 ```
 
-```ts [main.ts: Node.js]
-import { serve } from "@hono/node-server";
-import { ChoWeb } from "@chojs/web";
-import { HonoLinker } from "@chojs/vendor-hono";
-import { App, onError } from "./app.ts";
-
-const app = await ChoWeb.create(App, {
-  linker: new HonoLinker(),
-  prefix: "api",
-  onError,
-});
-
-const server = serve({ fetch: app.handler, port: 3000 });
-
-process.on("SIGTERM", () => {
-  server.close(async () => {
-    await app.close();
-  });
-});
-```
-
-```ts [main.ts: Bun]
-import { ChoWeb } from "@chojs/web";
-import { HonoLinker } from "@chojs/vendor-hono";
-import { App, onError } from "./app.ts";
-
-const app = await ChoWeb.create(App, {
-  linker: new HonoLinker(),
-  prefix: "api",
-  onError,
-});
-
-const server = Bun.serve({ port: 3000, fetch: app.handler });
-
-process.on("SIGTERM", async () => {
-  await server.stop();
-  await app.close();
-});
-```
-
-```ts [main.ts: Node.js with Fastify]
+```ts [main.ts: Node.js with Fastify]```ts [main.ts: Node.js with Fastify]
 import { ChoWeb } from "@chojs/web";
 import { FastifyLinker } from "@chojs/vendor-fastify";
 import { App, onError } from "./app.ts";
@@ -314,12 +274,10 @@ $ curl localhost:3000/api/todos/nope
 
 ```ts
 import { ChoWeb, provider } from "@chojs/web";
-import { HonoLinker } from "@chojs/vendor-hono";
 import { App, onError } from "./app.ts";
 import { API_KEY } from "./auth.ts";
 
 const app = await ChoWeb.create(App, {
-  linker: new HonoLinker(),
   prefix: "api",
   onError,
   overrides: [provider({ provide: API_KEY, factory: () => "test-key" })],

@@ -59,7 +59,6 @@ class UsersController {
 class App {}
 
 const app = await ChoWeb.create(App, {
-  linker: new HonoLinker(),
   prefix: "api",
 });
 // GET /api/v1/users/:id
@@ -134,7 +133,7 @@ routes match the same request depends on the adapter:
 
 | Adapter              | Wins                 |
 | -------------------- | -------------------- |
-| `@chojs/vendor-cho`  | The first declared   |
+| Built in             | The first declared   |
 | `@chojs/vendor-hono` | The first declared   |
 | `@chojs/vendor-fastify` | The static route  |
 

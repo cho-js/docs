@@ -120,7 +120,7 @@ request's data in them.
 
 | Adapter                 | `ctx.native`                    |
 | ----------------------- | ------------------------------- |
-| `@chojs/vendor-cho`     | `undefined`                     |
+| Built in                | `undefined`                     |
 | `@chojs/vendor-hono`    | Hono's `Context`                |
 | `@chojs/vendor-fastify` | `{ request, reply }` of Fastify |
 

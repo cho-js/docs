@@ -88,7 +88,7 @@ gtag('js', new Date());`,
         text: "Runtime adapters",
         items: [
           { text: "Choosing an adapter", link: "/adapters/" },
-          { text: "Plain (URL Pattern)", link: "/adapters/cho" },
+          { text: "Built-in router", link: "/adapters/cho" },
           { text: "Hono", link: "/adapters/hono" },
           { text: "Fastify", link: "/adapters/fastify" },
           { text: "Writing an adapter", link: "/adapters/custom" },

@@ -4,7 +4,7 @@
 no server, no port and no HTTP client.
 
 ```ts
-const app = await ChoWeb.create(App, { linker: new HonoLinker() });
+const app = await ChoWeb.create(App);
 
 const response = await app.handler(new Request("http://localhost/v1/users/42"));
 
@@ -29,7 +29,6 @@ class FakeStore {
 }
 
 const app = await ChoWeb.create(App, {
-  linker: new HonoLinker(),
   overrides: [provider({ provide: UserStore, factory: () => new FakeStore() })],
 });
 ```
@@ -46,12 +45,10 @@ The test body is the same; only the test runner differs.
 ```ts [Deno]
 import { assertEquals } from "jsr:@std/assert";
 import { ChoWeb, provider } from "@chojs/web";
-import { HonoLinker } from "@chojs/vendor-hono";
 import { App, UserStore } from "./app.ts";
 
 Deno.test("GET /v1/users/:id", async () => {
   const app = await ChoWeb.create(App, {
-    linker: new HonoLinker(),
     overrides: [
       provider({
         provide: UserStore,
@@ -74,12 +71,10 @@ Deno.test("GET /v1/users/:id", async () => {
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ChoWeb, provider } from "@chojs/web";
-import { HonoLinker } from "@chojs/vendor-hono";
 import { App, UserStore } from "./app.ts";
 
 test("GET /v1/users/:id", async () => {
   const app = await ChoWeb.create(App, {
-    linker: new HonoLinker(),
     overrides: [
       provider({
         provide: UserStore,
@@ -101,12 +96,10 @@ test("GET /v1/users/:id", async () => {
 ```ts [Bun]
 import { expect, test } from "bun:test";
 import { ChoWeb, provider } from "@chojs/web";
-import { HonoLinker } from "@chojs/vendor-hono";
 import { App, UserStore } from "./app.ts";
 
 test("GET /v1/users/:id", async () => {
   const app = await ChoWeb.create(App, {
-    linker: new HonoLinker(),
     overrides: [
       provider({
         provide: UserStore,
@@ -143,7 +136,7 @@ assert.equal(res.status, 201);
 ## Tips
 
 - **Export the root module** from a file that does not start a server, so tests
-  import it without side effects. Keep `Deno.serve` and friends in `main.ts`.
+  import it without side effects. Keep `serve` in `main.ts`.
 - **Test one feature** by creating the application from the feature module
   instead of the root: any module can be a root.
 - **Any adapter works** in tests. With the [Fastify adapter](/adapters/fastify),

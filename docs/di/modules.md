@@ -171,7 +171,7 @@ src/
     user-store.ts
   orders/
     …
-  main.ts           the only file with runtime APIs (Deno.serve, process.argv, …)
+  main.ts           the only file that serves or reads the command line
 ```
 
 ```ts

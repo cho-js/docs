@@ -1,12 +1,14 @@
-# Plain adapter
+# The built-in router
 
-`@chojs/vendor-cho` matches requests to routes with the standard
+`@chojs/web` matches requests to routes with the standard
 [URL Pattern API](https://developer.mozilla.org/docs/Web/API/URL_Pattern_API),
-and nothing else. There is no HTTP library underneath, and no dependency.
+and nothing else. There is no HTTP library underneath, no dependency, and
+nothing to install: it is the router `ChoWeb.create` uses when it is given no
+linker.
 
 ## Runtime support
 
-The adapter needs the global `URLPattern`:
+The router needs the global `URLPattern`:
 
 | Runtime            | Supported                               |
 | ------------------ | --------------------------------------- |
@@ -19,67 +21,47 @@ The adapter needs the global `URLPattern`:
 On a runtime without it, `ChoWeb.create` fails with an error that says so. Use
 the [Hono adapter](/adapters/hono) there.
 
-## Install
-
-::: code-group
-
-```sh [Deno]
-deno add jsr:@chojs/web jsr:@chojs/vendor-cho
-```
-
-```sh [Node.js]
-npx jsr add @chojs/web @chojs/vendor-cho
-npm install @hono/node-server
-```
-
-```sh [Bun]
-bunx jsr add @chojs/web @chojs/vendor-cho
-```
-
-:::
-
 ## Usage
 
-Pass a `ChoLinker` to `ChoWeb.create`:
+Give `ChoWeb.create` no linker:
 
 ```ts
 import { ChoWeb } from "@chojs/web";
-import { ChoLinker } from "@chojs/vendor-cho";
+import { serve } from "@chojs/web/serve";
 
-const app = await ChoWeb.create(App, { linker: new ChoLinker() });
+const app = await ChoWeb.create(App);
+
+await serve(app.handler, { port: 3000 }); // Deno, Node.js and Bun
 ```
 
-::: code-group
+On Cloudflare Workers and other edge runtimes there is no server to start: the
+entry module exports the handler.
 
-```ts [Deno]
-Deno.serve(app.handler);
-```
-
-```ts [Node.js]
-import { serve } from "@hono/node-server";
-
-serve({ fetch: app.handler, port: 3000 });
-```
-
-```ts [Bun]
-Bun.serve({ fetch: app.handler });
-```
-
-```ts [Cloudflare Workers]
+```ts
 let app: Promise<ChoWeb> | undefined;
 
 export default {
   async fetch(req: Request) {
-    app ??= ChoWeb.create(App, { linker: new ChoLinker() });
+    app ??= ChoWeb.create(App);
     return (await app).handler(req);
   },
 };
 ```
 
-:::
+The router is the `ChoLinker` class of `@chojs/web`. Create it yourself to
+give it options:
 
-On Node.js, `@hono/node-server` is only the bridge between Node's HTTP server
-and a `fetch`-style handler; the routing is still the plain adapter's.
+```ts
+import { ChoLinker, ChoWeb } from "@chojs/web";
+
+const app = await ChoWeb.create(App, { linker: new ChoLinker() });
+```
+
+::: info @chojs/vendor-cho
+The router used to be a package of its own, `@chojs/vendor-cho`. That package
+still exists and exports the same `ChoLinker` and `ChoRouter`, so applications
+that import from it keep working. New applications import from `@chojs/web`.
+:::
 
 ## Unmatched requests
 
@@ -109,13 +91,13 @@ router.match("GET", "/users/42"); // { route, params: { id: "42" } }, or undefin
 router.fetch; //                     the request handler, the same function as app.handler
 ```
 
-There is no runtime context on this adapter: `ctx.native` is `undefined`.
+There is no runtime context on this router: `ctx.native` is `undefined`.
 
 ## How it works
 
-The adapter only matches requests. `@chojs/web` builds each route as one
+The router only matches requests. `@chojs/web` builds each route as one
 function that runs its middlewares, its handler and its error handler; the
-adapter makes one `URLPattern` for each route, and calls the first route whose
+router makes one `URLPattern` for each route, and calls the first route whose
 method and pattern match with the `Request` and the decoded path parameters.
 
 ## Behavior

@@ -59,7 +59,6 @@ every feature, that no `@Catch` covers:
 
 ```ts
 const app = await ChoWeb.create(App, {
-  linker: new HonoLinker(),
   onError: (error, ctx) => {
     console.error(ctx.req.method, ctx.url.pathname, error);
     return Response.json({ error: "internal error" }, { status: 500 });
@@ -134,7 +133,6 @@ if (!user) throw new HttpError(404, "user not found");
 
 // the application
 const app = await ChoWeb.create(App, {
-  linker: new HonoLinker(),
   onError: (error) =>
     error instanceof HttpError
       ? Response.json({ error: error.message }, { status: error.status })
@@ -148,7 +146,7 @@ Without any error handler at any level, the error goes to the adapter:
 
 | Adapter                 | Unhandled error                                           |
 | ----------------------- | --------------------------------------------------------- |
-| `@chojs/vendor-cho`     | Logged with `console.error`; `500`                        |
+| Built in                | Logged with `console.error`; `500`                        |
 | `@chojs/vendor-hono`    | `onError` of the Hono application; logged, `500`          |
 | `@chojs/vendor-fastify` | The error handler of the Fastify application; `500`       |
 

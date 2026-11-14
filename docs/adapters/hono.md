@@ -14,7 +14,6 @@ deno add jsr:@chojs/web jsr:@chojs/vendor-hono
 
 ```sh [Node.js]
 npx jsr add @chojs/web @chojs/vendor-hono
-npm install @hono/node-server
 ```
 
 ```sh [Bun]
@@ -39,20 +38,14 @@ const app = await ChoWeb.create(App, { linker: new HonoLinker() });
 app.linked.instance; // the Hono application
 ```
 
+Serve it like any CHO web application:
+
 ::: code-group
 
-```ts [Deno]
-Deno.serve(app.handler);
-```
+```ts [Deno, Node.js, Bun]
+import { serve } from "@chojs/web/serve";
 
-```ts [Node.js]
-import { serve } from "@hono/node-server";
-
-serve({ fetch: app.handler, port: 3000 });
-```
-
-```ts [Bun]
-Bun.serve({ fetch: app.handler });
+await serve(app.handler, { port: 3000 });
 ```
 
 ```ts [Cloudflare Workers]

@@ -6,7 +6,7 @@
 ::: warning Node.js only
 Fastify is built on the HTTP server of Node.js, and this adapter is tested on
 Node.js alone. For Deno, Bun and edge runtimes use the
-[plain adapter](/adapters/cho) or the [Hono adapter](/adapters/hono).
+[built-in router](/adapters/cho) or the [Hono adapter](/adapters/hono).
 :::
 
 ## Install

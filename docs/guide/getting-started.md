@@ -7,23 +7,22 @@ needs.
 
 ### An HTTP application
 
-`@chojs/web`, plus one [runtime adapter](/adapters/). The examples use the Hono
-adapter, which runs everywhere:
+`@chojs/web` is all it needs: a router is built in. To match requests with
+another HTTP library, add a [runtime adapter](/adapters/).
 
 ::: code-group
 
 ```sh [Deno]
-deno add jsr:@chojs/web jsr:@chojs/vendor-hono
+deno add jsr:@chojs/web
 ```
 
 ```sh [Node.js]
-npx jsr add @chojs/web @chojs/vendor-hono
-npm install @hono/node-server   # serves a fetch-style handler on Node.js
+npx jsr add @chojs/web
 npm install -D tsx typescript
 ```
 
 ```sh [Bun]
-bunx jsr add @chojs/web @chojs/vendor-hono
+bunx jsr add @chojs/web
 ```
 
 :::
@@ -56,8 +55,7 @@ has the details.
 
 ## A first HTTP application
 
-Create `main.ts`. The application itself is the same on every runtime; only the
-last line, which serves it, differs.
+Create `main.ts`. The whole file is the same on every runtime.
 
 ```ts
 import {
@@ -68,7 +66,7 @@ import {
   Injectable,
   Module,
 } from "@chojs/web";
-import { HonoLinker } from "@chojs/vendor-hono";
+import { serve } from "@chojs/web/serve";
 
 @Injectable()
 class Greeter {
@@ -95,31 +93,24 @@ class HelloController {
 @Module({ providers: [Greeter], controllers: [HelloController] })
 class App {}
 
-const app = await ChoWeb.create(App, { linker: new HonoLinker() });
+const app = await ChoWeb.create(App);
+await serve(app.handler, { port: 3000 });
 ```
 
-Serve it and run it:
+Run it:
 
 ::: code-group
 
-```ts [Deno]
-Deno.serve({ port: 3000 }, app.handler);
-
-// deno run --allow-net main.ts
+```sh [Deno]
+deno run --allow-net --allow-env main.ts
 ```
 
-```ts [Node.js]
-import { serve } from "@hono/node-server";
-
-serve({ fetch: app.handler, port: 3000 });
-
-// npx tsx main.ts
+```sh [Node.js]
+npx tsx main.ts
 ```
 
-```ts [Bun]
-Bun.serve({ port: 3000, fetch: app.handler });
-
-// bun run main.ts
+```sh [Bun]
+bun run main.ts
 ```
 
 :::
@@ -138,6 +129,8 @@ What happened:
 - `@Module` groups them. The root module is the application.
 - `ChoWeb.create` validates everything, creates the instances, and gives
   `app.handler`: a plain `(req: Request) => Promise<Response>`.
+- `serve` gives the handler to the server of the runtime it runs on:
+  `Deno.serve`, `Bun.serve`, or the HTTP server of Node.js.
 
 Continue with the [web guide](/web/quick-start).
 

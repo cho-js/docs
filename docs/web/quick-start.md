@@ -6,8 +6,10 @@ handler that any server can call.
 
 - **Built on web standards.** Handlers receive the standard `Request` and
   answer with a standard `Response`.
-- **Bring your own router.** `@chojs/web` depends on no HTTP library. A small
-  [adapter](/adapters/) matches requests to routes.
+- **No HTTP library needed.** A router on the standard URL Pattern API is
+  built in, so an application depends on `@chojs/web` alone.
+- **Or bring your own router.** A small [adapter](/adapters/) matches requests
+  to routes on another library, such as Hono or Fastify.
 - **Same behavior on every adapter.** Middlewares, error handling and the
   conversion of results are done by `@chojs/web` itself.
 - **Fails early.** A bad route, a duplicate route or a missing provider is
@@ -18,21 +20,21 @@ handler that any server can call.
 ::: code-group
 
 ```sh [Deno]
-deno add jsr:@chojs/web jsr:@chojs/vendor-hono
+deno add jsr:@chojs/web
 ```
 
 ```sh [Node.js]
-npx jsr add @chojs/web @chojs/vendor-hono
-npm install @hono/node-server
+npx jsr add @chojs/web
 ```
 
 ```sh [Bun]
-bunx jsr add @chojs/web @chojs/vendor-hono
+bunx jsr add @chojs/web
 ```
 
 :::
 
-Any [adapter](/adapters/) can replace `@chojs/vendor-hono`.
+Nothing else is needed: the [built-in router](/adapters/cho) matches the
+requests. An [adapter](/adapters/) can replace it.
 
 ## An application
 
@@ -46,7 +48,6 @@ import {
   Module,
   Post,
 } from "@chojs/web";
-import { HonoLinker } from "@chojs/vendor-hono";
 
 @Injectable()
 class UserStore {
@@ -74,32 +75,32 @@ class UsersController {
 @Module({ route: "v1", providers: [UserStore], controllers: [UsersController] })
 class App {}
 
-const app = await ChoWeb.create(App, { linker: new HonoLinker() });
+const app = await ChoWeb.create(App);
 ```
 
 ## Serve it
 
-`app.handler` is a plain `(req: Request) => Promise<Response>`.
+`app.handler` is a plain `(req: Request) => Promise<Response>`. `serve` gives
+it to the server of the runtime: the same line runs on Deno, Node.js and Bun.
+
+```ts
+import { serve } from "@chojs/web/serve";
+
+await serve(app.handler, { port: 3000 });
+```
 
 ::: code-group
 
-```ts [Deno]
-Deno.serve({ port: 3000 }, app.handler);
+```sh [Deno]
+deno run --allow-net --allow-env main.ts
 ```
 
-```ts [Node.js]
-import { serve } from "@hono/node-server";
-
-serve({ fetch: app.handler, port: 3000 });
+```sh [Node.js]
+npx tsx main.ts
 ```
 
-```ts [Bun]
-Bun.serve({ port: 3000, fetch: app.handler });
-```
-
-```ts [Node.js with Fastify]
-// with: new FastifyLinker() from "@chojs/vendor-fastify"
-await app.linked.instance.listen({ port: 3000 });
+```sh [Bun]
+bun run main.ts
 ```
 
 :::

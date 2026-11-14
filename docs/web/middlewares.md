@@ -184,7 +184,7 @@ const handler = async (req: Request) => {
   return response;
 };
 
-Deno.serve(handler);
+await serve(handler); // from "@chojs/web/serve"
 ```
 
 :::

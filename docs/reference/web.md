@@ -8,6 +8,7 @@ generated API documentation is on [JSR](https://jsr.io/@chojs/web/doc).
 | Entry point         | For                                                        |
 | ------------------- | ---------------------------------------------------------- |
 | `@chojs/web`        | Applications                                               |
+| `@chojs/web/serve`  | Serving: `serve`                                           |
 | `@chojs/web/linker` | Adapters: `Linker`, `Linked`, `Route`                      |
 | `@chojs/web/graph`  | Introspection: `AppRef`, `FeatureRef`, `ControllerRef`, `MethodRef`, `NodeRef`, `ErrorHandlerRef` |
 
@@ -15,7 +16,10 @@ generated API documentation is on [JSR](https://jsr.io/@chojs/web/doc).
 
 ```ts
 class ChoWeb<T = unknown> {
+  // with a linker: T is the object of that linker's router
   static create<T>(app: Class, options: ChoWebOptions<T>): Promise<ChoWeb<T>>;
+  // without one: the built-in router
+  static create(app: Class, options?: ChoWebOptions): Promise<ChoWeb<ChoRouter>>;
 
   readonly handler: (req: Request) => Promise<Response>;
   readonly routes: readonly Route[];
@@ -26,7 +30,7 @@ class ChoWeb<T = unknown> {
 }
 
 type ChoWebOptions<T = unknown> = {
-  linker: Linker<T>;
+  linker?: Linker<T>; // default: new ChoLinker(), the built-in router
   prefix?: string;
   onError?: ChoWebErrorHandler;
   overrides?: readonly Provider[];
@@ -34,6 +38,49 @@ type ChoWebOptions<T = unknown> = {
 ```
 
 See [The application](/web/application).
+
+## `serve`
+
+```ts
+import { serve } from "@chojs/web/serve";
+
+function serve(
+  handler: (req: Request) => Response | Promise<Response>,
+  options?: { port?: number; hostname?: string; signal?: AbortSignal },
+): Promise<ChoWebServer>;
+
+type ChoWebServer = {
+  readonly runtime: "deno" | "node" | "bun" | "workerd" | "edge" | "unknown";
+  readonly port: number;
+  readonly hostname: string;
+  close(): Promise<void>;
+};
+```
+
+Runs a `fetch`-style handler on the server of the current runtime: `Deno.serve`,
+`Bun.serve`, or the HTTP server of Node.js. `port` defaults to `3000`. See
+[Serving](/web/application#serving).
+
+## The built-in router
+
+```ts
+class ChoLinker implements Linker<ChoRouter> {
+  constructor(options?: {
+    notFound?: (req: Request) => Response | Promise<Response>;
+  });
+  link(routes: readonly Route[]): Linked<ChoRouter>;
+}
+
+class ChoRouter {
+  readonly routes: readonly Route[];
+  match(method: string, pathname: string):
+    | { route: Route; params: Readonly<Record<string, string>> }
+    | undefined;
+  readonly fetch: (req: Request) => Promise<Response>;
+}
+```
+
+Both are exported by `@chojs/web`. See [The built-in router](/adapters/cho).
 
 ## Decorators
 
@@ -138,7 +185,7 @@ interface Linker<T> {
 
 | Package                 | Exports                                |
 | ----------------------- | -------------------------------------- |
-| `@chojs/vendor-cho`     | `ChoLinker`, `ChoRouter`               |
+| `@chojs/vendor-cho`     | `ChoLinker`, `ChoRouter`, the same as `@chojs/web` exports |
 | `@chojs/vendor-hono`    | `HonoLinker`, `HonoLinked`             |
 | `@chojs/vendor-fastify` | `FastifyLinker`, `FastifyNative`       |
 

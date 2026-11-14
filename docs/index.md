@@ -59,7 +59,6 @@ import {
   Injectable,
   Module,
 } from "@chojs/web";
-import { HonoLinker } from "@chojs/vendor-hono";
 
 @Injectable()
 class UserStore {
@@ -81,28 +80,16 @@ class UsersController {
 @Module({ providers: [UserStore], controllers: [UsersController] })
 class App {}
 
-const app = await ChoWeb.create(App, { linker: new HonoLinker() });
+const app = await ChoWeb.create(App);
 ```
 
-Then serve `app.handler` with whatever the runtime has:
+Then serve `app.handler`. The same line runs on Deno, Node.js and Bun:
 
-::: code-group
+```ts
+import { serve } from "@chojs/web/serve";
 
-```ts [Deno]
-Deno.serve(app.handler);
+await serve(app.handler, { port: 3000 });
 ```
-
-```ts [Bun]
-Bun.serve({ fetch: app.handler });
-```
-
-```ts [Node.js]
-import { serve } from "@hono/node-server";
-
-serve({ fetch: app.handler, port: 3000 });
-```
-
-:::
 
 A command-line application, with the same modules, controllers and providers:
 

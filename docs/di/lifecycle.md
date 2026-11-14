@@ -86,32 +86,13 @@ class Database {
 
 ::: code-group
 
-```ts [Web: Deno]
-const server = Deno.serve(app.handler);
+```ts [Web]
+import { serve } from "@chojs/web/serve";
 
-Deno.addSignalListener("SIGTERM", async () => {
-  await server.shutdown(); // stop accepting, finish the requests in flight
-  await app.close();
-});
-```
+const server = await serve(app.handler);
 
-```ts [Web: Node.js]
-import { serve } from "@hono/node-server";
-
-const server = serve({ fetch: app.handler, port: 3000 });
-
-process.on("SIGTERM", () => {
-  server.close(async () => {
-    await app.close();
-  });
-});
-```
-
-```ts [Web: Bun]
-const server = Bun.serve({ fetch: app.handler });
-
-process.on("SIGTERM", async () => {
-  await server.stop();
+process.once("SIGTERM", async () => {
+  await server.close(); // stop accepting, finish the requests in flight
   await app.close();
 });
 ```
@@ -136,7 +117,6 @@ module graph, without changing any module:
 
 ```ts [Web]
 const app = await ChoWeb.create(App, {
-  linker: new HonoLinker(),
   overrides: [provider({ provide: Database, factory: () => new FakeDatabase() })],
 });
 ```
