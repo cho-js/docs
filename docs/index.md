@@ -4,7 +4,7 @@ layout: home
 hero:
   name: CHO
   text: Modular applications, on every runtime
-  tagline: A tiny decorator-based framework for HTTP and command-line applications. Standard decorators, no reflection, the same code on Deno, Node.js, Bun and the edge.
+  tagline: A decorator-based framework for HTTP and command-line applications. Standard decorators, no reflection, the same code on Deno, Node.js, Bun and Edge.
   image:
     src: /cho.svg
     alt: CHO
