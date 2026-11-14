@@ -78,6 +78,12 @@ class App {}
 const app = await ChoWeb.create(App);
 ```
 
+::: tip Parameters instead of the context
+A handler can also declare what it receives:
+`@Args(Param("id"))` on `get(id: string)`, or `@Args(Body())` on
+`create(user: unknown)`. See [Handler arguments](/web/arguments).
+:::
+
 ## Serve it
 
 `app.handler` is a plain `(req: Request) => Promise<Response>`. `serve` gives
@@ -119,9 +125,12 @@ $ curl -X POST http://localhost:3000/v1/users -d '{"name":"Grace"}'
 | ------------------------------------ | -------------------------------------- |
 | How paths are built and matched      | [Routing](/web/routing)                |
 | What a handler receives              | [Request context](/web/context)        |
+| Declaring the id, the query, the body as parameters | [Handler arguments](/web/arguments) |
+| Validating a request, with zod or your own | [Validation](/web/validation)    |
 | What a handler can return            | [Responses](/web/responses)            |
 | Authentication, logging, timing      | [Middlewares](/web/middlewares)        |
 | Turning errors into responses        | [Error handling](/web/error-handling)  |
 | Options, shutdown, introspection     | [The application](/web/application)    |
+| Summaries, tags and responses, for OpenAPI | [Describing the API](/web/api-docs) |
 | Tests without a server               | [Testing](/web/testing)                |
 | A complete application               | [Example: a REST API](/web/example)    |

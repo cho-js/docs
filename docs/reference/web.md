@@ -107,12 +107,24 @@ A method has one of them.
 | `@Middlewares(...middlewares)` | A module, a controller, a handler | Functions `(ctx, next)`, or classes with `handle(ctx, next)` |
 | `@Catch(handler)`             | A module, a controller, a handler | A function `(error, ctx)`, or a class with `handle(error, ctx)` |
 
+### Handler arguments and documentation
+
+| Decorator        | On                                | Argument                                                                |
+| ---------------- | --------------------------------- | ----------------------------------------------------------------------- |
+| `@Args(...args)` | A handler                         | The arguments, in the order of the parameters                           |
+| `@Doc(options)`  | A module, a controller, a handler | `summary`, `description`, `tags`, `deprecated`, `responses`, `hidden`   |
+
+See [Handler arguments](/web/arguments), [Validation](/web/validation) and
+[Describing the API](/web/api-docs).
+
 ## Functions
 
 | Function                                | Returns                                         |
 | --------------------------------------- | ----------------------------------------------- |
 | `token<T>(description)`                 | A unique `InjectionToken<T>`                    |
 | `provider({ provide, deps?, factory })` | A provider object, with `factory` typed from `deps` |
+| `Param`, `Query`, `Header`, `Body`, `Form` `(key?, validator?)` | An argument for `@Args`: the whole source, or one key of it |
+| `validate({ onInvalid? })`              | The validation middleware, for `@Middlewares`   |
 
 ## Types
 
@@ -175,6 +187,35 @@ interface Linker<T> {
 }
 ```
 
+### Arguments and validation
+
+```ts
+type ChoWebArg<T> = ((ctx: ChoWebContext) => T | Promise<T>) & {
+  readonly info?: {
+    readonly source: "param" | "query" | "header" | "body" | "form";
+    readonly key?: string;
+    readonly validator?: ChoWebValidator;
+  };
+};
+
+type ChoWebValidator<T> = { parse(value: unknown): T | Promise<T> };
+
+type ChoWebInvalid = {
+  readonly source: "param" | "query" | "header" | "body" | "form";
+  readonly key?: string;
+  readonly error: unknown;
+};
+
+type ChoWebDoc = {
+  summary?: string;
+  description?: string;
+  tags?: readonly string[];
+  deprecated?: boolean;
+  responses?: Record<number, { description?: string; schema?: ChoWebValidator }>;
+  hidden?: boolean;
+};
+```
+
 ### Others
 
 `WebModuleOptions`, `WebControllerOptions`, and from the core `ModuleOptions`,
@@ -185,7 +226,6 @@ interface Linker<T> {
 
 | Package                 | Exports                                |
 | ----------------------- | -------------------------------------- |
-| `@chojs/vendor-cho`     | `ChoLinker`, `ChoRouter`, the same as `@chojs/web` exports |
 | `@chojs/vendor-hono`    | `HonoLinker`, `HonoLinked`             |
 | `@chojs/vendor-fastify` | `FastifyLinker`, `FastifyNative`       |
 

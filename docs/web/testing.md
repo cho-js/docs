@@ -133,6 +133,36 @@ const res = await app.handler(
 assert.equal(res.status, 201);
 ```
 
+## Arguments and validation
+
+Nothing changes for a handler with [arguments](/web/arguments): send the
+request, and assert on the response. A request that is not valid is answered
+`400` by the [validation middleware](/web/validation), with what failed:
+
+```ts
+const res = await app.handler(
+  new Request("http://localhost/v1/users/7", { method: "PUT", body: "{}" }),
+);
+assert.equal(res.status, 400);
+assert.deepEqual(
+  [(await res.json()).source],
+  ["body"],
+);
+```
+
+To check that every handler with a validator is validated, read the graph:
+
+```ts
+for (const feature of app.graph.features) {
+  for (const controller of feature.controllers) {
+    for (const method of controller.methods) {
+      const has_validator = method.args.some((arg) => arg.info?.validator);
+      assert.ok(!has_validator || method.validated, method.name);
+    }
+  }
+}
+```
+
 ## Tips
 
 - **Export the root module** from a file that does not start a server, so tests

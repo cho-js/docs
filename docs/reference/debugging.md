@@ -67,6 +67,7 @@ error.
 ### `cho:web`
 
 ```
+cho:web UsersController.update has an argument with a validator and no validate() middleware: it is not validated
 cho:web GET /v1/users/:id -> UsersController.get
 cho:web GET /v1/users -> UsersController.list
 cho:web application App created +2ms
@@ -75,7 +76,9 @@ cho:web ERROR GET /v1/users/1 failed: Error: db down
 
 It logs every route with its handler, the error that stops the application
 from being created, and each error a `@Catch` handler receives, with the
-request's method and path.
+request's method and path. It also lists each handler that has an argument
+with a validator and is not covered by the
+[validation middleware](/web/validation): its validators are not run.
 
 ### `cho:command`
 

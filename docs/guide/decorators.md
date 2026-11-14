@@ -36,6 +36,24 @@ The list is checked against the constructor **at compile time**: a wrong order,
 a wrong type or a missing dependency does not compile. See
 [Tokens and providers](/di/providers#the-dependencies-are-type-checked).
 
+## No parameter decorators
+
+Standard decorators decorate classes and class members. They cannot decorate a
+parameter, so there is no `@Body()` or `@Param("id")` in front of a parameter
+of a handler, as legacy TypeScript decorators allowed.
+
+CHO uses the same idea as for constructors: the arguments of a handler are
+listed once, on the method, in the order of its parameters.
+
+```ts
+@Put(":id")
+@Args(Param("id"), Body<UpdateUser>())
+update(id: string, user: UpdateUser) {}
+```
+
+This list is checked against the parameters at compile time too. See
+[Handler arguments](/web/arguments).
+
 ## Per runtime
 
 ::: code-group

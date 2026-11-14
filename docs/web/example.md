@@ -1,8 +1,9 @@
 # Example: a REST API
 
 A small but complete application: a feature module with a store, a controller
-with every kind of handler, an authentication middleware class, error handling
-and graceful shutdown. It runs unchanged on every runtime and adapter.
+with every kind of handler, typed and validated handler arguments, an
+authentication middleware class, error handling and graceful shutdown. It runs
+unchanged on every runtime and adapter.
 
 ## The feature
 
@@ -49,48 +50,98 @@ export class TodoStore {
 }
 ```
 
+```ts [todos/todo-input.ts]
+import type { ChoWebValidator } from "@chojs/web";
+
+export type NewTodo = { title: string };
+export type TodoPatch = { title?: string; done?: boolean };
+
+/** An error with `issues`, like the one a zod schema throws. */
+class Invalid extends Error {
+  constructor(readonly issues: { path: string[]; message: string }[]) {
+    super("invalid");
+  }
+}
+
+// Validators have the shape of a zod schema: with zod, these two would be
+//   z.object({ title: z.string().min(1) })
+//   z.object({ title: z.string().min(1), done: z.boolean() }).partial()
+
+export const NewTodo: ChoWebValidator<NewTodo> = {
+  parse(value) {
+    const { title } = (value ?? {}) as Record<string, unknown>;
+    if (typeof title !== "string" || title === "") {
+      throw new Invalid([{ path: ["title"], message: "title is required" }]);
+    }
+    return { title };
+  },
+};
+
+export const TodoPatch: ChoWebValidator<TodoPatch> = {
+  parse(value) {
+    const { title, done } = (value ?? {}) as Record<string, unknown>;
+    const issues = [];
+    if (title !== undefined && (typeof title !== "string" || title === "")) {
+      issues.push({ path: ["title"], message: "title is a non-empty string" });
+    }
+    if (done !== undefined && typeof done !== "boolean") {
+      issues.push({ path: ["done"], message: "done is a boolean" });
+    }
+    if (issues.length > 0) throw new Invalid(issues);
+    return {
+      ...(typeof title === "string" ? { title } : {}),
+      ...(typeof done === "boolean" ? { done } : {}),
+    };
+  },
+};
+```
+
 ```ts [todos/todos.controller.ts]
 import {
-  type ChoWebContext,
+  Args,
+  Body,
   Controller,
   Delete,
   Get,
   Middlewares,
+  Param,
   Patch,
   Post,
+  Query,
+  validate,
 } from "@chojs/web";
 import { Auth } from "../auth.ts";
 import { HttpError } from "../http-error.ts";
+import { NewTodo, TodoPatch } from "./todo-input.ts";
 import { TodoStore } from "./todo-store.ts";
 
+@Middlewares(validate()) // the validators of every handler are run
 @Controller({ route: "todos", dependencies: [TodoStore] })
 export class TodosController {
   constructor(readonly store: TodoStore) {}
 
   @Get("") // GET /api/todos?done=true
-  list(ctx: ChoWebContext) {
-    const done = ctx.url.searchParams.get("done");
+  @Args(Query("done"))
+  list(done: string | undefined) {
     const todos = this.store.list();
-    return done === null
+    return done === undefined
       ? todos
       : todos.filter((todo) => todo.done === (done === "true"));
   }
 
   @Get(":id") // GET /api/todos/:id
-  get(ctx: ChoWebContext) {
-    const todo = this.store.find(ctx.params.id!);
+  @Args(Param("id"))
+  get(id: string) {
+    const todo = this.store.find(id);
     if (!todo) throw new HttpError(404, "todo not found");
     return todo;
   }
 
   @Middlewares(Auth)
   @Post("") // POST /api/todos
-  async create(ctx: ChoWebContext) {
-    const { title } = await ctx.req.json();
-    if (typeof title !== "string" || title === "") {
-      throw new HttpError(400, "title is required");
-    }
-    const todo = this.store.add(title);
+  @Args(Body(NewTodo))
+  create(input: NewTodo) {
+    const todo = this.store.add(input.title);
     return Response.json(todo, {
       status: 201,
       headers: { location: `/api/todos/${todo.id}` },
@@ -99,16 +150,18 @@ export class TodosController {
 
   @Middlewares(Auth)
   @Patch(":id") // PATCH /api/todos/:id
-  async update(ctx: ChoWebContext) {
-    const todo = this.store.update(ctx.params.id!, await ctx.req.json());
+  @Args(Param("id"), Body(TodoPatch))
+  update(id: string, patch: TodoPatch) {
+    const todo = this.store.update(id, patch);
     if (!todo) throw new HttpError(404, "todo not found");
     return todo;
   }
 
   @Middlewares(Auth)
   @Delete(":id") // DELETE /api/todos/:id
-  remove(ctx: ChoWebContext) {
-    if (!this.store.remove(ctx.params.id!)) {
+  @Args(Param("id"))
+  remove(id: string) {
+    if (!this.store.remove(id)) {
       throw new HttpError(404, "todo not found");
     }
     // nothing returned: 204 No Content
@@ -204,6 +257,13 @@ export const onError: ChoWebErrorHandlerFn = (error) => {
 
 :::
 
+The handlers declare what they receive with
+[`@Args`](/web/arguments), so none of them reads the context. `validate()` is on
+the controller and `Auth` on three handlers: a request without the key is
+answered `401` before its body is read, and a request with a body that is not
+valid is answered `400` by the [validation middleware](/web/validation), so
+`create` and `update` only ever see a valid input.
+
 `Auth` is a provider of `TodosModule`, and
 [dependencies resolve where the provider is declared](/di/modules#scope-rules),
 so `API_KEY` must be visible there: `TodosModule` imports `ConfigModule`, which
@@ -265,6 +325,9 @@ $ curl localhost:3000/api/todos
 
 $ curl -X POST localhost:3000/api/todos -d '{"title":"No key"}'
 {"error":"unauthorized"}
+
+$ curl -X POST localhost:3000/api/todos -H 'x-api-key: dev' -d '{}'
+{"error":"Invalid request","source":"body","issues":[{"path":["title"],"message":"title is required"}]}
 
 $ curl localhost:3000/api/todos/nope
 {"error":"todo not found"}

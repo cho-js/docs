@@ -96,6 +96,11 @@ Overrides:
 | A handler's route is invalid                   | `Invalid route "<route>" of @Get() on method <name>: <reason>`                                                        |
 | A second HTTP method decorator on a method     | `Cannot add @Get() to method <name>: it already handles POST "<route>". A method can have one HTTP method decorator.` |
 | A static, private or symbol-named handler      | `TypeError: @Get() cannot decorate static method <name>: a handler must not be static`                                |
+| A second `@Args` on a method                   | `Cannot add @Args() to method <name>: it already has one.`                                                            |
+| An argument of `@Args` is not a function       | `TypeError: @Args() on method <name>: argument <n> must be made with Param, Query, Header, Body or Form, or be a function, got <v>` |
+| A key or a validator of the wrong type         | `TypeError: Body(): expected a key (a string) or a validator (an object with a parse method), got <v>`                |
+| An unknown option of `@Doc`                    | `@Doc(): unknown option "tag". Known options: deprecated, description, hidden, responses, summary, tags`              |
+| A handler option of `@Doc` on a class          | `@Doc(): option "summary" is for a handler, not for a class (class <Name>)`                                           |
 
 ### Rejected by `ChoWeb.create`
 
@@ -109,6 +114,7 @@ Any dependency injection error above, and:
 | The same controller declared by two modules   | The message above, followed by `Its controller is declared in more than one module: declare it in one.`                 |
 | A wildcard in a route                         | `Invalid route "<route>" of <where>: "<segment>" has a "*": wildcards are not part of the route syntax`                 |
 | A malformed parameter (`:`, `:1id`, `:a:b`)   | `Invalid route "<route>" of <where>: "<segment>" is not a valid parameter: write ":name", with letters, digits and "_"` |
+| `Param("x")` names no parameter of the path   | `@Args() of <Controller.method>: Param("x") is not a parameter of the route "<path>"`                                   |
 | `onError` is not a function or a class        | `Invalid error handler <v>: must be a function or a class with a 'handle' method.`                                      |
 | A middleware class has no `handle` method     | `Middleware class <Name> must implement 'handle' method.`                                                               |
 | A middleware class cannot be created          | `Failed to create middleware <Name> in module <Module>`, with `cause`                                                   |

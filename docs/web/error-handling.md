@@ -140,6 +140,19 @@ const app = await ChoWeb.create(App, {
 });
 ```
 
+## Arguments and invalid requests
+
+A handler that declares [arguments](/web/arguments) can fail before it is
+called:
+
+- **An argument that throws** (a body that is not JSON, a function of your own
+  that throws) fails the request with its error. It goes to the nearest error
+  handler, like an error of the handler itself.
+- **A request that is not valid** is not an error: when the
+  [validation middleware](/web/validation) is on the route, it answers `400`
+  itself, and no error handler is called. To change that answer, use its
+  `onInvalid` option.
+
 ## Unhandled errors
 
 Without any error handler at any level, the error goes to the adapter:

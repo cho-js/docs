@@ -57,12 +57,6 @@ import { ChoLinker, ChoWeb } from "@chojs/web";
 const app = await ChoWeb.create(App, { linker: new ChoLinker() });
 ```
 
-::: info @chojs/vendor-cho
-The router used to be a package of its own, `@chojs/vendor-cho`. That package
-still exists and exports the same `ChoLinker` and `ChoRouter`, so applications
-that import from it keep working. New applications import from `@chojs/web`.
-:::
-
 ## Unmatched requests
 
 A request no route matches is answered with `404` and the text `Not Found`.

@@ -148,6 +148,25 @@ handler's, each in declaration order.
 matches a route they apply to: never for another feature's or controller's
 routes, nor for a request that matches nothing.
 
+## The validation middleware
+
+`@chojs/web` comes with one middleware: `validate()`. It runs the validators
+of the [arguments](/web/arguments) of the handlers it covers, and answers `400`
+for a request that is not valid.
+
+```ts
+import { Middlewares, validate } from "@chojs/web";
+
+@Middlewares(validate())
+@Controller({ route: "users" })
+class UsersController {}
+```
+
+It is declared like any other middleware, on a handler, a controller or a
+feature module. Its place among the others does not matter: validation always
+happens after every middleware of the route, just before the handler. See
+[Validation](/web/validation).
+
 ## Application-wide middlewares
 
 There is no global CHO middleware, because features are independent. For

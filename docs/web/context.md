@@ -75,6 +75,12 @@ With `noUncheckedIndexedAccess`, `ctx.params.id` is `string | undefined`. The
 route guarantees the parameter, so `ctx.params.id!` is safe in its handler.
 :::
 
+::: tip Declare it instead
+A handler can receive the id, the query or the parsed body as parameters, with
+`@Args(Param("id"), Body())`, and reach the context as the last parameter.
+See [Handler arguments](/web/arguments).
+:::
+
 ## Sharing values: `state`
 
 `ctx.state` is a `Map` that lives for one request. A middleware sets a value;
