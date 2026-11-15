@@ -74,6 +74,7 @@ console.log(`listening on http://localhost:${server.port}`);
 | `port`     | `3000`                | The port; `0` picks a free one          |
 | `hostname` | the runtime's default | The host name or address to listen on   |
 | `signal`   | none                  | An `AbortSignal` that closes the server |
+| `closeTimeout` | none              | How long closing waits for the requests in flight, in milliseconds ([Shutting down](#shutting-down)) |
 
 It resolves, once the server is listening, to `{ runtime, port, hostname,
 close() }`. `serve` has no dependency, and is a separate import so that an
@@ -120,10 +121,11 @@ server first, then close.**
 ::: code-group
 
 ```ts [serve]
-const server = await serve(app.handler);
+const server = await serve(app.handler, { closeTimeout: 10_000 });
 
 process.once("SIGTERM", async () => {
-  await server.close(); // stop accepting, finish the requests in flight
+  // stop accepting, give the requests in flight 10 seconds to finish
+  await server.close();
   await app.close();
 });
 ```
@@ -139,6 +141,21 @@ process.once("SIGTERM", async () => {
 ```
 
 :::
+
+`server.close()` stops accepting requests and waits for the ones in flight. A
+request that never ends, such as an open stream of
+[server-sent events](/web/sse), would hold it for ever. With the `closeTimeout`
+option of `serve`, closing waits that many milliseconds, and then cuts the
+connections of the requests that are still in flight; `0` cuts them at once.
+
+- A request that ends in time is not cut, and closing does not wait for the rest
+  of the timeout.
+- The handler of a request that is cut sees what it sees when a client goes
+  away: `ctx.req.signal` is aborted, and the iteration of an `@Sse` handler is
+  ended.
+- The timeout also applies when the `signal` option closes the server.
+- On Deno, a request that arrives while such a server is closing is answered
+  `503`.
 
 A request that still reaches `app.handler` after `close()` is answered
 `503 Service Unavailable`, and runs no route.

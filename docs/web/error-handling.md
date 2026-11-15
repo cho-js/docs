@@ -153,6 +153,14 @@ called:
   itself, and no error handler is called. To change that answer, use its
   `onInvalid` option.
 
+## Errors in a stream of events
+
+An error handler answers a request. An error in a stream of
+[server-sent events](/web/sse) that has started comes too late for that: the
+`200` is sent. Such an error is **not** given to `@Catch` or to `onError`; the
+stream is cut, and the server prints the error. Catch it in the handler to log
+it, or to tell the client ([Server-sent events](/web/sse#errors)).
+
 ## Unhandled errors
 
 Without any error handler at any level, the error goes to the adapter:

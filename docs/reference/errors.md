@@ -100,6 +100,9 @@ Overrides:
 | An argument of `@Args` is not a function       | `TypeError: @Args() on method <name>: argument <n> must be made with Param, Query, Header, Body or Form, or be a function, got <v>` |
 | A key or a validator of the wrong type         | `TypeError: Body(): expected a key (a string) or a validator (an object with a parse method), got <v>`                |
 | An unknown option of `@Doc`                    | `@Doc(): unknown option "tag". Known options: deprecated, description, hidden, responses, summary, tags`              |
+| An unknown option of `@Sse`                    | `@Sse(): unknown option "keepalive". Known options: keepAlive, method` |
+| A `method` a stream cannot answer              | `TypeError: @Sse(): method must be one of GET, POST, PUT, PATCH, DELETE, got <v>` |
+| A `keepAlive` that is not a time               | `TypeError: @Sse(): keepAlive must be a positive whole number of milliseconds, got <v>` |
 | A handler option of `@Doc` on a class          | `@Doc(): option "summary" is for a handler, not for a class (class <Name>)`                                           |
 
 ### Rejected by `ChoWeb.create`
@@ -133,8 +136,23 @@ These go to the route's [error handler](/web/error-handling):
 | A middleware calls `next()` twice                     | `middleware <name>: next() called more than once`                              |
 | A middleware returns nothing without calling `next()` | `middleware <name> returned no response: return a Response or call next()`     |
 | A middleware returns something else                   | `TypeError: middleware <name> must return a Response or nothing, got <typeof>` |
+| An `@Sse` handler returns something else              | `TypeError: @Sse() handler <Controller.method> must return an async iterable or a Response, got <typeof>` |
 
 A middleware class is named `<Class>.handle`.
+
+### Cutting an event stream
+
+These happen once a stream of [server-sent events](/web/sse) has started. The
+stream is cut, and the server prints the error. No
+[error handler](/web/error-handling) is called: the request is already
+answered.
+
+| Mistake                                   | Message                                                                                                    |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Something that is not an event is yielded | `TypeError: @Sse() handler <Controller.method>: an event must be a string or an object with data, got <v>` |
+| An `event` or an `id` that cannot be sent | `TypeError: @Sse() handler <Controller.method>: "event" must be a string with no line break, got <v>`      |
+| A `retry` that is not a time              | `TypeError: @Sse() handler <Controller.method>: "retry" must be a whole number of milliseconds, got <v>`   |
+| `data` that cannot be serialized as JSON  | The `TypeError` of `JSON.stringify`                                                                        |
 
 ## `@chojs/command`
 

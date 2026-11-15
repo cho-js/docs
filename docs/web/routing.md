@@ -12,6 +12,9 @@ A **handler** is a controller method marked with an HTTP method decorator:
 | `@Head(route)`     | `HEAD`      |
 | `@Options(route)`  | `OPTIONS`   |
 
+`@Sse(route)` is one more: a handler, `GET` by default, that answers with a
+stream of [server-sent events](/web/sse).
+
 ```ts
 @Controller({ route: "users" })
 class UsersController {

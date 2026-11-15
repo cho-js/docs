@@ -68,18 +68,21 @@ old(ctx: ChoWebContext) {
 ```
 
 ```ts [Stream]
-@Get("events")
-events() {
+@Get("export")
+export() {
   const encoder = new TextEncoder();
+  const rows = this.store.rows(); // an iterator
   const stream = new ReadableStream({
-    start(controller) {
-      controller.enqueue(encoder.encode("data: hello\n\n"));
-      controller.close();
+    pull(controller) {
+      const { done, value } = rows.next();
+      if (done) {
+        controller.close();
+      } else {
+        controller.enqueue(encoder.encode(`${value.id},${value.name}\n`));
+      }
     },
   });
-  return new Response(stream, {
-    headers: { "content-type": "text/event-stream" },
-  });
+  return new Response(stream, { headers: { "content-type": "text/csv" } });
 }
 ```
 
@@ -107,6 +110,8 @@ report() {
   ([Error handling](/web/error-handling)).
 - A handler can be `async`: the awaited value is converted.
 - The response of a `@Head` handler is sent without its body.
+- A stream of events for a browser has its own decorator, `@Sse`: see
+  [Server-sent events](/web/sse).
 
 The same conversion applies to what an
 [error handler](/web/error-handling) returns, with one difference: an error

@@ -64,6 +64,7 @@ What differs between them:
 | `ctx.native`           | `undefined`                        | Hono's `Context`                                 | `{ request, reply }` of Fastify                            |
 | When two routes match  | The first declared                 | The first declared                               | The static one                                             |
 | `HEAD` without `@Head` | `@Get`, without the body           | `@Get`, without the body                         | `@Get`, without the body                                   |
+| [Server-sent events](/web/sse) | Sent as they come          | Sent as they come                                | Sent as they come by `listen()`; `app.handler` waits for the end |
 | No route matches       | The `notFound` option; `404`       | `notFound` of the Hono application               | The not-found handler of the Fastify application           |
 | A route rejects        | Logged with `console.error`; `500` | `onError` of the Hono application; logged, `500` | The error handler of the Fastify application; `500`        |
 | Its own middlewares    | [`@chojs/vendor-cho`](/adapters/middlewares) | [`fromHono(middleware)`](/adapters/hono#using-hono-middlewares) | [`fromFastify(hook)`](/adapters/fastify#using-fastify-options-plugins-and-hooks) |

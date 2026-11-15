@@ -46,7 +46,12 @@ import { serve } from "@chojs/web/serve";
 
 function serve(
   handler: (req: Request) => Response | Promise<Response>,
-  options?: { port?: number; hostname?: string; signal?: AbortSignal },
+  options?: {
+    port?: number; // default: 3000
+    hostname?: string;
+    signal?: AbortSignal; // closes the server
+    closeTimeout?: number; // milliseconds; default: none
+  },
 ): Promise<ChoWebServer>;
 
 type ChoWebServer = {
@@ -58,8 +63,10 @@ type ChoWebServer = {
 ```
 
 Runs a `fetch`-style handler on the server of the current runtime: `Deno.serve`,
-`Bun.serve`, or the HTTP server of Node.js. `port` defaults to `3000`. See
-[Serving](/web/application#serving).
+`Bun.serve`, or the HTTP server of Node.js. `close()` waits for the requests in
+flight; with `closeTimeout`, the ones that are still in flight after that long
+are cut. See [Serving](/web/application#serving) and
+[Shutting down](/web/application#shutting-down).
 
 ## The built-in router
 
@@ -98,6 +105,8 @@ Both are exported by `@chojs/web`. See [The built-in router](/adapters/cho).
 | Decorator                                                                  | On       | Argument                                     |
 | -------------------------------------------------------------------------- | -------- | -------------------------------------------- |
 | `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Head`, `@Options` `(route)` | A method | The handler's route, such as `":id"` or `""` |
+
+| `@Sse(route, options?)` | A method | The route of a stream of [server-sent events](/web/sse); options `method` (`"GET"` by default) and `keepAlive` |
 
 A method has one of them.
 
@@ -217,6 +226,29 @@ type ChoWebDoc = {
   hidden?: boolean;
 };
 ```
+
+### Server-sent events
+
+```ts
+type ChoWebSseEvent<T = unknown> = {
+  data: T; // a string as it is, anything else as JSON
+  event?: string;
+  id?: string;
+  retry?: number; // milliseconds
+};
+
+type ChoWebSseOptions = {
+  method?: ChoWebSseMethod; // default: "GET"
+  keepAlive?: number; // milliseconds; default: none
+};
+
+type ChoWebSseMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+
+// What an @Sse handler returns, now or as a promise.
+type ChoWebSseResult = AsyncIterable<ChoWebSseEvent | string> | Response;
+```
+
+See [Server-sent events](/web/sse).
 
 ### Others
 
