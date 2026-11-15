@@ -70,6 +70,8 @@ async import(ctx: ChoWebContext) {
 
 :::
 
+Uploads have a recipe: [Receive an uploaded file](/recipes/uploads).
+
 ::: info
 With `noUncheckedIndexedAccess`, `ctx.params.id` is `string | undefined`. The
 route guarantees the parameter, so `ctx.params.id!` is safe in its handler.

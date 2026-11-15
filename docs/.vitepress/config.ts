@@ -39,7 +39,7 @@ gtag('js', new Date());`,
     search: { provider: "local" },
     nav: [
       { text: "Guide", link: "/guide/introduction", activeMatch: "^/(guide|di)/" },
-      { text: "Web", link: "/web/quick-start", activeMatch: "^/(web|adapters)/" },
+      { text: "Web", link: "/web/quick-start", activeMatch: "^/(web|adapters|recipes)/" },
       { text: "Command", link: "/command/quick-start", activeMatch: "^/command/" },
       { text: "Reference", link: "/reference/web", activeMatch: "^/(reference|advanced)/" },
       {
@@ -86,6 +86,17 @@ gtag('js', new Date());`,
           { text: "Describing the API", link: "/web/api-docs" },
           { text: "Testing", link: "/web/testing" },
           { text: "Example: a REST API", link: "/web/example" },
+        ],
+      },
+      {
+        text: "Recipes",
+        items: [
+          { text: "Overview", link: "/recipes/" },
+          { text: "Stream a response", link: "/recipes/streaming" },
+          { text: "Send a file to download", link: "/recipes/downloads" },
+          { text: "Receive an uploaded file", link: "/recipes/uploads" },
+          { text: "Forward a request", link: "/recipes/proxy" },
+          { text: "Shut down gracefully", link: "/recipes/shutdown" },
         ],
       },
       {

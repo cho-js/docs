@@ -160,6 +160,9 @@ connections of the requests that are still in flight; `0` cuts them at once.
 A request that still reaches `app.handler` after `close()` is answered
 `503 Service Unavailable`, and runs no route.
 
+The whole of it, with both signals, is a recipe:
+[Shut down gracefully](/recipes/shutdown).
+
 ## Debug logging
 
 ```sh

@@ -112,6 +112,10 @@ report() {
 - The response of a `@Head` handler is sent without its body.
 - A stream of events for a browser has its own decorator, `@Sse`: see
   [Server-sent events](/web/sse).
+- The [recipes](/recipes/) go further with a `Response`:
+  [streaming a body](/recipes/streaming) as it is produced,
+  [sending a file](/recipes/downloads) from disk, and
+  [forwarding a request](/recipes/proxy) to another server.
 
 The same conversion applies to what an
 [error handler](/web/error-handling) returns, with one difference: an error

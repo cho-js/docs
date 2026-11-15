@@ -6,6 +6,11 @@ the response stays open, and the handler sends events for as long as it wants.
 
 The handler is an `async *` method, and every `yield` is an event:
 
+::: tip Not events?
+A stream of anything else, such as CSV rows or lines of JSON, needs no
+decorator: see [Stream a response](/recipes/streaming).
+:::
+
 ::: code-group
 
 ```ts [Server]
