@@ -1,8 +1,8 @@
 # Introduction
 
 CHO is a tiny decorator-based framework for building modular applications:
-HTTP services with `@chojs/web`, command-line tools with `@chojs/command`, both
-on the same dependency injection.
+HTTP services with `@chojs/web`, command-line tools with `@chojs/command` and
+message consumers with `@chojs/message`, all on the same dependency injection.
 
 If you know Angular, NestJS or Spring, the shape is familiar: **modules** group
 **providers** and **controllers**, and decorators declare how they fit
@@ -74,6 +74,7 @@ dependency, a duplicate route) never waits for the first request to show up.
 | ----------------------- | ------------------------------------------------------------------- |
 | `@chojs/web`            | HTTP applications                                                   |
 | `@chojs/command`        | Command-line applications                                           |
+| `@chojs/message`        | Applications that handle the messages of a broker                   |
 | `@chojs/vendor-cho`     | Middlewares for the built-in router of `@chojs/web`, such as CORS  |
 | `@chojs/vendor-hono`    | Running `@chojs/web` on [Hono](https://hono.dev)                    |
 | `@chojs/vendor-fastify` | Running `@chojs/web` on [Fastify](https://fastify.dev), Node.js only |
@@ -81,20 +82,24 @@ dependency, a duplicate route) never waits for the first request to show up.
 
 All of them are published on [JSR](https://jsr.io/@chojs).
 
-An application imports from **one** package: `@chojs/web` or `@chojs/command`.
-Each re-exports what an application needs from the core (`@Module`,
+An application imports from **one** package: `@chojs/web`, `@chojs/command` or
+`@chojs/message`. Each re-exports what an application needs from the core (`@Module`,
 `@Controller`, `@Injectable`, `token`, `provider`), so you never import
-`@chojs/core` yourself. A web application adds one adapter package.
+`@chojs/core` yourself. A web application can add one adapter package, and a
+message application adds the adapter of its broker. An application that serves
+HTTP and handles messages uses both packages,
+[on one injector](/message/with-web).
 
 ## How the documentation is organized
 
 - **[Getting started](/guide/getting-started)** installs CHO and runs a first
   application on each runtime.
 - **[Dependency injection](/di/overview)** explains modules, providers and
-  tokens. It applies to both kinds of application.
-- **[Web applications](/web/quick-start)** and
-  **[Command-line applications](/command/quick-start)** are the guides of the
-  two packages.
+  tokens. It applies to every kind of application.
+- **[Web applications](/web/quick-start)**,
+  **[Command-line applications](/command/quick-start)** and
+  **[Message applications](/message/quick-start)** are the guides of the
+  three packages.
 - **[Reference](/reference/web)** lists the API, the error messages and the
   debug logging.
 - **[Advanced](/advanced/core)** is for people who build on the core itself.

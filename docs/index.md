@@ -4,7 +4,7 @@ layout: home
 hero:
   name: CHO
   text: Modular applications, on every runtime
-  tagline: A decorator-based framework for HTTP and command-line applications. Standard decorators, no reflection, the same code on Deno, Node.js, Bun and Edge.
+  tagline: A decorator-based framework for HTTP, command-line and message applications. Standard decorators, no reflection, the same code on Deno, Node.js, Bun and Edge.
   image:
     src: /cho.svg
     alt: CHO
@@ -28,14 +28,10 @@ features:
     details: Works with TC39 decorators, and with legacy and Bun decorators. No reflect-metadata, no compiler plugin, no emitted types.
     link: /guide/decorators
     linkText: Decorators
-  - title: Fails before it starts
-    details: The whole module graph is validated and linked once, at startup. A missing provider or a duplicate route never waits for the first request.
+  - title: Dependency injection that fails early
+    details: The whole module graph is validated once, at startup, so a missing provider never waits for the first request. A provider can await a connection before its value is ready.
     link: /di/overview
     linkText: Dependency injection
-  - title: Asynchronous dependency injection
-    details: A provider can await a connection or a file before its value is ready. Everything that depends on it waits, and is released in reverse order.
-    link: /di/lifecycle
-    linkText: Lifecycle
   - title: HTTP applications
     details: Controllers, routes, middlewares and error handlers with @chojs/web, on the plain URL Pattern router, Hono or Fastify.
     link: /web/quick-start
@@ -44,6 +40,10 @@ features:
     details: Single commands or git-style actions with @chojs/command. Declared flags, generated help, exit codes instead of process.exit.
     link: /command/quick-start
     linkText: Command quick start
+  - title: Message applications
+    details: Handlers for the topics of a broker with @chojs/message. Acknowledged after handling, tested with no broker, on the same instances as your HTTP application.
+    link: /message/quick-start
+    linkText: Message quick start
 ---
 
 ## A quick look
@@ -117,4 +117,30 @@ class App {}
 
 const app = ChoCommand.create(App, { name: "greet" });
 const code = await app.run(Deno.args); // Node.js, Bun: process.argv.slice(2)
+```
+
+A message application, again with the same modules, controllers and providers:
+
+```ts
+import {
+  ChoMessage,
+  type ChoMessageContext,
+  Controller,
+  Module,
+  Subscribe,
+} from "@chojs/message";
+
+@Controller({ topic: "orders" })
+class OrdersController {
+  @Subscribe("created") // the topic orders.created
+  created(ctx: ChoMessageContext) {
+    console.log(ctx.key, ctx.json());
+  }
+}
+
+@Module({ controllers: [OrdersController] })
+class App {}
+
+const app = await ChoMessage.create(App);
+await app.handle("orders.created", { key: "42", value: '{"id":"42"}' });
 ```

@@ -104,6 +104,9 @@ report() {
   accepts: the value is given to `new Response(value)`. The platform sets the
   content type, except for a string, where `@chojs/web` sets it so that it is
   the same on every runtime.
+- A `ReadableStream` has no content type on Deno and Node.js; Bun sends
+  `application/octet-stream`. Return a `Response` with the type you mean
+  ([Stream a response](/recipes/streaming)).
 - `null` is JSON (`null`), not an empty response. Return nothing for a `204`.
 - A value that cannot be serialized as JSON, such as a `BigInt` or an object
   with a cycle, is an error, handled like any error of the handler

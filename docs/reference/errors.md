@@ -20,9 +20,9 @@ anonymous class), quoted string, `InjectionToken(<description>)` or
 | Step                             | What is checked                                                        |
 | -------------------------------- | ---------------------------------------------------------------------- |
 | A class is defined               | The arguments of each decorator                                        |
-| The application is created       | The module graph, the routes or commands, the middlewares and handlers |
+| The application is created       | The module graph, the routes, commands or topics, the middlewares and handlers |
 | An instance is created           | Factories and constructors                                             |
-| A request or a command runs      | Middleware misuse, and your own errors                                 |
+| A request, a command or a message runs | Middleware misuse, and your own errors                           |
 | The application is closed        | Dispose methods                                                        |
 
 ## Dependency injection
@@ -153,6 +153,66 @@ answered.
 | An `event` or an `id` that cannot be sent | `TypeError: @Sse() handler <Controller.method>: "event" must be a string with no line break, got <v>`      |
 | A `retry` that is not a time              | `TypeError: @Sse() handler <Controller.method>: "retry" must be a whole number of milliseconds, got <v>`   |
 | `data` that cannot be serialized as JSON  | The `TypeError` of `JSON.stringify`                                                                        |
+
+## `@chojs/message`
+
+### Thrown by the decorators
+
+| Mistake                                        | Message                                                                                                       |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| A handler's topic is invalid                   | `Invalid topic "<topic>" of @Subscribe() on method <name>: <reason>`                                          |
+| A second `@Subscribe` on a method              | `Cannot add @Subscribe() to method <name>: it already handles "<topic>". A method can have one @Subscribe().` |
+| A static, private or symbol-named handler      | `TypeError: @Subscribe() cannot decorate static method <name>: a handler must not be static`                  |
+| An unknown option of `@Module` / `@Controller` | `@Controller(): unknown option "route". Known options: dependencies, topic`                                   |
+
+### Rejected by `ChoMessage.create` and `ChoMessage.from`
+
+Any dependency injection error above, and:
+
+| Mistake                                        | Message                                                                                                      |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| A topic is not a string                        | `TypeError: Invalid topic of <where>: expected a string, got <v>`                                            |
+| A leading or trailing `.`                      | `Invalid topic "<topic>" of <where>: it must not start or end with "."`                                      |
+| An empty segment                               | `Invalid topic "<topic>" of <where>: it must not contain an empty segment ("..")`                            |
+| A wildcard in a topic (`*`, `>`, `#`)          | `Invalid topic "<topic>" of <where>: "<segment>" has a "*": wildcards are not part of the topic syntax`      |
+| A segment with another character               | `Invalid topic "<topic>" of <where>: "<segment>" is not a valid segment: write letters, digits, "_" and "-"` |
+| A handler with no level at all                 | `Invalid topic of <Controller.method>: it is empty. Give @Subscribe(), its controller or its module a topic` |
+| Two handlers with the same topic               | `Duplicate topic "<topic>": declared by <Controller.method> and <Controller.method>`                         |
+| `onError` is not a function or a class         | `Invalid error handler <v>: must be a function or a class with a 'handle' method.`                           |
+| A middleware class has no `handle` method      | `Middleware class <Name> must implement 'handle' method.`                                                    |
+| A middleware class cannot be created           | `Failed to create middleware <Name> in module <Module>`, with `cause`                                        |
+| An error handler class has no `handle` method  | `Error handler class <Name> must implement 'handle' method.`                                                 |
+| An error handler class cannot be created       | `Failed to create error handler <Name> in module <Module>`, with `cause`                                     |
+| An unknown option                              | `ChoMessage.create(): unknown option "<name>". Known options: linker, onError, overrides, prefix`            |
+| `overrides` given to `from`                    | `ChoMessage.from(): unknown option "overrides". Known options: linker, onError, prefix`                      |
+| What `from` is given is not an injector        | `TypeError: ChoMessage.from(): expected an injector, got <v>`                                                |
+| `from` on a disposed injector                  | `The injector is disposed`                                                                                   |
+
+`<where>` names the declaration: `the global prefix`, `feature <Module>`,
+`controller <Controller>` or `method <name> of controller <Controller>`.
+
+### Rejected by `start()` and `handle()`
+
+| Mistake                                          | Message                                                                                                                      |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `start()` without a linker                       | `ChoMessage.start(): the application has no linker. Give ChoMessage.create or ChoMessage.from a linker, such as KafkaLinker` |
+| `handle()` for a topic with no handler           | `ChoMessage.handle(): no handler for the topic "<topic>"`                                                                    |
+| `start()` or `handle()` once `close()` is called | `The application is closed`                                                                                                  |
+| A value that is neither bytes nor a string       | `TypeError: Invalid value of a message: expected bytes (a Uint8Array) or a string, got <v>`                                  |
+
+### Failing a message
+
+This goes to the handler's [error handler](/message/error-handling):
+
+| Mistake                           | Message                                           |
+| --------------------------------- | ------------------------------------------------- |
+| A middleware calls `next()` twice | `middleware <name>: next() called more than once` |
+
+A middleware class is named `<Class>.handle`.
+
+When an error handler itself throws, the message fails with the **original**
+error, and the server prints `The error handler of <name> failed:` with what
+was thrown.
 
 ## `@chojs/command`
 

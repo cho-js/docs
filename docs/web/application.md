@@ -48,6 +48,7 @@ try {
 | `routes`          | Every route: `method`, `path`, `name`                                 |
 | `graph`           | The same routes as a tree: features, controllers, handlers            |
 | `linked.instance` | The router's own object: a `ChoRouter` by default, a Hono or Fastify app with an adapter |
+| `injector`        | The injector that holds the instances of the application              |
 
 ```ts
 app.handler; //         serve it
@@ -55,6 +56,22 @@ app.linked.instance; // the ChoRouter (or the Hono application, with HonoLinker)
 app.routes; //          [{ method: "GET", path: "/api/users/:id", name: "UsersController.get", … }]
 await app.close();
 ```
+
+### The injector
+
+`app.injector` is read-only, and is there for one use: building a second
+application on the **same instances**. A message application made with
+`ChoMessage.from(app.injector)` shares the providers of the web application,
+its database pool included.
+
+```ts
+const web = await ChoWeb.create(App);
+const messages = await ChoMessage.from(web.injector, { linker });
+```
+
+The web application owns the injector: `web.close()` disposes the instances,
+after the other application is closed. See
+[With a web application](/message/with-web).
 
 ## Serving
 

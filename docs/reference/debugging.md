@@ -46,6 +46,7 @@ set_env(env); // a record, or a function (key) => value
 | `cho:di`      | The injector      | Modules, resolutions, creations and their time, failures |
 | `cho:web`     | `@chojs/web`      | Routes, application creation, errors given to handlers  |
 | `cho:command` | `@chojs/command`  | Commands found, each run, exit codes, errors            |
+| `cho:message` | `@chojs/message`  | Topics, application creation, messages that failed      |
 
 ### `cho:di`
 
@@ -96,6 +97,22 @@ with what it ran (a command, the help or the version), each command's exit
 code and duration, each error, the error handler that received it, and a
 handler that failed.
 
+### `cho:message`
+
+```
+cho:message shop.orders.created -> OrdersController.created
+cho:message shop.orders.cancelled -> OrdersController.cancelled
+cho:message application App created +6ms
+cho:message ERROR shop.orders.created (OrdersController.created) failed: TypeError: an order has an email
+```
+
+It logs every topic with its handler, the error that stops the application
+from being created, and each error of a handler or a middleware, with the
+topic and the handler of its message. It is logged before the error handler
+runs, so a message that is then settled as handled still leaves a line. An
+application made with `ChoMessage.from` logs
+`application created on a given injector`.
+
 Debug logging only adds these lines: errors are reported the same way with or
 without it.
 
@@ -108,6 +125,8 @@ without it.
 | A route answers `404`                                  | `CHO_DEBUGLOG=cho:web` lists every route with its full path; routes have no leading `/`     |
 | The wrong route answers                                | A parameter route declared before a static one ([Routing](/web/routing#matching-order))     |
 | An error handler runs but the client gets `500`        | The handler returns nothing ([Error handling](/web/error-handling#what-an-error-handler-returns)) |
-| A middleware does not run                              | Middlewares belong to their routes or commands; a module without controllers has none       |
+| A middleware does not run                              | Middlewares belong to their routes, commands or topics; a module without controllers has none |
+| A message is never handled                             | `CHO_DEBUGLOG=cho:message` lists every topic in full, global prefix included ([Topics](/message/topics)) |
+| A message is delivered again and again                 | It fails each time: its error handler returns nothing ([Error handling](/message/error-handling#retry-or-drop)) |
 | `SyntaxError: Invalid or unexpected token` at an `@`   | Node.js is running the file without `tsx` or compilation ([Runtimes](/guide/runtimes#node-js)) |
 | A flag value is taken as the command                   | Declare the flag in `parseOptions` ([Flags](/command/flags#finding-the-command))            |

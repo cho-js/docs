@@ -89,7 +89,8 @@ class OrdersModule {} // the same Logger instance as UsersModule
 ## Controllers
 
 A controller is an entry point the framework calls: a class with route
-handlers (`@chojs/web`) or commands (`@chojs/command`). It is declared in
+handlers (`@chojs/web`), commands (`@chojs/command`) or message handlers
+(`@chojs/message`). It is declared in
 `controllers`, not in `providers`.
 
 ```ts
@@ -159,7 +160,7 @@ class ClientsModule {}
 
 ## Organizing an application
 
-A layout that works for both kinds of application:
+A layout that works for every kind of application:
 
 ```
 src/
@@ -171,7 +172,7 @@ src/
     user-store.ts
   orders/
     …
-  main.ts           the only file that serves or reads the command line
+  main.ts           the only file that serves, connects or reads the command line
 ```
 
 ```ts
@@ -182,4 +183,5 @@ export class App {}
 
 In a web application, every module that declares controllers is a *feature*,
 mounted at the root whatever imports it: importing a module does not nest its
-routes. See [Routing](/web/routing).
+routes. See [Routing](/web/routing). The same holds for the topics of a
+message application: see [Topics](/message/topics).

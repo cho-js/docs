@@ -46,6 +46,27 @@ bunx jsr add @chojs/command
 
 :::
 
+### A message application
+
+::: code-group
+
+```sh [Deno]
+deno add jsr:@chojs/message
+```
+
+```sh [Node.js]
+npx jsr add @chojs/message
+npm install -D tsx typescript
+```
+
+```sh [Bun]
+bunx jsr add @chojs/message
+```
+
+:::
+
+Its first application is in the [message quick start](/message/quick-start).
+
 ::: tip Node.js
 The packages are ES modules: set `"type": "module"` in `package.json`. Node.js
 does not run decorators by itself, so compile the application with

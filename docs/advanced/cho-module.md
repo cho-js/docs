@@ -1,9 +1,9 @@
 # Writing a CHO module
 
 A CHO module is a package that turns a module graph into a running
-application, as `@chojs/web` does for HTTP and `@chojs/command` for the
-command line. You could write one for a message queue consumer, a scheduler,
-a WebSocket server or a GraphQL API.
+application, as `@chojs/web` does for HTTP, `@chojs/command` for the command
+line and `@chojs/message` for the messages of a broker. You could write one
+for a scheduler, a WebSocket server or a GraphQL API.
 
 The recipe has three parts:
 
@@ -143,11 +143,13 @@ The core stores `@Middlewares` and `@Catch`, and hands them back as the
 `middlewares` and `errorHandler` fields of the module, controller and method
 metadata. Your module decides how and when to call them.
 
-- **`compose(middlewares, endpoint, kind)`** runs a chain of middlewares
-  around an endpoint, in the onion model both built-in modules use. Each
+- **`compose(middlewares, endpoint, kind?)`** runs a chain of middlewares
+  around an endpoint, in the onion model every built-in module uses. Each
   middleware is `(ctx, next)`; `kind` says what a result is and how to name it
   in error messages. `@chojs/web` uses it with a `Response`, `@chojs/command`
-  with an exit code.
+  with an exit code. Without a `kind` the chain has no result, as in
+  `@chojs/message`: what a middleware returns is ignored
+  ([The core package](/advanced/core#compose)).
 - **`assert_handle`, `is_handle_class`, `resolve_handle`** accept middlewares
   and error handlers written as injectable classes with a `handle` method:
   checking them, and creating them with the injector, so every CHO module

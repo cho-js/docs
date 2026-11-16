@@ -3,14 +3,15 @@
 An application goes through three steps: the graph is **validated**, the
 instances are **created**, and at the end they are **released**.
 
-| Step     | `@chojs/web`                              | `@chojs/command`                                   |
-| -------- | ----------------------------------------- | -------------------------------------------------- |
-| Validate | `ChoWeb.create`                           | `ChoCommand.create`                                |
-| Create   | `ChoWeb.create`: everything, up front     | `run()`: only what the command needs, the first time |
-| Release  | `app.close()`                             | `app.close()`                                      |
+| Step     | `@chojs/web`, `@chojs/message`                             | `@chojs/command`                                     |
+| -------- | ---------------------------------------------------------- | ---------------------------------------------------- |
+| Validate | `ChoWeb.create`, `ChoMessage.create`                       | `ChoCommand.create`                                  |
+| Create   | `ChoWeb.create`, `ChoMessage.create`: everything, up front | `run()`: only what the command needs, the first time |
+| Release  | `app.close()`                                              | `app.close()`                                        |
 
 The difference in the middle is deliberate. A server must not start
-half-created, so a web application creates everything before it resolves. A
+half-created, so a web application creates everything before it resolves, and
+so does a message application, before it connects to its broker. A
 command-line tool must print `--help` without needing the database, so it
 creates lazily.
 

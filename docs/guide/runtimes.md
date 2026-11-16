@@ -16,6 +16,7 @@ What differs between runtimes is small, and all of it is on this page:
 |                         | Deno | Node.js | Bun    | Edge (Workers, …) |
 | ----------------------- | ---- | ------- | ------ | ----------------- |
 | `@chojs/command`        | Yes  | Yes     | Yes    | n/a               |
+| `@chojs/message`        | Yes  | Yes     | Yes    | n/a               |
 | `@chojs/web`            | Yes  | Yes     | Yes    | Yes               |
 | Its built-in router     | Yes  | 24+     | 1.3.4+ | With `URLPattern` |
 | `serve`                 | Yes  | Yes     | Yes    | Export the handler |
@@ -24,7 +25,9 @@ What differs between runtimes is small, and all of it is on this page:
 
 The built-in router needs the global `URLPattern`; on a runtime without it, use
 the [Hono adapter](/adapters/hono). `@chojs/vendor-fastify` is built on the HTTP
-server of Node.js.
+server of Node.js. `@chojs/message` needs nothing of a runtime; a
+[broker adapter](/message/adapters) runs where the client library of its broker
+does.
 
 ## Deno
 

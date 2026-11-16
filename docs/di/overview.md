@@ -1,21 +1,21 @@
 # Dependency injection
 
-Both kinds of CHO application, web and command-line, are built from the same
-three things:
+Every kind of CHO application, web, command-line and message, is built from
+the same three things:
 
 | Concept        | What it is                                                                                       |
 | -------------- | ------------------------------------------------------------------------------------------------ |
 | **Provider**   | How a value is created: an `@Injectable` class, or a `provider()` object with a factory          |
-| **Controller** | An entry point the framework calls: a class with route handlers or commands                      |
+| **Controller** | An entry point the framework calls: a class with route handlers, commands or message handlers    |
 | **Module**     | A group of providers and controllers. It injects what it declares and what its imports export    |
 
 A **token** identifies something injectable: a class, a `token<T>()`, or a
 symbol. The **injector** validates the graph of a root module, creates the
-instances and releases them. You rarely meet it: `ChoWeb` and `ChoCommand`
-create it for you.
+instances and releases them. You rarely meet it: `ChoWeb`, `ChoCommand` and
+`ChoMessage` create it for you.
 
-Everything on these pages is imported from `@chojs/web` or `@chojs/command`,
-whichever your application uses.
+Everything on these pages is imported from `@chojs/web`, `@chojs/command` or
+`@chojs/message`, whichever your application uses.
 
 ## An example
 

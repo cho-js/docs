@@ -106,6 +106,25 @@ runtime" means in practice.
 - **Parsing.** The parser is a vendored copy of `parseArgs` from
   `@std/cli`, so the package has no dependency besides `@chojs/core`.
 
+## `@chojs/message`
+
+- **Records.** `@Subscribe` writes `{ topic }` on the method under a private
+  symbol key. The `topic` option of `@Module` / `@Controller` is a plain extra
+  option of the core.
+- **Building the graph**, as `@chojs/web` does, for the controllers that have
+  `@Subscribe` handlers. Every topic is checked before anything is created.
+- **Compiling the routes.** Each handler becomes one `Route`. Its `handle`
+  creates the context and runs the middlewares around the handler with the
+  core's `compose`, without a result. An error goes to the nearest error
+  handler, and only one that returns `true` makes `handle` resolve.
+- **Messages in hand.** `ChoMessage` wraps each route to remember the messages
+  that are being handled. `close()` stops the linker, waits for them, and
+  refuses the ones that come after.
+- **A given injector.** `ChoMessage.from` skips the first step: it builds the
+  same graph on an injector it does not own, and so never disposes it. It is
+  what lets one module graph hold web and message controllers: each package
+  reads its own records, and ignores a controller that has none.
+
 ## Specifications
 
 Each package has a specification next to its source, which these pages are
@@ -114,3 +133,4 @@ based on:
 - [`core/specs.md`](https://github.com/cho-js/cho/blob/main/core/specs.md)
 - [`web/specs.md`](https://github.com/cho-js/cho/blob/main/web/specs.md)
 - [`command/specs.md`](https://github.com/cho-js/cho/blob/main/command/specs.md)
+- [`message/specs.md`](https://github.com/cho-js/cho/blob/main/message/specs.md)

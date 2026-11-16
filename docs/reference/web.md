@@ -25,6 +25,7 @@ class ChoWeb<T = unknown> {
   readonly routes: readonly Route[];
   readonly graph: AppRef;
   readonly linked: Linked<T>; // { instance: T, handler }
+  readonly injector: Injector; // for ChoMessage.from(app.injector)
 
   close(): Promise<void>;
 }
