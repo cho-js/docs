@@ -10,34 +10,135 @@ titleTemplate: Modular applications, on every runtime
 import { onMounted, onUnmounted } from "vue";
 import { withBase } from "vitepress";
 
-// Sections come in as they are scrolled to. Without the script, or for a
-// reader who asked for less motion, everything is simply shown.
+// The page is a sequence of steps. On a screen that is wide and tall enough
+// for a step to fit (the same condition as in home.css), the page moves a
+// whole step at a time: the browser snaps to a step, and the wheel, which the
+// browser would let stop half way, is taken over here.
+const STEPS = "(min-width: 1100px) and (min-height: 740px)";
+
 let observer;
+let stop_wheel = () => {};
+
 onMounted(() => {
   const page = document.querySelector(".cho-page");
-  if (
-    !page || !("IntersectionObserver" in window) ||
-    matchMedia("(prefers-reduced-motion: reduce)").matches
-  ) {
+  if (!page) {
     return;
   }
-  observer = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("in");
-        observer.unobserve(entry.target);
+  const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Sections come in as they are scrolled to. Without the script, or for a
+  // reader who asked for less motion, everything is simply shown.
+  if ("IntersectionObserver" in window && !calm) {
+    observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in");
+          observer.unobserve(entry.target);
+        }
+      }
+    }, { rootMargin: "0px 0px -10% 0px", threshold: 0.08 });
+    page.classList.add("cho-reveal");
+    page.querySelectorAll("[data-r]").forEach((el) => observer.observe(el));
+  }
+
+  const wide = matchMedia(STEPS);
+  const steps = [...page.querySelectorAll(".cho-step")];
+  const root = document.documentElement;
+  const nav = () =>
+    parseFloat(getComputedStyle(root).getPropertyValue("--vp-nav-height")) || 0;
+  const bottom = () => root.scrollHeight - innerHeight;
+  // Where the page stops: the top of each step, then the end of the page.
+  const stops = () => [
+    ...steps.map((el, i) =>
+      i === 0 ? 0 : Math.round(el.getBoundingClientRect().top + scrollY - nav())
+    ),
+    bottom(),
+  ];
+
+  let moving = false; //  a step is being scrolled to
+  let last = 0; //        the time of the last wheel event
+  let timer;
+
+  const on_wheel = (event) => {
+    if (!wide.matches || event.ctrlKey || event.deltaY === 0) {
+      return; // a narrow or short screen, a pinch, or a sideways scroll
+    }
+    if (event.target.closest?.(".VPLocalSearchBox, .VPNavScreen")) {
+      return; // the search and the menu scroll by themselves
+    }
+    // A code sample that is longer than its frame scrolls first.
+    const pre = event.target.closest?.("pre");
+    if (pre && pre.scrollHeight > pre.clientHeight + 1) {
+      const room = event.deltaY > 0
+        ? pre.scrollTop + pre.clientHeight < pre.scrollHeight - 1
+        : pre.scrollTop > 0;
+      if (room) {
+        last = performance.now();
+        return;
       }
     }
-  }, { rootMargin: "0px 0px -10% 0px", threshold: 0.08 });
-  page.classList.add("cho-reveal");
-  page.querySelectorAll("[data-r]").forEach((el) => observer.observe(el));
+    const now = performance.now();
+    // One gesture is one step: a trackpad keeps sending events after the
+    // fingers are lifted, and they must not start the next step.
+    const same_gesture = now - last < 160;
+    last = now;
+    const down = event.deltaY > 0;
+    const all = stops();
+    const y = scrollY;
+    let at = 0;
+    all.forEach((top, i) => {
+      if (Math.abs(top - y) < Math.abs(all[at] - y)) {
+        at = i;
+      }
+    });
+
+    // A step taller than the screen scrolls freely, up to its edge.
+    const el = steps[at];
+    if (el && !moving) {
+      const box = el.getBoundingClientRect();
+      const more_below = box.bottom > innerHeight + 2;
+      const more_above = box.top < nav() - 2;
+      if (down ? more_below : more_above) {
+        return;
+      }
+    }
+
+    event.preventDefault();
+    if (moving || same_gesture) {
+      return;
+    }
+    const to = all[at + (down ? 1 : -1)];
+    if (to === undefined || Math.abs(to - y) < 2) {
+      return;
+    }
+    moving = true;
+    scrollTo({ top: to, behavior: calm ? "auto" : "smooth" });
+    const done = () => {
+      moving = false;
+      clearTimeout(timer);
+      removeEventListener("scrollend", done);
+    };
+    addEventListener("scrollend", done);
+    timer = setTimeout(done, 1200); // for a browser without "scrollend"
+  };
+
+  addEventListener("wheel", on_wheel, { passive: false });
+  stop_wheel = () => {
+    removeEventListener("wheel", on_wheel);
+    clearTimeout(timer);
+  };
 });
-onUnmounted(() => observer?.disconnect());
+
+onUnmounted(() => {
+  observer?.disconnect();
+  stop_wheel();
+});
 </script>
 
 <div class="cho-page">
 <div class="cho-progress" aria-hidden="true"></div>
 
+<div class="cho-first cho-step">
 <section class="cho-hero">
 <div class="cho-wrap cho-hero-grid">
 <div>
@@ -70,8 +171,9 @@ onUnmounted(() => observer?.disconnect());
 </ul>
 </div>
 </section>
+</div>
 
-<section class="cho-sec tint">
+<section class="cho-sec tint cho-step">
 <div class="cho-wrap cho-split">
 <div class="cho-copy" data-r="left">
 <span class="cho-eyebrow">01 · One shape</span>
@@ -178,7 +280,7 @@ await app.handle("orders.created", { key: "42", value: '{"id":"42"}' });
 </div>
 </section>
 
-<section class="cho-sec">
+<section class="cho-sec cho-step">
 <div class="cho-wrap cho-split flip">
 <div class="cho-copy" data-r="right">
 <span class="cho-eyebrow">02 · Portable</span>
@@ -212,7 +314,7 @@ await app.handle("orders.created", { key: "42", value: '{"id":"42"}' });
 </div>
 </section>
 
-<section class="cho-sec tint">
+<section class="cho-sec tint cho-step">
 <div class="cho-wrap cho-split">
 <div class="cho-copy" data-r="left">
 <span class="cho-eyebrow">03 · Standard decorators</span>
@@ -248,7 +350,7 @@ class Broken {
 </div>
 </section>
 
-<section class="cho-sec">
+<section class="cho-sec cho-step">
 <div class="cho-wrap cho-split flip">
 <div class="cho-copy" data-r="right">
 <span class="cho-eyebrow">04 · Dependency injection</span>
@@ -284,7 +386,7 @@ UsersController.get and AdminController.find</span>
 </div>
 </section>
 
-<section class="cho-sec tint">
+<section class="cho-sec tint cho-step">
 <div class="cho-wrap">
 <div class="cho-head" data-r>
 <span class="cho-eyebrow">And the rest</span>

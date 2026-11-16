@@ -915,6 +915,150 @@
   }
 }
 
+/* ------------------------------------------------------------------- steps */
+
+/*
+ * On a screen that is wide and tall enough, each step fills the screen, and
+ * the page stops on steps only. The same condition is in index.md, where the
+ * wheel is made to move one step at a time.
+ */
+@media (min-width: 1100px) and (min-height: 740px) {
+  html:has(.cho-home) {
+    scroll-snap-type: y mandatory;
+    scroll-padding-top: var(--vp-nav-height);
+  }
+
+  .cho-step {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100vh - var(--vp-nav-height));
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .cho-step > .cho-wrap,
+  .cho-first .cho-wrap {
+    width: 100%;
+  }
+
+  .cho-sec.cho-step {
+    padding: 40px 0;
+  }
+
+  .cho-step .cho-split {
+    align-items: center;
+  }
+
+  .cho-step .cho-copy {
+    position: static;
+  }
+
+  .cho-first .cho-hero {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+  }
+
+  .cho-first .cho-runs {
+    padding: 0 0 28px;
+  }
+
+  .cho-first .cho-runs p {
+    margin-bottom: 12px;
+  }
+
+  /* the first screen follows the height of the window */
+  .cho-first h1 {
+    font-size: min(72px, 9.2vh);
+  }
+
+  .cho-first .cho-lead {
+    margin-top: 2.4vh;
+    font-size: min(20px, 2.5vh);
+  }
+
+  .cho-first .cho-actions,
+  .cho-first .cho-install {
+    margin-top: 2.8vh;
+  }
+
+  .cho-first .cho-mark {
+    width: min(100%, 50vh);
+  }
+
+  .cho-step h2 {
+    font-size: min(46px, 5.6vh);
+  }
+
+  .cho-step .cho-copy > p {
+    font-size: 16px;
+  }
+
+  .cho-step .cho-ticks {
+    margin-top: 18px;
+    gap: 10px;
+  }
+
+  .cho-step .cho-more {
+    margin-top: 20px;
+  }
+
+  .cho-step .cho-head {
+    margin-bottom: 22px;
+  }
+
+  .cho-step .cho-head p {
+    display: none;
+  }
+
+  .cho-sec.cho-step:has(.cho-bento) {
+    padding: 24px 0;
+  }
+
+  /* eight cards in two rows, so that the step fits the screen */
+  .cho-step .cho-bento {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .cho-step .cho-bento a,
+  .cho-step .cho-bento a.wide {
+    grid-column: auto;
+    padding: 16px 18px;
+  }
+
+  .cho-step .cho-bento h3 {
+    font-size: 17px;
+  }
+
+  .cho-step .cho-bento p {
+    font-size: 14px;
+  }
+
+  /* a long sample scrolls in its frame, and the step still fits */
+  .cho-step .cho-code pre {
+    max-height: calc(100vh - var(--vp-nav-height) - 150px);
+    overflow-y: auto;
+  }
+
+  /* The last step ends with the footer of the site. */
+  .cho-end {
+    display: flex;
+    align-items: center;
+    min-height: calc(100vh - var(--vp-nav-height) - 89px);
+    padding: 40px 0;
+  }
+
+  .cho-end > .cho-wrap {
+    width: 100%;
+  }
+
+  .cho-home .VPFooter {
+    scroll-snap-align: end;
+  }
+}
+
 /* ------------------------------------------------------------------ reveal */
 
 /* Only once the script is there: without it, everything is simply shown. */
