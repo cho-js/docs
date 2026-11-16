@@ -1,0 +1,1102 @@
+/**
+ * The home page (docs/index.md): a page of its own, on the "Monarch" colors
+ * of custom.css. Every rule is under .cho-home, the pageClass of that page.
+ */
+
+.cho-home {
+  --cho-a: #c2410c;
+  --cho-b: #e8a100;
+  --cho-ink: var(--vp-c-text-1);
+  --cho-muted: var(--vp-c-text-2);
+  --cho-line: var(--vp-c-divider);
+  --cho-card: var(--vp-c-bg-soft);
+  --cho-glow: rgba(234, 88, 12, 0.22);
+  --cho-glow-2: rgba(232, 161, 0, 0.2);
+  --cho-term: #1b1410;
+  --cho-term-ink: #f3e9df;
+  --cho-grad: linear-gradient(120deg, var(--cho-a) 20%, var(--cho-b));
+}
+
+.dark .cho-home {
+  --cho-a: #ffa15c;
+  --cho-b: #ffd166;
+  --cho-glow: rgba(249, 115, 22, 0.26);
+  --cho-glow-2: rgba(255, 209, 102, 0.14);
+  --cho-term: #120d0a;
+}
+
+/* The default home layout keeps a margin under the page: the page ends itself. */
+.cho-home .VPHome {
+  margin-bottom: 0;
+}
+
+.cho-page {
+  color: var(--cho-ink);
+  overflow-x: clip;
+}
+
+.cho-wrap {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.cho-grad {
+  background: var(--cho-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------------------------------------------------------------- progress */
+
+.cho-progress {
+  display: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  .cho-progress {
+    display: block;
+    position: fixed;
+    z-index: 40;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--cho-grad);
+    transform-origin: 0 50%;
+    animation: cho-progress linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+@keyframes cho-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* -------------------------------------------------------------------- hero */
+
+.cho-hero {
+  position: relative;
+  padding: 72px 0 56px;
+  isolation: isolate;
+}
+
+.cho-hero::before {
+  /* a faint grid, fading out from the butterfly */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image:
+    linear-gradient(var(--cho-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cho-line) 1px, transparent 1px);
+  background-size: 56px 56px;
+  opacity: 0.55;
+  mask-image: radial-gradient(ellipse 70% 70% at 72% 40%, #000 0%, transparent 72%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 72% 40%, #000 0%, transparent 72%);
+}
+
+.cho-hero-grid {
+  display: grid;
+  gap: 40px;
+  align-items: center;
+}
+
+.cho-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border: 1px solid var(--cho-line);
+  border-radius: 999px;
+  background: var(--vp-c-bg);
+  color: var(--cho-muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.cho-badge:hover {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+}
+
+.cho-badge b {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+  font-weight: 600;
+}
+
+.cho-hero h1 {
+  margin: 20px 0 0;
+  font-size: clamp(40px, 7vw, 72px);
+  line-height: 1.04;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.cho-lead {
+  margin: 22px 0 0;
+  max-width: 34em;
+  color: var(--cho-muted);
+  font-size: clamp(17px, 2vw, 20px);
+  line-height: 1.55;
+}
+
+.cho-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.cho-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 22px;
+  height: 44px;
+  border: 1px solid var(--cho-line);
+  border-radius: 999px;
+  background: var(--vp-c-bg);
+  color: var(--cho-ink);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.cho-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--vp-c-brand-1);
+}
+
+.cho-btn.primary {
+  border-color: transparent;
+  background: #c2410c;
+  color: #fff;
+  box-shadow: 0 8px 24px -8px var(--cho-glow);
+}
+
+.cho-btn.primary:hover {
+  background: #b83c0a;
+  box-shadow: 0 12px 28px -8px var(--cho-glow);
+}
+
+.cho-btn span {
+  transition: transform 0.2s;
+}
+
+.cho-btn:hover span {
+  transform: translateX(3px);
+}
+
+.cho-install {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 26px;
+  padding: 8px 14px;
+  border: 1px dashed var(--cho-line);
+  border-radius: 10px;
+  color: var(--cho-muted);
+  font-family: var(--vp-font-family-mono);
+  font-size: 13.5px;
+}
+
+.cho-install i {
+  color: var(--vp-c-brand-1);
+  font-style: normal;
+}
+
+/* the butterfly */
+
+.cho-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(72%, 440px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+}
+
+.cho-mark::before,
+.cho-mark::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  filter: blur(56px);
+}
+
+.cho-mark::before {
+  inset: 12% 22% 22% 6%;
+  background: var(--cho-glow);
+  animation: cho-drift 11s ease-in-out infinite alternate;
+}
+
+.cho-mark::after {
+  inset: 28% 4% 8% 34%;
+  background: var(--cho-glow-2);
+  animation: cho-drift 14s ease-in-out infinite alternate-reverse;
+}
+
+.cho-ring {
+  position: absolute;
+  inset: 6%;
+  border: 1px solid var(--cho-line);
+  border-radius: 50%;
+}
+
+.cho-ring.r2 {
+  inset: 20%;
+  border-style: dashed;
+  animation: cho-spin 80s linear infinite;
+}
+
+.cho-mark img {
+  width: 58%;
+  filter: drop-shadow(0 18px 30px var(--cho-glow));
+  animation: cho-float 7s ease-in-out infinite;
+}
+
+@keyframes cho-float {
+  0%, 100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(3deg);
+  }
+}
+
+@keyframes cho-drift {
+  to {
+    transform: translate(8%, -6%) scale(1.12);
+  }
+}
+
+@keyframes cho-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------------------------------------------------------------- runtimes */
+
+.cho-runs {
+  padding: 8px 0 72px;
+}
+
+.cho-runs p {
+  margin: 0 0 18px;
+  color: var(--cho-muted);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.cho-runs ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cho-runs li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--cho-line);
+  border-radius: 14px;
+  background: var(--vp-c-bg);
+  font-weight: 600;
+  font-size: 15px;
+  transition: transform 0.25s, border-color 0.25s;
+}
+
+.cho-runs li:hover {
+  transform: translateY(-3px);
+  border-color: var(--vp-c-brand-1);
+}
+
+/* The logos are drawn for a light page: each sits on a light tile. */
+.cho-logo {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.07);
+}
+
+.cho-logo img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+/* ---------------------------------------------------------------- sections */
+
+.cho-sec {
+  position: relative;
+  padding: 88px 0;
+  border-top: 1px solid var(--cho-line);
+}
+
+.cho-sec.tint {
+  background:
+    radial-gradient(60% 50% at 85% 0%, var(--cho-glow-2), transparent 70%),
+    var(--vp-c-bg-alt);
+}
+
+.cho-split {
+  display: grid;
+  gap: 36px;
+  align-items: start;
+}
+
+.cho-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--vp-c-brand-1);
+  font-family: var(--vp-font-family-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cho-eyebrow::before {
+  content: "";
+  width: 28px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--cho-grad);
+}
+
+.cho-sec h2 {
+  margin: 14px 0 0;
+  padding: 0;
+  border: 0;
+  font-size: clamp(30px, 4.4vw, 46px);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.cho-copy > p {
+  margin: 18px 0 0;
+  color: var(--cho-muted);
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+.cho-copy code,
+.cho-bento code {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.86em;
+}
+
+.cho-ticks {
+  display: grid;
+  gap: 12px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cho-ticks li {
+  position: relative;
+  padding-left: 30px;
+  font-size: 15.5px;
+  line-height: 1.55;
+}
+
+.cho-ticks li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M5 9.4l2.6 2.6L13 6.4' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+      center / contain no-repeat,
+    #c2410c;
+}
+
+.cho-more {
+  display: inline-flex;
+  gap: 6px;
+  margin-top: 26px;
+  color: var(--vp-c-brand-1);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.cho-more span {
+  transition: transform 0.2s;
+}
+
+.cho-more:hover span {
+  transform: translateX(4px);
+}
+
+/* code: the blocks of the default theme, in a frame of their own */
+
+.cho-code {
+  min-width: 0;
+}
+
+.cho-code.vp-doc div[class*="language-"],
+.cho-code.vp-doc .vp-code-group {
+  margin: 0;
+}
+
+.cho-code.vp-doc .vp-code-group .tabs {
+  margin: 0;
+  border-radius: 14px 14px 0 0;
+}
+
+.cho-code.vp-doc div[class*="language-"] {
+  border: 1px solid var(--cho-line);
+  border-radius: 14px;
+  box-shadow: 0 30px 60px -36px var(--cho-glow);
+}
+
+.cho-code.vp-doc .vp-code-group div[class*="language-"] {
+  border-top: 0;
+  border-radius: 0 0 14px 14px;
+}
+
+.cho-code.vp-doc .vp-code-group .tabs {
+  border: 1px solid var(--cho-line);
+  border-bottom: 0;
+}
+
+.cho-code.vp-doc code {
+  font-size: 13.5px;
+}
+
+.cho-code + .cho-note,
+.cho-note {
+  margin: 14px 0 0;
+  color: var(--cho-muted);
+  font-size: 14px;
+}
+
+.cho-note b {
+  color: var(--vp-c-danger-1);
+  font-weight: 600;
+}
+
+/* the stack: what is yours, and what is swapped */
+
+.cho-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.cho-layer {
+  padding: 16px 18px;
+  border: 1px solid var(--cho-line);
+  border-radius: 14px;
+  background: var(--vp-c-bg);
+}
+
+.cho-layer small {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--cho-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.cho-layer strong {
+  font-size: 16px;
+}
+
+.cho-layer.yours {
+  border-color: transparent;
+  background: var(--cho-grad);
+  color: #1b1410;
+  box-shadow: 0 20px 40px -24px var(--cho-glow);
+}
+
+.cho-layer.yours small {
+  color: rgba(27, 20, 16, 0.72);
+}
+
+.cho-layer.yours em {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 13.5px;
+  font-style: normal;
+}
+
+.cho-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.cho-chips span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--cho-line);
+  border-radius: 999px;
+  background: var(--cho-card);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.cho-chips .cho-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+
+.cho-chips .cho-logo img {
+  width: 16px;
+  height: 16px;
+}
+
+.cho-join {
+  justify-self: center;
+  width: 2px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--cho-grad);
+}
+
+/* a terminal */
+
+.cho-term {
+  overflow: hidden;
+  border: 1px solid var(--cho-line);
+  border-radius: 14px;
+  background: var(--cho-term);
+  color: var(--cho-term-ink);
+  box-shadow: 0 30px 60px -36px var(--cho-glow);
+}
+
+.cho-term header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cho-term header i {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.cho-term header span {
+  margin-left: 8px;
+  color: rgba(243, 233, 223, 0.55);
+  font-family: var(--vp-font-family-mono);
+  font-size: 12px;
+}
+
+.cho-term pre {
+  margin: 0;
+  padding: 18px;
+  overflow-x: auto;
+  font-family: var(--vp-font-family-mono);
+  font-size: 13.5px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.cho-term .p {
+  color: #ffd166;
+}
+
+.cho-term .e {
+  color: #ff8f7a;
+}
+
+.cho-term .d {
+  color: rgba(243, 233, 223, 0.5);
+}
+
+.cho-term .gap {
+  display: inline-block;
+  margin-top: 14px;
+}
+
+.cho-term .ok {
+  color: #8fd694;
+}
+
+/* the order of creation, and of release */
+
+.cho-flow {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid var(--cho-line);
+  border-radius: 14px;
+  background: var(--vp-c-bg);
+}
+
+.cho-flow div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  font-size: 13.5px;
+}
+
+.cho-flow b {
+  flex: 0 0 68px;
+  color: var(--cho-muted);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.cho-flow span {
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+  font-family: var(--vp-font-family-mono);
+  font-weight: 500;
+}
+
+.cho-flow i {
+  color: var(--cho-muted);
+  font-style: normal;
+}
+
+/* ------------------------------------------------------------------- bento */
+
+.cho-head {
+  max-width: 720px;
+  margin: 0 auto 44px;
+  text-align: center;
+}
+
+.cho-head .cho-eyebrow::after {
+  content: "";
+  width: 28px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--cho-grad);
+}
+
+.cho-head p {
+  margin: 16px 0 0;
+  color: var(--cho-muted);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.cho-bento {
+  display: grid;
+  gap: 14px;
+}
+
+.cho-bento a {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  padding: 24px;
+  border: 1px solid var(--cho-line);
+  border-radius: 18px;
+  background: var(--vp-c-bg);
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+
+.cho-bento a::after {
+  content: "";
+  position: absolute;
+  inset: auto -20% -60% auto;
+  width: 60%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--cho-glow);
+  filter: blur(48px);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.cho-bento a:hover {
+  transform: translateY(-4px);
+  border-color: var(--vp-c-brand-1);
+  box-shadow: 0 24px 48px -32px var(--cho-glow);
+}
+
+.cho-bento a:hover::after {
+  opacity: 1;
+}
+
+.cho-bento small {
+  color: var(--vp-c-brand-1);
+  font-family: var(--vp-font-family-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.cho-bento h3 {
+  margin: 10px 0 0;
+  font-size: 19px;
+  line-height: 1.3;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.cho-bento p {
+  margin: 8px 0 0;
+  color: var(--cho-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* --------------------------------------------------------------------- end */
+
+.cho-end {
+  position: relative;
+  padding: 96px 0 104px;
+  border-top: 1px solid var(--cho-line);
+  text-align: center;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.cho-end::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  bottom: -55%;
+  width: min(900px, 120%);
+  aspect-ratio: 1.6;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--cho-glow), transparent);
+  transform: translateX(-50%);
+}
+
+.cho-end img {
+  width: 64px;
+  margin: 0 auto 18px;
+}
+
+.cho-end h2 {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: clamp(32px, 5vw, 54px);
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.cho-end > .cho-wrap > p {
+  margin: 16px auto 0;
+  max-width: 36em;
+  color: var(--cho-muted);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.cho-end .cho-code {
+  max-width: 520px;
+  margin: 32px auto 0;
+  text-align: left;
+}
+
+.cho-end .cho-actions {
+  justify-content: center;
+}
+
+/* ------------------------------------------------------------- wide screens */
+
+@media (min-width: 640px) {
+  .cho-wrap {
+    padding: 0 32px;
+  }
+
+  .cho-runs ul {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .cho-bento {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  .cho-hero {
+    padding: 96px 0 72px;
+  }
+
+  .cho-hero-grid {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  }
+
+  .cho-mark {
+    width: min(100%, 440px);
+  }
+
+  .cho-sec {
+    padding: 128px 0;
+  }
+
+  .cho-split {
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+    gap: 64px;
+  }
+
+  .cho-split.flip > .cho-copy {
+    order: 2;
+  }
+
+  .cho-split.flip {
+    grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
+  }
+
+  /* the text stays while its picture scrolls by */
+  .cho-copy {
+    position: sticky;
+    top: calc(var(--vp-nav-height) + 48px);
+  }
+
+  .cho-bento {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .cho-bento a {
+    grid-column: span 2;
+  }
+
+  .cho-bento a.wide {
+    grid-column: span 3;
+  }
+}
+
+/* ------------------------------------------------------------------- steps */
+
+/*
+ * On a screen that is wide and tall enough, each step fills the screen, and
+ * the page stops on steps only. The same condition is in index.md, where the
+ * wheel is made to move one step at a time.
+ */
+@media (min-width: 1100px) and (min-height: 740px) {
+  html:has(.cho-home) {
+    scroll-snap-type: y mandatory;
+    scroll-padding-top: var(--vp-nav-height);
+  }
+
+  .cho-step {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100vh - var(--vp-nav-height));
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .cho-step > .cho-wrap,
+  .cho-first .cho-wrap {
+    width: 100%;
+  }
+
+  .cho-sec.cho-step {
+    padding: 40px 0;
+  }
+
+  .cho-step .cho-split {
+    align-items: center;
+  }
+
+  .cho-step .cho-copy {
+    position: static;
+  }
+
+  .cho-first .cho-hero {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+  }
+
+  .cho-first .cho-runs {
+    padding: 0 0 28px;
+  }
+
+  .cho-first .cho-runs p {
+    margin-bottom: 12px;
+  }
+
+  /* the first screen follows the height of the window */
+  .cho-first h1 {
+    font-size: min(72px, 9.2vh);
+  }
+
+  .cho-first .cho-lead {
+    margin-top: 2.4vh;
+    font-size: min(20px, 2.5vh);
+  }
+
+  .cho-first .cho-actions,
+  .cho-first .cho-install {
+    margin-top: 2.8vh;
+  }
+
+  .cho-first .cho-mark {
+    width: min(100%, 50vh);
+  }
+
+  .cho-step h2 {
+    font-size: min(46px, 5.6vh);
+  }
+
+  .cho-step .cho-copy > p {
+    font-size: 16px;
+  }
+
+  .cho-step .cho-ticks {
+    margin-top: 18px;
+    gap: 10px;
+  }
+
+  .cho-step .cho-more {
+    margin-top: 20px;
+  }
+
+  .cho-step .cho-head {
+    margin-bottom: 22px;
+  }
+
+  .cho-step .cho-head p {
+    display: none;
+  }
+
+  .cho-sec.cho-step:has(.cho-bento) {
+    padding: 24px 0;
+  }
+
+  /* eight cards in two rows, so that the step fits the screen */
+  .cho-step .cho-bento {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .cho-step .cho-bento a,
+  .cho-step .cho-bento a.wide {
+    grid-column: auto;
+    padding: 16px 18px;
+  }
+
+  .cho-step .cho-bento h3 {
+    font-size: 17px;
+  }
+
+  .cho-step .cho-bento p {
+    font-size: 14px;
+  }
+
+  /* a long sample scrolls in its frame, and the step still fits */
+  .cho-step .cho-code pre {
+    max-height: calc(100vh - var(--vp-nav-height) - 150px);
+    overflow-y: auto;
+  }
+
+  /* The last step ends with the footer of the site. */
+  .cho-end {
+    display: flex;
+    align-items: center;
+    min-height: calc(100vh - var(--vp-nav-height) - 89px);
+    padding: 40px 0;
+  }
+
+  .cho-end > .cho-wrap {
+    width: 100%;
+  }
+
+  .cho-home .VPFooter {
+    scroll-snap-align: end;
+  }
+}
+
+/* ------------------------------------------------------------------ reveal */
+
+/* Only once the script is there: without it, everything is simply shown. */
+.cho-reveal [data-r] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: calc(var(--d, 0) * 90ms);
+}
+
+.cho-reveal [data-r="left"] {
+  transform: translateX(-32px);
+}
+
+.cho-reveal [data-r="right"] {
+  transform: translateX(32px);
+}
+
+.cho-reveal [data-r="zoom"] {
+  transform: scale(0.94);
+}
+
+.cho-reveal [data-r].in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cho-mark img,
+  .cho-mark::before,
+  .cho-mark::after,
+  .cho-ring.r2 {
+    animation: none;
+  }
+
+  .cho-progress {
+    display: none;
+  }
+}
