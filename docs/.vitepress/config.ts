@@ -8,7 +8,7 @@ export default defineConfig({
   base,
   title: "CHO",
   description:
-    "A tiny decorator-based framework for modular HTTP and command-line applications, on Deno, Node.js, Bun and edge runtimes.",
+    "A tiny decorator-based framework for modular HTTP, command-line and message applications, on Deno, Node.js, Bun and edge runtimes.",
   lang: "en-US",
   cleanUrls: true,
   lastUpdated: true,
@@ -29,6 +29,14 @@ export default defineConfig({
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());`,
     ],
+      [
+        "script",
+        {
+            "data-website-id": '{ "token": "2c003d76cd43430b92975026f1ff7632" }',
+            src: "https://static.cloudflareinsights.com/beacon.min.js",
+            type: "module",
+        },
+      ]
   ],
   markdown: {
     theme: { light: "github-light", dark: "github-dark" },
@@ -41,6 +49,7 @@ gtag('js', new Date());`,
       { text: "Guide", link: "/guide/introduction", activeMatch: "^/(guide|di)/" },
       { text: "Web", link: "/web/quick-start", activeMatch: "^/(web|adapters|recipes)/" },
       { text: "Command", link: "/command/quick-start", activeMatch: "^/command/" },
+      { text: "Message", link: "/message/quick-start", activeMatch: "^/message/" },
       { text: "Reference", link: "/reference/web", activeMatch: "^/(reference|advanced)/" },
       {
         text: "v3",
@@ -124,10 +133,25 @@ gtag('js', new Date());`,
         ],
       },
       {
+        text: "Message applications",
+        items: [
+          { text: "Quick start", link: "/message/quick-start" },
+          { text: "Topics", link: "/message/topics" },
+          { text: "Handlers and the context", link: "/message/handlers" },
+          { text: "Middlewares", link: "/message/middlewares" },
+          { text: "Error handling", link: "/message/error-handling" },
+          { text: "The application", link: "/message/application" },
+          { text: "With a web application", link: "/message/with-web" },
+          { text: "Testing", link: "/message/testing" },
+          { text: "Broker adapters", link: "/message/adapters" },
+        ],
+      },
+      {
         text: "Reference",
         items: [
           { text: "@chojs/web API", link: "/reference/web" },
           { text: "@chojs/command API", link: "/reference/command" },
+          { text: "@chojs/message API", link: "/reference/message" },
           { text: "Error messages", link: "/reference/errors" },
           { text: "Debug logging", link: "/reference/debugging" },
         ],
