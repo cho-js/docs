@@ -42,7 +42,8 @@ gtag('js', new Date());`,
     theme: { light: "github-light", dark: "github-dark" },
   },
   themeConfig: {
-    siteTitle: "CHO",
+    siteTitle: false,
+    logo: '/cho.svg',
     outline: [2, 3],
     search: { provider: "local" },
     nav: [
