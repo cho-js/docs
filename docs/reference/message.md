@@ -141,6 +141,10 @@ interface Linker<T> {
 
 See [Broker adapters](/message/adapters).
 
+| Package               | Exports                                                                                                                                              |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@chojs/vendor-kafka` | `KafkaLinker`, `KafkaLinked`, `KafkaLinkerOptions`, `KafkaClient`, `KafkaNative`, `KafkaMessage`, `DEAD_LETTER_HEADERS` ([Kafka adapter](/message/kafka)) |
+
 ### Others
 
 `MessageModuleOptions`, `MessageControllerOptions`, `TopicOption`, and from

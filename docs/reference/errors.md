@@ -214,6 +214,30 @@ When an error handler itself throws, the message fails with the **original**
 error, and the server prints `The error handler of <name> failed:` with what
 was thrown.
 
+### `@chojs/vendor-kafka`
+
+Thrown by `new KafkaLinker(options)`, as a `TypeError`, and by `link()`, which
+`ChoMessage.create` calls:
+
+| Mistake                                   | Message                                                                                                                  |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| No `brokers`, or an empty list            | `KafkaLinker: the "brokers" option is required: a list of "host:port", such as ["localhost:9092"]`                       |
+| No `groupId`                              | `KafkaLinker: the "groupId" option is required: the consumer group of the application, such as "mailer"`                 |
+| An unknown option                         | `KafkaLinker: unknown option "<name>". Known options: brokers, client, clientId, …`                                      |
+| An option of the wrong type               | `KafkaLinker: the "<name>" option is …, got <v>`                                                                         |
+| One linker for two applications           | `KafkaLinker.link() was already called: use one linker for one application`                                              |
+| A topic longer than Kafka accepts         | `KafkaLinker: the topic of <name> has <n> characters: Kafka accepts 249 ("<topic>")`                                     |
+| A dead-letter topic that is the topic     | `KafkaLinker: the dead-letter topic of "<topic>" is "<topic>" itself: a dead message would be handled again, for ever`   |
+
+Given to [`onFatal`](/message/kafka#when-the-consumer-stops-by-itself) when
+the consumer stops by itself, with the original error as `cause`:
+
+| Situation                                 | Message                                                                                                                             |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| A dead message, and no dead-letter topic  | `KafkaLinker: <name> failed <n> time(s) for <topic>[<partition>]@<offset>, and there is no dead-letter topic: the consumer stopped, and the offset is not committed. Set the "deadLetter" option to go on after such a message` |
+| A dead letter that cannot be sent         | `KafkaLinker: cannot send <topic>[<partition>]@<offset> to the dead-letter topic "<topic>": the consumer stopped, and the offset is not committed` |
+| The connection cannot be restored         | `KafkaLinker: cannot read the topics again`                                                                                         |
+
 ## `@chojs/command`
 
 ### Thrown by the decorators

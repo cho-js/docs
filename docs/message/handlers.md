@@ -85,7 +85,8 @@ what it is.
 ```ts
 @Subscribe("created")
 created(ctx: ChoMessageContext) {
-  const { partition, offset } = ctx.native as KafkaMessage;
+  // with @chojs/vendor-kafka
+  const { partition, offset } = (ctx.native as KafkaNative).message;
 }
 ```
 

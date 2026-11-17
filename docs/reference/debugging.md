@@ -47,6 +47,7 @@ set_env(env); // a record, or a function (key) => value
 | `cho:web`     | `@chojs/web`      | Routes, application creation, errors given to handlers  |
 | `cho:command` | `@chojs/command`  | Commands found, each run, exit codes, errors            |
 | `cho:message` | `@chojs/message`  | Topics, application creation, messages that failed      |
+| `cho:kafka`   | `@chojs/vendor-kafka` | The subscription, retries, dead letters, failed commits, the stop |
 
 ### `cho:di`
 

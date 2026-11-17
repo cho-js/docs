@@ -4,11 +4,13 @@
 own, named after its broker, that connects the topics of an application to
 one. The application passes it to `ChoMessage.create` as the `linker` option.
 
-::: warning No adapter is published yet
-The first adapters are being designed. Until one is published, an application
-writes its own linker, as below, or delivers its messages
+| Adapter                                   | Broker                                    | Runs on      |
+| ----------------------------------------- | ----------------------------------------- | ------------ |
+| [`@chojs/vendor-kafka`](/message/kafka)   | [Apache Kafka](https://kafka.apache.org)  | Node.js only |
+
+For another broker, an application writes its own linker, as below, or
+delivers its messages
 [by hand](/message/application#delivering-a-message-by-hand).
-:::
 
 ## What an adapter does
 
@@ -116,7 +118,7 @@ app.linked.instance; // the MyClient, typed
 ## What each adapter decides
 
 These depend on the broker, so each adapter answers them, and documents its
-answers:
+answers. The [Kafka adapter](/message/kafka#behavior) has its own.
 
 | Question                          | Example of an answer                                         |
 | --------------------------------- | ------------------------------------------------------------ |

@@ -144,6 +144,7 @@ gtag('js', new Date());`,
           { text: "With a web application", link: "/message/with-web" },
           { text: "Testing", link: "/message/testing" },
           { text: "Broker adapters", link: "/message/adapters" },
+          { text: "Kafka", link: "/message/kafka" },
         ],
       },
       {

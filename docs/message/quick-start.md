@@ -22,9 +22,9 @@ has a route.
 - **Fails early.** A bad topic, a duplicate topic or a missing provider is
   reported when the application is created, not on the first message.
 
-::: warning No broker adapter is published yet
-`@chojs/message` is complete, and no adapter for a broker is published yet.
-Until one is, an application delivers its messages
+::: tip Broker adapters
+[`@chojs/vendor-kafka`](/message/kafka) connects an application to Apache
+Kafka, on Node.js. For another broker, an application delivers its messages
 [by hand](/message/application#delivering-a-message-by-hand), or with a
 [linker of its own](/message/adapters), which is some forty lines for most
 client libraries.
@@ -133,13 +133,18 @@ A broker is not called, it is connected to. The application takes a **linker**,
 the adapter of a broker, and starts:
 
 ```ts
-const app = await ChoMessage.create(App, { linker: new MyLinker() });
+import { KafkaLinker } from "@chojs/vendor-kafka";
+
+const app = await ChoMessage.create(App, {
+  linker: new KafkaLinker({ brokers: ["localhost:9092"], groupId: "mailer" }),
+});
 
 await app.start(); // connects, and subscribes to the two topics
 ```
 
-`MyLinker` is yours for now: [Broker adapters](/message/adapters) shows a whole
-one. The repository has a runnable example with a broker kept in memory,
+This is the [Kafka adapter](/message/kafka), which runs on Node.js. For
+another broker, [Broker adapters](/message/adapters) shows how to write a
+linker. The repository has a runnable example with a broker kept in memory,
 [`hello-world-message.ts`](https://github.com/cho-js/cho/blob/main/examples/hello-world-message.ts).
 
 ## What to read next
