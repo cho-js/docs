@@ -7,28 +7,35 @@ titleTemplate: Modular applications, on every runtime
 ---
 
 <script setup>
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import { withBase } from "vitepress";
 
-// The page is a sequence of steps. On a screen that is wide and tall enough
-// for a step to fit (the same condition as in home.css), the page moves a
-// whole step at a time: the browser snaps to a step, and the wheel, which the
-// browser would let stop half way, is taken over here.
-const STEPS = "(min-width: 1100px) and (min-height: 740px)";
-
+const installCommand = "deno add jsr:@chojs/web";
+const copyStatus = ref("");
+const canCopy = ref(false);
 let observer;
-let stop_wheel = () => {};
+let copyTimer;
+
+async function copyInstall() {
+  clearTimeout(copyTimer);
+  try {
+    await navigator.clipboard.writeText(installCommand);
+    copyStatus.value = "Copied!";
+  } catch {
+    copyStatus.value = "Select the command to copy it.";
+  }
+  copyTimer = setTimeout(() => { copyStatus.value = ""; }, 3000);
+}
 
 onMounted(() => {
+  canCopy.value = !!navigator.clipboard?.writeText;
   const page = document.querySelector(".cho-page");
-  if (!page) {
+  if (!page || matchMedia("(prefers-reduced-motion: reduce)").matches) {
     return;
   }
-  const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // Sections come in as they are scrolled to. Without the script, or for a
-  // reader who asked for less motion, everything is simply shown.
-  if ("IntersectionObserver" in window && !calm) {
+  // Content stays visible without JavaScript or when reduced motion is requested.
+  if ("IntersectionObserver" in window) {
     observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
@@ -36,154 +43,102 @@ onMounted(() => {
           observer.unobserve(entry.target);
         }
       }
-    }, { rootMargin: "0px 0px -10% 0px", threshold: 0.08 });
+    }, { threshold: 0.08 });
     page.classList.add("cho-reveal");
     page.querySelectorAll("[data-r]").forEach((el) => observer.observe(el));
   }
-
-  const wide = matchMedia(STEPS);
-  const steps = [...page.querySelectorAll(".cho-step")];
-  const root = document.documentElement;
-  const nav = () =>
-    parseFloat(getComputedStyle(root).getPropertyValue("--vp-nav-height")) || 0;
-  const bottom = () => root.scrollHeight - innerHeight;
-  // Where the page stops: the top of each step, then the end of the page.
-  const stops = () => [
-    ...steps.map((el, i) =>
-      i === 0 ? 0 : Math.round(el.getBoundingClientRect().top + scrollY - nav())
-    ),
-    bottom(),
-  ];
-
-  let moving = false; //  a step is being scrolled to
-  let last = 0; //        the time of the last wheel event
-  let timer;
-
-  const on_wheel = (event) => {
-    if (!wide.matches || event.ctrlKey || event.deltaY === 0) {
-      return; // a narrow or short screen, a pinch, or a sideways scroll
-    }
-    if (event.target.closest?.(".VPLocalSearchBox, .VPNavScreen")) {
-      return; // the search and the menu scroll by themselves
-    }
-    // A code sample that is longer than its frame scrolls first.
-    const pre = event.target.closest?.("pre");
-    if (pre && pre.scrollHeight > pre.clientHeight + 1) {
-      const room = event.deltaY > 0
-        ? pre.scrollTop + pre.clientHeight < pre.scrollHeight - 1
-        : pre.scrollTop > 0;
-      if (room) {
-        last = performance.now();
-        return;
-      }
-    }
-    const now = performance.now();
-    // One gesture is one step: a trackpad keeps sending events after the
-    // fingers are lifted, and they must not start the next step.
-    const same_gesture = now - last < 160;
-    last = now;
-    const down = event.deltaY > 0;
-    const all = stops();
-    const y = scrollY;
-    let at = 0;
-    all.forEach((top, i) => {
-      if (Math.abs(top - y) < Math.abs(all[at] - y)) {
-        at = i;
-      }
-    });
-
-    // A step taller than the screen scrolls freely, up to its edge.
-    const el = steps[at];
-    if (el && !moving) {
-      const box = el.getBoundingClientRect();
-      const more_below = box.bottom > innerHeight + 2;
-      const more_above = box.top < nav() - 2;
-      if (down ? more_below : more_above) {
-        return;
-      }
-    }
-
-    event.preventDefault();
-    if (moving || same_gesture) {
-      return;
-    }
-    const to = all[at + (down ? 1 : -1)];
-    if (to === undefined || Math.abs(to - y) < 2) {
-      return;
-    }
-    moving = true;
-    scrollTo({ top: to, behavior: calm ? "auto" : "smooth" });
-    const done = () => {
-      moving = false;
-      clearTimeout(timer);
-      removeEventListener("scrollend", done);
-    };
-    addEventListener("scrollend", done);
-    timer = setTimeout(done, 1200); // for a browser without "scrollend"
-  };
-
-  addEventListener("wheel", on_wheel, { passive: false });
-  stop_wheel = () => {
-    removeEventListener("wheel", on_wheel);
-    clearTimeout(timer);
-  };
 });
 
 onUnmounted(() => {
   observer?.disconnect();
-  stop_wheel();
+  clearTimeout(copyTimer);
 });
 </script>
 
 <div class="cho-page">
 <div class="cho-progress" aria-hidden="true"></div>
 
-<div class="cho-first cho-step">
-<section class="cho-hero">
+<div class="cho-first">
+<section class="cho-hero" aria-labelledby="hero-title">
 <div class="cho-wrap cho-hero-grid">
-<div>
-<a class="cho-badge" :href="withBase('/message/quick-start')" data-r><b>New</b> Message applications, with @chojs/message →</a>
-<h1 data-r style="--d: 1">Modular applications, on <span class="cho-grad">every runtime</span></h1>
-<p class="cho-lead" data-r style="--d: 2">A tiny decorator-based framework for HTTP, command-line and message applications. Standard decorators, no reflection, the same code on Deno, Node.js, Bun and the edge.</p>
-<div class="cho-actions" data-r style="--d: 3">
+<div class="cho-hero-copy">
+<a class="cho-badge" :href="withBase('/message/quick-start')"><b>New</b> Meet @chojs/message <span aria-hidden="true">↗</span></a>
+<h1 id="hero-title">One framework.<br><span class="cho-grad">Every runtime.</span></h1>
+<p class="cho-lead">Build modular HTTP, command-line and message applications with a tiny TypeScript framework. Keep your code. Choose your runtime.</p>
+<div class="cho-actions">
 <a class="cho-btn primary" :href="withBase('/guide/getting-started')">Get started <span>→</span></a>
-<a class="cho-btn" :href="withBase('/guide/introduction')">Why CHO?</a>
-<a class="cho-btn" href="https://github.com/cho-js/cho" target="_blank" rel="noreferrer">GitHub</a>
+<a class="cho-btn" href="https://github.com/cho-js/cho" target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">↗</span></a>
 </div>
-<div class="cho-install" data-r style="--d: 4"><i>$</i> deno add jsr:@chojs/web</div>
+<div class="cho-install">
+<span aria-hidden="true">$</span><code>{{ installCommand }}</code>
+<button v-if="canCopy" type="button" class="cho-copy-install" aria-label="Copy install command" @click="copyInstall">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>
+</button>
+<span class="cho-copy-status" role="status">{{ copyStatus }}</span>
 </div>
-<div class="cho-mark" data-r="zoom" style="--d: 2">
-<span class="cho-ring"></span>
-<span class="cho-ring r2"></span>
-<img :src="withBase('/cho.svg')" alt="The CHO butterfly" width="260" height="260">
+<ul class="cho-principles"><li>Standard decorators</li><li>No reflection</li><li>Type-checked DI</li></ul>
+</div>
+<div class="cho-preview">
+<div class="cho-preview-mark" aria-hidden="true"><img :src="withBase('/cho.svg')" alt="" width="72" height="72"></div>
+<div class="cho-editor">
+<div class="cho-editor-bar"><span><i aria-hidden="true"></i> main.ts</span><span>TypeScript</span></div>
+<div class="cho-code vp-doc">
+
+```ts
+import { ChoWeb, Controller, Get, Module } from "@chojs/web";
+import { serve } from "@chojs/web/serve";
+
+@Controller()
+class HelloController {
+  @Get("/")
+  hello() {
+    return { message: "Hello, world!" };
+  }
+}
+
+@Module({ controllers: [HelloController] })
+class App {}
+
+const app = await ChoWeb.create(App);
+await serve(app.handler, { port: 3000 });
+```
+
+</div>
+<div class="cho-response"><div><span class="cho-response-method">GET</span><code>localhost:3000/</code><span class="cho-response-status">200 OK</span></div><code>{ "message": "Hello, world!" }</code></div>
+</div>
+<p class="cho-preview-note"><span aria-hidden="true">↳</span> One file. A real application. Your choice of runtime.</p>
 </div>
 </div>
 </section>
 
-<section class="cho-runs">
+<section class="cho-runs" aria-label="Supported runtimes">
 <div class="cho-wrap">
-<p data-r>One codebase runs on</p>
+<p>At home on<br> <strong>your runtime.</strong></p>
 <ul>
-<li data-r style="--d: 1"><span class="cho-logo"><img :src="withBase('/runtimes/deno.svg')" alt=""></span>Deno</li>
-<li data-r style="--d: 2"><span class="cho-logo"><img :src="withBase('/runtimes/node.svg')" alt=""></span>Node.js</li>
-<li data-r style="--d: 3"><span class="cho-logo"><img :src="withBase('/runtimes/bun.svg')" alt=""></span>Bun</li>
-<li data-r style="--d: 4"><span class="cho-logo"><img :src="withBase('/runtimes/cloudflare-workers.svg')" alt=""></span>Workers</li>
+<li><span class="cho-logo"><img :src="withBase('/runtimes/deno.svg')" alt=""></span>Deno</li>
+<li><span class="cho-logo"><img :src="withBase('/runtimes/node.svg')" alt=""></span>Node.js</li>
+<li><span class="cho-logo"><img :src="withBase('/runtimes/bun.svg')" alt=""></span>Bun</li>
+<li><span class="cho-logo"><img :src="withBase('/runtimes/cloudflare-workers.svg')" alt=""></span>Cloudflare Workers</li>
 </ul>
 </div>
 </section>
 </div>
 
-<section class="cho-sec tint cho-step">
+<nav class="cho-section-nav" aria-label="Explore CHO">
+<div class="cho-wrap"><span>A small core. A lot of possibility.</span><a href="#one-shape">One shape</a><a href="#portable">Portable</a><a href="#type-safe">Type-safe</a><a href="#batteries-included">In the box <span aria-hidden="true">↓</span></a></div>
+</nav>
+
+<section id="one-shape" class="cho-sec tint">
 <div class="cho-wrap cho-split">
 <div class="cho-copy" data-r="left">
 <span class="cho-eyebrow">01 · One shape</span>
-<h2>Learn it once. Build <span class="cho-grad">three kinds</span> of application.</h2>
-<p>Modules group providers and controllers, and decorators say how they fit together. An HTTP service, a command-line tool and a message consumer are the same three things, with a route, a command or a topic on the method.</p>
-<ul class="cho-ticks">
-<li><b>HTTP</b> with <code>@chojs/web</code>: routes, typed arguments, validation, server-sent events.</li>
-<li><b>Command line</b> with <code>@chojs/command</code>: declared flags, generated help, exit codes.</li>
-<li><b>Messages</b> with <code>@chojs/message</code>: one handler for a topic, acknowledged after it returns.</li>
-</ul>
+<h2>Learn the pattern.<br><span class="cho-grad">Build your thing.</span></h2>
+<p>Modules, providers, controllers. The same three building blocks for an API, a CLI or a message consumer. Just change the decorator on the method.</p>
+<div class="cho-packages">
+<a :href="withBase('/web/quick-start')"><span class="cho-package-icon" aria-hidden="true">↗</span><span><b>HTTP applications</b><code>@chojs/web</code></span><span class="cho-package-arrow" aria-hidden="true">→</span></a>
+<a :href="withBase('/command/quick-start')"><span class="cho-package-icon" aria-hidden="true">&gt;_</span><span><b>Command-line tools</b><code>@chojs/command</code></span><span class="cho-package-arrow" aria-hidden="true">→</span></a>
+<a :href="withBase('/message/quick-start')"><span class="cho-package-icon" aria-hidden="true">⇄</span><span><b>Message consumers</b><code>@chojs/message</code></span><span class="cho-package-arrow" aria-hidden="true">→</span></a>
+</div>
 <a class="cho-more" :href="withBase('/guide/introduction')">How CHO is organized <span>→</span></a>
 </div>
 <div class="cho-code vp-doc" data-r="right" style="--d: 1">
@@ -280,12 +235,12 @@ await app.handle("orders.created", { key: "42", value: '{"id":"42"}' });
 </div>
 </section>
 
-<section class="cho-sec cho-step">
+<section id="portable" class="cho-sec">
 <div class="cho-wrap cho-split flip">
 <div class="cho-copy" data-r="right">
 <span class="cho-eyebrow">02 · Portable</span>
-<h2>Your code never meets the <span class="cho-grad">HTTP library</span>.</h2>
-<p>A handler receives the standard <code>Request</code> and answers with a standard <code>Response</code>. What matches the requests underneath is a small adapter you can swap, and the runtime is a line you do not write.</p>
+<h2>Your application.<br><span class="cho-grad">Your stack.</span></h2>
+<p>Build on the web's <code>Request</code> and <code>Response</code>, not a library's API. Swap the router underneath without rewriting the controllers above.</p>
 <ul class="cho-ticks">
 <li>A router is built in, on the standard <code>URLPattern</code>.</li>
 <li>Hono or Fastify with one option, and no change to a controller.</li>
@@ -293,7 +248,7 @@ await app.handle("orders.created", { key: "42", value: '{"id":"42"}' });
 </ul>
 <a class="cho-more" :href="withBase('/guide/runtimes')">Runtimes and adapters <span>→</span></a>
 </div>
-<div class="cho-stack">
+<div class="cho-stack" role="group" aria-label="Application architecture, from your code to the runtime">
 <div class="cho-layer yours" data-r style="--d: 0"><small>Yours</small><strong>Modules, controllers, providers</strong><em>(req: Request) =&gt; Response</em></div>
 <span class="cho-join" data-r style="--d: 1"></span>
 <div class="cho-layer" data-r style="--d: 1"><small>The framework</small><strong>@chojs/web</strong></div>
@@ -314,11 +269,11 @@ await app.handle("orders.created", { key: "42", value: '{"id":"42"}' });
 </div>
 </section>
 
-<section class="cho-sec tint cho-step">
+<section id="type-safe" class="cho-sec tint">
 <div class="cho-wrap cho-split">
 <div class="cho-copy" data-r="left">
 <span class="cho-eyebrow">03 · Standard decorators</span>
-<h2>No reflection. No compiler plugin. <span class="cho-grad">Still type-checked.</span></h2>
+<h2>Less magic.<br><span class="cho-grad">More confidence.</span></h2>
 <p>CHO runs with TC39 decorators, and with the legacy ones of TypeScript and Bun. Dependencies are declared, not guessed from emitted types, and the compiler checks them against the constructor.</p>
 <ul class="cho-ticks">
 <li>No <code>reflect-metadata</code>, no <code>emitDecoratorMetadata</code>.</li>
@@ -350,11 +305,11 @@ class Broken {
 </div>
 </section>
 
-<section class="cho-sec cho-step">
+<section class="cho-sec">
 <div class="cho-wrap cho-split flip">
 <div class="cho-copy" data-r="right">
 <span class="cho-eyebrow">04 · Dependency injection</span>
-<h2>It fails <span class="cho-grad">before it starts</span>, or it does not fail.</h2>
+<h2>Catch wiring errors.<br><span class="cho-grad">Before the first request.</span></h2>
 <p>The whole module graph is validated and linked once, when the application is created. A missing provider, a circular import or a duplicate route never waits for the first request.</p>
 <ul class="cho-ticks">
 <li>A provider can <code>await</code> a connection before its value is ready.</li>
@@ -386,11 +341,11 @@ UsersController.get and AdminController.find</span>
 </div>
 </section>
 
-<section class="cho-sec tint cho-step">
+<section id="batteries-included" class="cho-sec tint">
 <div class="cho-wrap">
 <div class="cho-head" data-r>
-<span class="cho-eyebrow">And the rest</span>
-<h2>Small, and <span class="cho-grad">complete</span>.</h2>
+<span class="cho-eyebrow">Small core. Thoughtful details.</span>
+<h2>The everyday essentials.<br><span class="cho-grad">Already here.</span></h2>
 <p>What an application needs every day is in the box, and behaves the same on every adapter.</p>
 </div>
 <div class="cho-bento">
@@ -409,8 +364,9 @@ UsersController.get and AdminController.find</span>
 <section class="cho-end">
 <div class="cho-wrap">
 <img :src="withBase('/cho.svg')" alt="" width="64" height="64" data-r="zoom">
-<h2 data-r style="--d: 1">Start with <span class="cho-grad">one package</span>.</h2>
-<p data-r style="--d: 2">It brings everything an application needs. A first HTTP application takes one file, and runs the same on every runtime.</p>
+<span class="cho-eyebrow" data-r>Less setup. More building.</span>
+<h2 data-r style="--d: 1">Your next application<br>starts with <span class="cho-grad">one package.</span></h2>
+<p data-r style="--d: 2">Start with a single file. Grow into modules. Take it to the runtime that works for you.</p>
 <div class="cho-code vp-doc" data-r style="--d: 3">
 
 ::: code-group
