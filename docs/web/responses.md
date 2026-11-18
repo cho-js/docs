@@ -1,125 +1,33 @@
-# Responses
+# Set response status, body and headers
 
-What a handler returns is the response.
+Return an object for a conventional JSON response. Return a Fetch `Response` when the client needs a specific status or header.
 
-| Returned                                                         | Sent                                                        |
-| ---------------------------------------------------------------- | ----------------------------------------------------------- |
-| A `Response`                                                     | As is                                                       |
-| Nothing (`undefined`)                                            | `204 No Content`                                            |
-| A string                                                         | As text: `text/plain;charset=UTF-8`                         |
-| Bytes: `Uint8Array` and other typed arrays, `ArrayBuffer`        | As bytes, with no content type                              |
-| A `Blob`                                                         | Its bytes, with the blob's own type                         |
-| A `ReadableStream`                                               | Streamed, with no content type                              |
-| A `FormData`, a `URLSearchParams`                                | As a form: `multipart/form-data` or `x-www-form-urlencoded` |
-| Anything else: objects, arrays, numbers, booleans, `null`, dates | As JSON: `application/json`                                 |
+| Handler result | Response |
+| --- | --- |
+| `{ id: "42" }`, an array, number, boolean or `null` | JSON, status `200` |
+| A string | Text with UTF-8 content type, status `200` |
+| `undefined`, including a method with no return | Empty body, status `204` |
+| `Uint8Array`, `ArrayBuffer`, other array views, `Blob`, `FormData`, `URLSearchParams` or `ReadableStream` | Fetch body with the platform's applicable headers |
+| A `Response` | Its status, headers and body |
 
-Everything but a `Response` and `undefined` is sent with status `200`. **For
-another status or content type, return a `Response`.**
+CHO awaits a promise before applying these rules. Check for a missing record explicitly. Returning `undefined` from a lookup would send `204` to the client.
 
-## Examples
+## Report creation
 
-::: code-group
-
-```ts [JSON]
-@Get("users")
-list() {
-  return [{ id: "1", name: "Ada" }]; // 200, application/json
-}
-```
-
-```ts [Status and headers]
-@Post("users")
-async create(ctx: ChoWebContext) {
-  const user = await this.store.add(await ctx.req.json());
-  return Response.json(user, {
+```ts
+@Post("")
+@Args(Body("title", titleValidator))
+create(title: string) {
+  const book = this.catalog.add(title);
+  return Response.json(book, {
     status: 201,
-    headers: { location: `/users/${user.id}` },
+    headers: { location: "/books/" + encodeURIComponent(book.id) },
   });
 }
 ```
 
-```ts [No content]
-@Delete("users/:id")
-async remove(ctx: ChoWebContext) {
-  await this.store.remove(ctx.params.id!);
-  // nothing returned: 204 No Content
-}
-```
+In this controller fragment, `titleValidator` runs under [`validate()`](/web/validation) and `catalog` is an injected store. Set `Location` to the actual public path, including any application prefix.
 
-```ts [Text and HTML]
-@Get("ping")
-ping() {
-  return "pong"; // text/plain;charset=UTF-8
-}
+## Stream or download a body
 
-@Get("page")
-page() {
-  return new Response("<h1>Hello</h1>", {
-    headers: { "content-type": "text/html;charset=UTF-8" },
-  });
-}
-```
-
-```ts [Redirect]
-@Get("old")
-old(ctx: ChoWebContext) {
-  return Response.redirect(new URL("/new", ctx.url), 301);
-}
-```
-
-```ts [Stream]
-@Get("export")
-export() {
-  const encoder = new TextEncoder();
-  const rows = this.store.rows(); // an iterator
-  const stream = new ReadableStream({
-    pull(controller) {
-      const { done, value } = rows.next();
-      if (done) {
-        controller.close();
-      } else {
-        controller.enqueue(encoder.encode(`${value.id},${value.name}\n`));
-      }
-    },
-  });
-  return new Response(stream, { headers: { "content-type": "text/csv" } });
-}
-```
-
-```ts [File download]
-@Get("report")
-report() {
-  const csv = new Blob(["id,name\n1,Ada\n"], { type: "text/csv" });
-  return new Response(csv, {
-    headers: { "content-disposition": 'attachment; filename="report.csv"' },
-  });
-}
-```
-
-:::
-
-## Details
-
-- The bodies in the middle of the table are what the platform's `Response`
-  accepts: the value is given to `new Response(value)`. The platform sets the
-  content type, except for a string, where `@chojs/web` sets it so that it is
-  the same on every runtime.
-- A `ReadableStream` has no content type on Deno and Node.js; Bun sends
-  `application/octet-stream`. Return a `Response` with the type you mean
-  ([Stream a response](/recipes/streaming)).
-- `null` is JSON (`null`), not an empty response. Return nothing for a `204`.
-- A value that cannot be serialized as JSON, such as a `BigInt` or an object
-  with a cycle, is an error, handled like any error of the handler
-  ([Error handling](/web/error-handling)).
-- A handler can be `async`: the awaited value is converted.
-- The response of a `@Head` handler is sent without its body.
-- A stream of events for a browser has its own decorator, `@Sse`: see
-  [Server-sent events](/web/sse).
-- The [recipes](/recipes/) go further with a `Response`:
-  [streaming a body](/recipes/streaming) as it is produced,
-  [sending a file](/recipes/downloads) from disk, and
-  [forwarding a request](/recipes/proxy) to another server.
-
-The same conversion applies to what an
-[error handler](/web/error-handling) returns, with one difference: an error
-handler that returns nothing has not handled the error.
+Wrap a byte stream in `new Response(stream, { headers })` to choose its media type. For a browser download, also set `Content-Disposition`. For typed event streams, `@Sse` handles event framing and response headers. [Stream bytes](/recipes/streaming) · [Download a file](/recipes/downloads) · [Server-sent events](/web/sse)

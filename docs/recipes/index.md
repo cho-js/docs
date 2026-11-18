@@ -1,20 +1,13 @@
-# Recipes
+# HTTP recipes
 
-A recipe starts from something you want to do, and shows how to do it with what
-`@chojs/web` already has. None of them needs an API of its own: a handler gets
-the platform's `Request` and returns the platform's `Response`, so what the
-platform can do, a handler can do.
+Each recipe adds one behavior to a controller or entry point from the [HTTP quick start](/web/quick-start). Import the decorators and context types used in a controller fragment from `@chojs/web`. The paths in the verification commands assume no controller route or application prefix. If you keep the tutorial's `api` prefix, add `/api` to those URLs.
 
-| Recipe                                                    | Shows how to                                                     |
-| --------------------------------------------------------- | ---------------------------------------------------------------- |
-| [Stream a response](/recipes/streaming)                   | Send a body as it is produced: rows, lines of JSON, another stream |
-| [Send a file to download](/recipes/downloads)             | Answer with a file, made in memory or read from disk             |
-| [Receive an uploaded file](/recipes/uploads)              | Read the files of a form, or write a large body straight to disk |
-| [Forward a request to another server](/recipes/proxy)     | Pass a request on, and its answer back                           |
-| [Shut down gracefully](/recipes/shutdown)                 | Stop a server without dropping the requests it is answering      |
+| I need to… | Start here | Verify with |
+| --- | --- | --- |
+| Deliver records while producing them | [Stream a response](/recipes/streaming) | `curl -N` |
+| Offer a file with a suggested name | [Download a file](/recipes/downloads) | Response headers and downloaded bytes |
+| Receive a multipart form | [Accept an upload](/recipes/uploads) | `curl -F` |
+| Expose a fixed upstream service through a route | [Forward a request](/recipes/proxy) | Upstream status and body |
+| Drain connections before disposing resources | [Shut down gracefully](/recipes/shutdown) | A request active during shutdown |
 
-Every recipe has the same parts: the shortest code that works, its variations,
-and **what to know**: the traps, and where the runtimes differ.
-
-The code of the recipes was run on Deno, Node.js and Bun. Where a runtime
-behaves differently, the recipe says so.
+For browser subscriptions with named events and automatic reconnection, use the [SSE guide](/web/sse).

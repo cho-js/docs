@@ -1,188 +1,66 @@
-# Fastify adapter
+# Serve CHO routes with Fastify
 
-`@chojs/vendor-fastify` registers the routes of a CHO web application on a
-[Fastify](https://fastify.dev) application.
+Use Fastify on Node.js when the service depends on Fastify plugins, hooks or its native server. In the Node.js [HTTP tutorial project](/web/quick-start), run `npx jsr add @chojs/vendor-fastify`. Also install `fastify` as a direct dependency when constructing an instance as below.
 
-::: warning Node.js only
-Fastify is built on the HTTP server of Node.js, and this adapter is tested on
-Node.js alone. For Deno, Bun and edge runtimes use the
-[built-in router](/adapters/cho) or the [Hono adapter](/adapters/hono).
-:::
-
-## Install
-
-```sh
-npx jsr add @chojs/web @chojs/vendor-fastify
-```
-
-Fastify comes with the adapter. Add it to your own dependencies
-(`npm install fastify`) when you create the Fastify application yourself.
-
-## Usage
-
-Pass a `FastifyLinker` to `ChoWeb.create`, and serve the Fastify application:
+## Start the native listener
 
 ```ts
+import Fastify from "fastify";
 import { ChoWeb } from "@chojs/web";
 import { FastifyLinker } from "@chojs/vendor-fastify";
+import { Library } from "./app.ts";
 
-const app = await ChoWeb.create(App, { linker: new FastifyLinker() });
-const fastify = app.linked.instance; // the Fastify application
-
-await fastify.listen({ port: 3000 });
-```
-
-To stop, close Fastify first, so that no request is running, then the
-application:
-
-```ts
-process.on("SIGTERM", async () => {
-  await fastify.close();
-  await app.close();
+const native = Fastify({ logger: true });
+const app = await ChoWeb.create(Library, {
+  prefix: "api",
+  linker: new FastifyLinker(native),
 });
+
+try {
+  await native.listen({ port: 3000, host: "127.0.0.1" });
+} catch (error) {
+  await native.close();
+  await app.close();
+  throw error;
+}
 ```
+
+Request `/api/books/42` and look for the request in Fastify's log. For shutdown, close `native` before releasing `app`. CHO registers its routes in a Fastify plugin and leaves the raw request body available for Fetch readers.
 
 ## Using Fastify options, plugins and hooks
 
-Fastify plugins and hooks are written for Fastify's request and reply. There
-are two ways to use them.
+Configure application-wide plugins and hooks on `native` before passing it to the linker. Set its not-found and error handlers there. For a hook that should run only on a CHO controller or method, use `fromFastify(hook)` in `@Middlewares`. The wrapper supports a pre-handler check. For changes after a response has been produced, use an appropriate native hook.
 
-### On every route
+In an adapter-specific controller, narrow `ctx.native` to `FastifyNative` from `@chojs/vendor-fastify` to use its `request` and `reply`. Use `ctx.req` to read the body of a CHO route.
 
-Create the Fastify application yourself, and give it to the linker. What you
-add to it applies to every route:
+## Test without a socket
 
 ```ts
-import Fastify from "fastify";
-import cors from "@fastify/cors";
-
-const fastify = Fastify({ logger: true });
-await fastify.register(cors);
-fastify.setNotFoundHandler((_request, reply) =>
-  reply.status(404).send({ error: "not found" })
-);
-
-const app = await ChoWeb.create(App, { linker: new FastifyLinker(fastify) });
+const result = await native.inject({ method: "GET", url: "/api/books/42" });
+console.log(result.statusCode, result.json());
 ```
 
-The same Fastify application takes your `setErrorHandler`.
+`app.handler` also makes an in-memory request using Fastify injection. It buffers the request and response bodies. Use the native listener when verifying downloads, SSE or disconnect behavior. Give each application its own linker and Fastify instance.
 
-### On a handler, a controller or a feature
+## Adapt a request hook
 
-`fromFastify` turns a Fastify **hook** into a CHO middleware, for
-[`@Middlewares`](/web/middlewares). A hook is what many plugins give to protect
-a route (`fastify.basicAuth`, `fastify.auth([...])`, `fastify.rateLimit()`,
-`fastify.csrfProtection`), or a function of your own:
+For a route that requires a particular media type, run a native hook before CHO reads the body. This example uses Fastify's request headers and short-circuits with its reply object.
 
 ```ts
-import Fastify from "fastify";
-import basicAuth from "@fastify/basic-auth";
-import { ChoWeb, Controller, Get, Middlewares } from "@chojs/web";
-import { FastifyLinker, fromFastify } from "@chojs/vendor-fastify";
+import { Controller, Middlewares, Post } from "@chojs/web";
+import { fromFastify } from "@chojs/vendor-fastify";
 
-const fastify = Fastify();
-await fastify.register(basicAuth, { validate, authenticate: true });
-
-@Middlewares(fromFastify(fastify.basicAuth))
-@Controller({ route: "admin" })
-class AdminController {
+@Controller()
+class Imports {
   @Middlewares(fromFastify(async (request, reply) => {
-    if (request.ip !== "127.0.0.1") {
-      return reply.code(403).send({ error: "forbidden" });
+    const type = request.headers["content-type"]?.split(";")[0]?.trim();
+    if (type !== "application/json") {
+      return reply.code(415).send({ error: "Use application/json" });
     }
   }))
-  @Get("report")
-  report() {
-    return { users: 3 };
-  }
-}
-
-const app = await ChoWeb.create(App, { linker: new FastifyLinker(fastify) });
-```
-
-The hook runs with Fastify's request and reply, at its place among the CHO
-middlewares of the route, on the Fastify application (`this`):
-
-| In the hook                                | What happens                                                |
-| ------------------------------------------ | ----------------------------------------------------------- |
-| Its promise resolves, or it calls `done()` | The rest of the CHO chain runs                              |
-| `reply.send()`, `reply.redirect()`         | The hook answered: the rest of the chain does not run       |
-| It throws, rejects or calls `done(error)`  | The error goes to the CHO [error handlers](/web/error-handling), then to Fastify's |
-
-Good to know:
-
-- A hook is a step **before** the handler: it cannot change the handler's
-  response. For that, and for plugins that are not hooks (`@fastify/cors`,
-  `@fastify/helmet`), register the plugin on the Fastify application.
-- When a hook answers, the response is the one Fastify sends. The CHO
-  middlewares around it see its status and headers, and cannot change it.
-- Fastify does not parse the body of CHO routes, so `request.body` is not set
-  in a hook.
-
-::: warning Only on this adapter
-A middleware made with `fromFastify` needs Fastify's request and reply: on
-another adapter it fails the request.
-:::
-
-## Reaching Fastify from a handler
-
-Handlers, middlewares and error handlers receive a `ChoWebContext`, with a
-standard `Request` built from Fastify's. Fastify's request and reply are its
-`native` property, for what only Fastify can do:
-
-```ts
-import type { FastifyNative } from "@chojs/vendor-fastify";
-
-@Get("ip")
-ip(ctx: ChoWebContext) {
-  return (ctx.native as FastifyNative).request.ip;
+  @Post("imports")
+  create() { return { accepted: true }; }
 }
 ```
 
-A handler that uses it only runs on this adapter.
-
-## Testing without a server
-
-`app.handler` is a `fetch`-style function here too. It sends the request
-through Fastify's `inject()`, with no network connection, which is what a test
-needs:
-
-```ts
-const response = await app.handler(new Request("http://localhost/users/42"));
-```
-
-It reads the bodies of the request and of the response whole, so serve real
-traffic with `listen()`.
-
-That goes for a stream of [server-sent events](/web/sse) too: through
-`app.handler` it is collected until it ends, so it only suits a stream that
-does end. Served with `listen()`, the events are sent as they come.
-
-## How it works
-
-The adapter only matches requests. `@chojs/web` builds each route as one
-function that runs its middlewares, its handler and its error handler; the
-adapter registers it on Fastify with its method and full path, and calls it
-with a standard `Request`, Fastify's decoded path parameters, and Fastify's
-request and reply. Fastify sends the `Response` the route resolves to.
-
-The routes are registered as a Fastify plugin. Inside it Fastify parses no
-body, so the body of the request reaches the handler untouched, as the stream
-of `ctx.req`: read it with `ctx.req.json()`, `ctx.req.text()`,
-`ctx.req.formData()` and so on. Routes you add to the Fastify application
-yourself keep Fastify's body parsing.
-
-## Behavior
-
-| Topic               | Behavior                                                                                                                       |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Matching order      | Fastify's router decides: a static path wins over a parameter, wherever they are declared (`me` wins over `:id`)               |
-| Paths               | Matched as written: case and a trailing slash count, unless the Fastify application is set otherwise                           |
-| Path parameters     | Percent-decoded. A parameter matches one segment, never an empty one. Fastify answers `400` to a path that cannot be decoded   |
-| Request body        | Not parsed by Fastify: `ctx.req` reads the stream                                                                              |
-| Client disconnects  | `ctx.req.signal` is aborted when the connection closes before the response is sent                                             |
-| `HEAD` requests     | Run the `@Head` handler of the route. Without one, the `@Get` handler answers, without the body                                |
-| Unhandled errors    | A route that fails with no `@Catch` and no `onError` goes to Fastify's error handler: `500`, logged when the logger is enabled |
-| Unmatched requests  | Answered by Fastify's not-found handler                                                                                        |
-| When routes exist   | Once the Fastify application is ready: `listen()`, `ready()` and `app.handler` wait for it                                     |
-| One linker, one app | A second `link()` on the same linker throws: its Fastify application already holds the routes of the first                     |
+Register `Imports` with the module and test it through Fastify. A `text/plain` request should receive `415` without calling `create`. A request with the JSON media type should reach the controller. A transport-independent version of this check could read `ctx.req.headers` in a CHO middleware.

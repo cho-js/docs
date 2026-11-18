@@ -1,4 +1,5 @@
 import { defineConfig } from "vitepress";
+import { sidebar } from "./sidebar";
 
 // The path the site is served under: "/" locally, "/cho-docs/" on GitHub
 // Pages (set by the deploy workflow through DOCS_BASE).
@@ -61,113 +62,7 @@ gtag('js', new Date());`,
         ],
       },
     ],
-    sidebar: [
-      {
-        text: "Guide",
-        items: [
-          { text: "Introduction", link: "/guide/introduction" },
-          { text: "Getting started", link: "/guide/getting-started" },
-          { text: "Runtimes", link: "/guide/runtimes" },
-          { text: "Decorators", link: "/guide/decorators" },
-        ],
-      },
-      {
-        text: "Dependency injection",
-        items: [
-          { text: "Overview", link: "/di/overview" },
-          { text: "Tokens and providers", link: "/di/providers" },
-          { text: "Modules", link: "/di/modules" },
-          { text: "Lifecycle", link: "/di/lifecycle" },
-        ],
-      },
-      {
-        text: "Web applications",
-        items: [
-          { text: "Quick start", link: "/web/quick-start" },
-          { text: "Routing", link: "/web/routing" },
-          { text: "Request context", link: "/web/context" },
-          { text: "Handler arguments", link: "/web/arguments" },
-          { text: "Validation", link: "/web/validation" },
-          { text: "Responses", link: "/web/responses" },
-          { text: "Server-sent events", link: "/web/sse" },
-          { text: "Middlewares", link: "/web/middlewares" },
-          { text: "Error handling", link: "/web/error-handling" },
-          { text: "The application", link: "/web/application" },
-          { text: "Describing the API", link: "/web/api-docs" },
-          { text: "Testing", link: "/web/testing" },
-          { text: "Example: a REST API", link: "/web/example" },
-        ],
-      },
-      {
-        text: "Recipes",
-        items: [
-          { text: "Overview", link: "/recipes/" },
-          { text: "Stream a response", link: "/recipes/streaming" },
-          { text: "Send a file to download", link: "/recipes/downloads" },
-          { text: "Receive an uploaded file", link: "/recipes/uploads" },
-          { text: "Forward a request", link: "/recipes/proxy" },
-          { text: "Shut down gracefully", link: "/recipes/shutdown" },
-        ],
-      },
-      {
-        text: "Runtime adapters",
-        items: [
-          { text: "Choosing an adapter", link: "/adapters/" },
-          { text: "Built-in router", link: "/adapters/cho" },
-          { text: "Middlewares", link: "/adapters/middlewares" },
-          { text: "Hono", link: "/adapters/hono" },
-          { text: "Fastify", link: "/adapters/fastify" },
-          { text: "Writing an adapter", link: "/adapters/custom" },
-        ],
-      },
-      {
-        text: "Command-line applications",
-        items: [
-          { text: "Quick start", link: "/command/quick-start" },
-          { text: "Commands", link: "/command/commands" },
-          { text: "Flags and arguments", link: "/command/flags" },
-          { text: "Middlewares", link: "/command/middlewares" },
-          { text: "Errors and exit codes", link: "/command/errors" },
-          { text: "Help output", link: "/command/help" },
-          { text: "The application", link: "/command/application" },
-          { text: "Testing", link: "/command/testing" },
-        ],
-      },
-      {
-        text: "Message applications",
-        items: [
-          { text: "Quick start", link: "/message/quick-start" },
-          { text: "Topics", link: "/message/topics" },
-          { text: "Handlers and the context", link: "/message/handlers" },
-          { text: "Middlewares", link: "/message/middlewares" },
-          { text: "Error handling", link: "/message/error-handling" },
-          { text: "The application", link: "/message/application" },
-          { text: "With a web application", link: "/message/with-web" },
-          { text: "Testing", link: "/message/testing" },
-          { text: "Broker adapters", link: "/message/adapters" },
-          { text: "Kafka", link: "/message/kafka" },
-        ],
-      },
-      {
-        text: "Reference",
-        items: [
-          { text: "@chojs/web API", link: "/reference/web" },
-          { text: "@chojs/command API", link: "/reference/command" },
-          { text: "@chojs/message API", link: "/reference/message" },
-          { text: "Error messages", link: "/reference/errors" },
-          { text: "Debug logging", link: "/reference/debugging" },
-        ],
-      },
-      {
-        text: "Advanced",
-        collapsed: true,
-        items: [
-          { text: "The core package", link: "/advanced/core" },
-          { text: "Writing a CHO module", link: "/advanced/cho-module" },
-          { text: "Internals", link: "/advanced/internals" },
-        ],
-      },
-    ],
+    sidebar,
     socialLinks: [
       { icon: "github", link: "https://github.com/cho-js/cho" },
       { icon: "x", link: "https://x.com/cho_framework" },

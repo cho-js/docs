@@ -1,220 +1,69 @@
-# Command quick start
+# Build a shelf-label CLI
 
-`@chojs/command` builds command-line applications with decorators. Classes
-declare commands; `ChoCommand` parses the command line, runs the right one and
-returns the exit code.
+The command `library label "The Odyssey" --shelf classics` will print a label. It will also tell a shell script when the title is missing. Start with [project setup](/guide/getting-started) and install `@chojs/command`.
 
-- **Two shapes of application.** A single command, like `ls`, or multiple
-  actions, like `git`.
-- **Help for free.** `--help` and `--version` are built in, generated from
-  `@Help` texts and the flags each command declares.
-- **Declared flags.** A command says which flags it takes and of which type.
-- **Middlewares and error handlers** on a module, a controller or a command.
-- **Nothing is created to print help.** A command's dependencies are created
-  when it first runs.
-- **Exit codes, not `process.exit`.** `run()` resolves to the exit code and
-  never exits the process itself.
+## 1. Declare the command
 
-## Install
+Save as `app.ts`. The action name selects the method, `args._` contains the positional title, and `args.shelf` contains the named option. CHO also uses the flag declaration to generate help.
 
-::: code-group
+<<< @/examples/command/app.ts
 
-```sh [Deno]
-deno add jsr:@chojs/command
-```
+## 2. Connect the process
 
-```sh [Node.js]
-npx jsr add @chojs/command
-```
-
-```sh [Bun]
-bunx jsr add @chojs/command
-```
-
-:::
-
-## Multiple actions
-
-The first word of the command line names the action to run, like `git commit`.
-
-```ts
-import {
-  Action,
-  ChoCommand,
-  type ChoCommandContext,
-  Controller,
-  Help,
-  Injectable,
-  Module,
-} from "@chojs/command";
-
-@Injectable()
-class Disk {
-  copy(from: string, to: string) {/* ... */}
-  remove(path: string) {/* ... */}
-}
-
-@Help("File system commands")
-@Controller({ dependencies: [Disk] })
-class FileSystem {
-  constructor(readonly disk: Disk) {}
-
-  @Help("Copy a file")
-  @Action("copy")
-  copy(ctx: ChoCommandContext) {
-    const [from, to] = ctx.args._;
-    this.disk.copy(String(from), String(to));
-  }
-
-  @Help("Delete a file")
-  @Action("rm", { boolean: ["force"], alias: { f: "force" } })
-  remove(ctx: ChoCommandContext) {
-    if (!ctx.args.force) return 3; // the exit code
-    this.disk.remove(String(ctx.args._[0]));
-  }
-}
-
-@Module({ providers: [Disk], controllers: [FileSystem] })
-class App {}
-
-const app = ChoCommand.create(App, { name: "fs", version: "1.0.0" });
-```
-
-## A single command
-
-One method runs for every command line, like `ls`. Mark it with `@Main()`
-instead of `@Action`:
-
-```ts
-import {
-  ChoCommand,
-  type ChoCommandContext,
-  Controller,
-  Help,
-  Main,
-  Module,
-} from "@chojs/command";
-
-@Controller()
-class Greet {
-  @Help("Greet someone")
-  @Main({ string: ["name"], describe: { name: "Who to greet" } })
-  main(ctx: ChoCommandContext) {
-    console.log(`Hello, ${ctx.args.name ?? "world"}!`);
-  }
-}
-
-@Module({ controllers: [Greet] })
-class App {}
-
-const app = ChoCommand.create(App, { name: "greet", version: "1.0.0" });
-```
-
-An application has either one `@Main` or one or more `@Action`, never both.
-
-## Run it
-
-`run()` takes the command line and resolves to the exit code. The runtime
-gives you the first and takes the second:
+Create `cli.ts` alongside `app.ts`. Only this entry point needs to know where the runtime keeps its arguments or how it reports an exit code.
 
 ::: code-group
 
 ```ts [Deno]
-const code = await app.run(Deno.args);
-await app.close();
+import { createApp } from "./app.ts";
+
+const app = createApp();
+let code: number;
+try {
+  code = await app.run(Deno.args);
+} finally {
+  await app.close();
+}
 Deno.exit(code);
 ```
 
-```ts [Node.js]
-const code = await app.run(process.argv.slice(2));
-await app.close();
-process.exit(code);
-```
+```ts [Node.js and Bun]
+import { createApp } from "./app.ts";
 
-```ts [Bun]
-const code = await app.run(process.argv.slice(2));
-await app.close();
-process.exit(code);
+const app = createApp();
+try {
+  process.exitCode = await app.run(process.argv.slice(2));
+} finally {
+  await app.close();
+}
 ```
 
 :::
+
+## 3. Try success, help and failure
 
 ::: code-group
 
 ```sh [Deno]
-deno run --allow-read --allow-write fs.ts copy src dest
+deno run cli.ts label "The Odyssey" -s classics
+deno run cli.ts label --help
+deno run cli.ts label
 ```
 
 ```sh [Node.js]
-npx tsx fs.ts copy src dest
+npx tsx cli.ts label "The Odyssey" -s classics
+npx tsx cli.ts label --help
+npx tsx cli.ts label
 ```
 
 ```sh [Bun]
-bun run fs.ts copy src dest
+bun run cli.ts label "The Odyssey" -s classics
+bun run cli.ts label --help
+bun run cli.ts label
 ```
 
 :::
 
-```console
-$ fs copy src dest
-$ fs rm path/to/file --force
-$ fs --version
-fs version 1.0.0
-$ fs --help
-Usage: fs <command> [options] [args]
+The first invocation prints `[classics] The Odyssey`. The second lists the shelf option, its alias and its default. The last prints `Supply a book title.` to stderr. In a POSIX shell, run `echo $?` immediately afterwards to see status `2`.
 
-File system commands:
-  copy  Copy a file
-  rm    Delete a file
-
-Options:
-  --help     Show this help
-  --version  Show the version
-
-Run 'fs <command> --help' for help on a command.
-```
-
-## Making it an executable
-
-::: code-group
-
-```ts [Deno]
-#!/usr/bin/env -S deno run --allow-read --allow-write
-import { ChoCommand } from "@chojs/command";
-// …
-
-// chmod +x fs.ts && ./fs.ts copy a b
-// or a single binary: deno compile --output fs fs.ts
-```
-
-```ts [Node.js]
-#!/usr/bin/env -S npx tsx
-import { ChoCommand } from "@chojs/command";
-// …
-
-// chmod +x fs.ts && ./fs.ts copy a b
-// or compile with tsc and set "bin" in package.json
-```
-
-```ts [Bun]
-#!/usr/bin/env bun
-import { ChoCommand } from "@chojs/command";
-// …
-
-// chmod +x fs.ts && ./fs.ts copy a b
-// or a single binary: bun build --compile --outfile fs fs.ts
-```
-
-:::
-
-## What to read next
-
-| Topic                                 | Page                                        |
-| ------------------------------------- | ------------------------------------------- |
-| `@Main`, `@Action`, `@Help`, rules    | [Commands](/command/commands)               |
-| Flags, positionals, the context       | [Flags and arguments](/command/flags)       |
-| Confirmation, timing, shared setup    | [Middlewares](/command/middlewares)         |
-| `@Catch` and exit codes               | [Errors and exit codes](/command/errors)    |
-| What `--help` prints                  | [Help output](/command/help)                |
-| Options, setup, cleanup               | [The application](/command/application)     |
-| Tests                                 | [Testing](/command/testing)                 |
+Use [`@Main`](/command/commands) for a tool with one implicit command. For a complete single-command project with an injected file reader, [build a catalog audit](/command/file-audit). For additional named actions, see [flag parsing](/command/flags) and [help output](/command/help).

@@ -1,147 +1,40 @@
-# Decorators
+# Configure decorators
 
-CHO is written with decorators, and works with both forms that exist today.
+Decorators record the classes, methods and dependencies that CHO will wire together at startup. The TypeScript types check whether the declarations fit the code. At runtime, CHO uses the actual tokens passed to the decorators.
 
-| Form            | Where it comes from                                                                                                          |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Standard (TC39) | The [stage 3 proposal](https://github.com/tc39/proposal-decorators): TypeScript 5 without `experimentalDecorators`, and Deno |
-| Legacy          | TypeScript with `experimentalDecorators: true`, and Bun's own implementation                                                 |
+## Select a compiler mode
 
-You do not choose in your code: the same application runs with either, and no
-import changes. Every CHO decorator accepts both call shapes.
+For standard decorators, use TypeScript 5+ and omit `experimentalDecorators`. If an existing project enables `experimentalDecorators`, CHO also accepts that legacy calling convention. Deno, Bun and Node projects can share decorated classes. See [runtime setup](/guide/runtimes) for the runner.
 
-## What CHO does not need
-
-- **No `reflect-metadata`.** Nothing is read from emitted type information.
-- **No `emitDecoratorMetadata`**, and no compiler plugin.
-- **No parameter decorators.** There is no `@Inject()` on constructor
-  parameters, which standard decorators do not have.
-
-Dependencies are listed in the decorator instead, in the order of the
-constructor's parameters:
+Dependency injection works without `emitDecoratorMetadata` or a `reflect-metadata` import. An interface disappears during compilation, so give interface-shaped values a typed token.
 
 ```ts
-@Injectable([Logger, PORT])
-class Server {
-  constructor(logger: Logger, port: number) {}
-}
+import { Injectable, token } from "@chojs/web";
 
-@Controller({ route: "users", dependencies: [UserStore] })
-class UsersController {
-  constructor(readonly store: UserStore) {}
+export const SHELF = token<string>("default shelf");
+
+@Injectable([SHELF])
+export class LabelPrinter {
+  constructor(readonly shelf: string) {}
 }
 ```
 
-The list is checked against the constructor **at compile time**: a wrong order,
-a wrong type or a missing dependency does not compile. See
-[Tokens and providers](/di/providers#the-dependencies-are-type-checked).
+The decorator connects `SHELF` to constructor position zero. A module still needs to [provide a value for that token](/di/providers).
 
 ## No parameter decorators
 
-Standard decorators decorate classes and class members. They cannot decorate a
-parameter, so there is no `@Body()` or `@Param("id")` in front of a parameter
-of a handler, as legacy TypeScript decorators allowed.
-
-CHO uses the same idea as for constructors: the arguments of a handler are
-listed once, on the method, in the order of its parameters.
+Put web argument readers on the method. Their order is the order of the values supplied at dispatch. A method may also take the context after those values.
 
 ```ts
-@Put(":id")
-@Args(Param("id"), Body<UpdateUser>())
-update(id: string, user: UpdateUser) {}
-```
-
-This list is checked against the parameters at compile time too. See
-[Handler arguments](/web/arguments).
-
-## Per runtime
-
-::: code-group
-
-```jsonc [Deno: deno.jsonc]
-{
-  // Standard decorators are the default. Nothing to set.
-  // For legacy decorators:
-  "compilerOptions": { "experimentalDecorators": true }
+@Get(":id")
+@Args(Param("id"), Query("edition"))
+find(id: string, edition: string | undefined) {
+  return { id, edition: edition ?? "first" };
 }
 ```
 
-```jsonc [Node.js: tsconfig.json]
-{
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "strict": true
-    // Standard decorators: leave "experimentalDecorators" out.
-  }
-}
-```
+This reads `GET /42?edition=second` as the pair `"42"` and `"second"`. [Handler arguments](/web/arguments) covers parsed bodies and custom readers.
 
-```jsonc [Bun: tsconfig.json]
-{
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "Preserve",
-    "moduleResolution": "bundler",
-    "strict": true
-    // Legacy decorators: "experimentalDecorators": true
-  }
-}
-```
+## Order and inheritance
 
-:::
-
-- **Deno** and **Bun** run TypeScript decorators directly.
-- **Node.js** needs the application compiled with TypeScript 5 (`tsc`), or run
-  with a tool such as `tsx`.
-
-## Order of decorators
-
-Decorators on one class or method can be written in any order, with one rule
-of thumb: read them top to bottom as "outside in".
-
-```ts
-@Middlewares(auth) //   runs first
-@Middlewares(timing) // runs second
-@Catch(onError)
-@Controller({ route: "admin" })
-class AdminController {
-  @Middlewares(audit) // after the controller's middlewares
-  @Get("stats")
-  stats() {}
-}
-```
-
-- `@Middlewares` can be applied several times; middlewares are kept in source
-  order, top decorator first, and within one decorator in argument order.
-- A class has one of `@Injectable`, `@Module` or `@Controller`.
-- A class or a method has at most one `@Catch`.
-- A method has one HTTP method decorator (`@Get`, …), or one of `@Main` and
-  `@Action`.
-
-Mistakes in a decorator (a second `@Get` on a method, an unknown option, an
-invalid route) throw when the class is **defined**, so they show up as soon as
-the file is loaded.
-
-## Inheritance
-
-A controller has the handlers or commands it inherits from a base class. An
-override keeps what its parent declared unless it declares it again:
-
-```ts
-@Controller({ route: "items" })
-class ItemsController {
-  @Get(":id")
-  get(ctx: ChoWebContext) {}
-}
-
-@Controller({ route: "books" })
-class BooksController extends ItemsController {
-  @Middlewares(cache) // added after the parent's middlewares
-  override get(ctx: ChoWebContext) {} // still GET /books/:id
-}
-```
-
-The class decorators themselves are not inherited: a subclass is decorated on
-its own.
+Use a single `@Middlewares(first, second)` when execution order matters. Put routing and input declarations together on public instance methods. A derived controller can reuse a decorated base method. An override can keep the inherited route or supply a new route decorator. Check the final method and path in `app.routes` after refactoring a base class.

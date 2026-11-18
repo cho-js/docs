@@ -1,164 +1,48 @@
-# Tokens and providers
+# Supply values with tokens and factories
 
-## Tokens
+A class can serve as its own lookup key. For a configuration value, an interface or two separately configured instances of one class, create a typed token. Export the token from one file and import that same object everywhere you use it. Creating another token with the same description produces a different key.
 
-A token identifies something injectable.
-
-| Token                        | Resolves to       | Example                    |
-| ---------------------------- | ----------------- | -------------------------- |
-| A class (abstract included)  | An instance of it | `Logger`                   |
-| An injection token `token()` | `T`               | `token<string>("API_URL")` |
-| A symbol                     | `unknown`         | `Symbol("cache")`          |
+## Build a provider from dependencies
 
 ```ts
-import { token } from "@chojs/web"; // or "@chojs/command"
+import { Injectable, Module, provider, token } from "@chojs/web";
 
-const API_URL = token<string>("API_URL");
-const PORT = token<number>("PORT");
-```
+const BRANCH = token<string>("library branch");
+const LABEL_PREFIX = token<string>("label prefix");
 
-- `token<T>(description)` creates a **unique** token. Two tokens with the same
-  description are different tokens, so export a token and import it where it is
-  needed.
-- The description is for error messages, where the token reads
-  `InjectionToken(API_URL)`.
-- **Strings are not tokens.** Different packages could pick the same string;
-  the decorators reject them.
-
-## Providers
-
-A provider says how to create the value of a token. There are two kinds.
-
-### An `@Injectable` class
-
-Its token is the class. Its value is an instance, created with the listed
-dependencies as constructor arguments, in order.
-
-```ts
-@Injectable()
-class Logger {}
-
-@Injectable([Logger, PORT])
-class Server {
-  constructor(readonly logger: Logger, readonly port: number) {}
-}
-```
-
-### A provider object
-
-Built with `provider()`: a token, the dependencies (`deps`), and a factory that
-receives their values, in order. The factory can be `async`.
-
-```ts
-import { provider, token } from "@chojs/web";
-
-const API_URL = token<string>("API_URL");
-
-provider({
-  provide: API_URL,
-  deps: [Config],
-  factory: (config) => config.apiUrl, // config: Config
-});
-```
-
-The factory's argument types are inferred from `deps`, and its result must
-match the token's type.
-
-Use a provider object for:
-
-::: code-group
-
-```ts [A plain value]
-provider({ provide: PORT, factory: () => 3000 });
-```
-
-```ts [An async resource]
-provider({
-  provide: Database,
-  deps: [Config],
-  factory: async (config) => await Database.connect(config.dbUrl),
-});
-```
-
-```ts [A class you do not own]
-// A library class has no @Injectable: construct it in a factory.
-provider({
-  provide: S3Client,
-  deps: [Config],
-  factory: (config) => new S3Client({ region: config.region }),
-});
-```
-
-```ts [An implementation of an abstract class]
-abstract class Mailer {
-  abstract send(to: string, text: string): Promise<void>;
+@Injectable([LABEL_PREFIX])
+class Printer {
+  constructor(readonly prefix: string) {}
+  label(title: string) {
+    return this.prefix + " " + title;
+  }
 }
 
-provider({ provide: Mailer, factory: () => new SmtpMailer() });
-```
-
-```ts [Something new each time]
-// Instances are singletons: provide a function, and call it.
-const NEW_ID = token<() => string>("NEW_ID");
-
-provider({ provide: NEW_ID, factory: () => () => crypto.randomUUID() });
-```
-
-:::
-
-Providers are declared in the `providers` of a [module](/di/modules):
-
-```ts
 @Module({
   providers: [
-    Config,
-    Logger,
-    provider({ provide: API_URL, deps: [Config], factory: (c) => c.apiUrl }),
+    provider({ provide: BRANCH, factory: () => "central" }),
+    provider({
+      provide: LABEL_PREFIX,
+      deps: [BRANCH],
+      factory: (branch) => "[" + branch.toUpperCase() + "]",
+    }),
+    Printer,
   ],
+  exports: [Printer],
 })
-class App {}
+export class LabelsModule {}
 ```
 
-A `@Controller` or a `@Module` class is not a provider: it goes in
-`controllers` or `imports`, and is rejected in `providers`.
+When CHO creates `Printer` it resolves `LABEL_PREFIX` first. That factory receives the branch string and returns `"[CENTRAL]"`. A factory may return a promise. CHO waits for it before constructing the consumer.
 
-## The dependencies are type-checked
+## Match the declaration to the consumer
 
-`@Injectable`, `@Controller` and `@Module` only accept a class whose
-constructor can be called with the values of the listed dependencies, in
-order. This is a compile-time check; nothing is reflected at runtime.
+| Consumer | Declare its inputs on | What receives the values |
+| --- | --- | --- |
+| Provider class | `@Injectable([A, B])` | Constructor |
+| Controller or module | `dependencies: [A, B]` in decorator options | Constructor |
+| Factory provider | `deps: [A, B]` in `provider({...})` | Factory function |
 
-```ts
-@Injectable([PORT, Logger]) // compile error: the constructor wants (Logger, number)
-class Server {
-  constructor(logger: Logger, port: number) {}
-}
-```
+For three constructor parameters, list all three tokens in the same order. TypeScript can catch incompatible types. Two string tokens have the same value type, so their relative order still needs review. Use typed tokens for value inference. Symbols also work as runtime keys.
 
-What is checked:
-
-- the value type of each dependency against the parameter at its position;
-- that every required parameter has a dependency. A class may take fewer
-  parameters than there are dependencies.
-
-What to know:
-
-- The check needs the list as written in the decorator. A list kept in a
-  variable typed as an array is not checked.
-- A symbol token has no value type, so it can be received as any type. Prefer
-  `token<T>()`.
-- TypeScript compares types by structure: a class with no members accepts any
-  value, so the check is only as precise as the types are.
-
-## Where dependencies are declared
-
-| Decorator     | Dependencies                                   |
-| ------------- | ---------------------------------------------- |
-| `@Injectable` | The argument: `@Injectable([A, B])`            |
-| `@Controller` | The `dependencies` option                      |
-| `@Module`     | The `dependencies` option (see [Modules](/di/modules#a-module-is-injectable-itself)) |
-| `provider()`  | The `deps` property                            |
-
-Middleware and error handler classes are `@Injectable` classes too, so they
-have dependencies the same way. See the middlewares pages of
-[web](/web/middlewares) and [command](/command/middlewares).
+To replace one of these declarations for a test, pass a provider with the original `provide` token in [`overrides`](/di/lifecycle).

@@ -1,106 +1,26 @@
-# Introduction
+# How CHO applications fit together
 
-CHO is a tiny decorator-based framework for building modular applications:
-HTTP services with `@chojs/web`, command-line tools with `@chojs/command` and
-message consumers with `@chojs/message`, all on the same dependency injection.
+CHO connects TypeScript classes to HTTP requests, command lines and broker deliveries. A library catalog, for example, can expose a book over HTTP, print a shelf label from a terminal and update inventory when a shipment arrives. Each entry point can call the same catalog service.
 
-If you know Angular, NestJS or Spring, the shape is familiar: **modules** group
-**providers** and **controllers**, and decorators declare how they fit
-together.
+| When the input is… | Declare the entry point with | Deliver input with |
+| --- | --- | --- |
+| An HTTP request | `@Get`, `@Post` or another HTTP method | `app.handler(request)` |
+| A list of command-line arguments | `@Main` or `@Action` | `app.run(argv)` |
+| A message addressed to a topic | `@Subscribe` | `app.handle(topic, delivery)` or a broker adapter |
 
-```ts
-@Injectable()
-class UserStore {}
+## Follow one request
 
-@Controller({ route: "users", dependencies: [UserStore] })
-class UsersController {
-  constructor(readonly store: UserStore) {}
-}
+1. A **module** declares the controllers it owns and the providers they can use. The root module imports the features that make up the application.
+2. A **controller** maps an input to a method. A web controller might declare `@Get(":id")` and receive the book ID as an argument.
+3. A **provider** supplies a dependency, such as a catalog or database client. The controller lists its dependencies in constructor order. The injector supplies the instances.
+4. The application compiles these declarations. For HTTP and messages, a **linker** gives the compiled routes to a router or broker client. For a CLI, CHO selects a command from the argument list.
 
-@Module({ providers: [UserStore], controllers: [UsersController] })
-class App {}
-```
+Start with the entry point you can exercise locally. All three application packages export the module, controller and injection APIs their examples use.
 
-What is different is the approach, which is also why the project exists.
+## Choose a first project
 
-## Why CHO
+- [Serve a book as JSON](/web/quick-start) and check the result with `curl`.
+- [Print a shelf label](/command/quick-start) and inspect the generated help and exit status.
+- [Receive an inventory message](/message/quick-start) and exercise a consumer in memory.
 
-### Portability
-
-Applications are deployed on Node.js, Deno, Bun, Cloudflare Workers, AWS Lambda
-and more, each with its own APIs and limits. CHO keeps application code away
-from all of that:
-
-- A web handler receives the standard `Request` and answers with a standard
-  `Response`. Nothing in a controller depends on the HTTP library underneath.
-- That library is a small [adapter](/adapters/) you can swap: the plain URL
-  Pattern router, Hono or Fastify.
-- The framework itself uses no runtime-specific API, and every change is tested
-  on Deno, Node.js and Bun.
-
-An adapter may support fewer runtimes than the framework does; each one says
-which. See [Runtimes](/guide/runtimes).
-
-### Standard decorators
-
-Decorators exist in two incompatible forms: the TC39 proposal (stage 3, the
-standard one) and the older TypeScript `experimentalDecorators`, which Bun also
-implements. Frameworks that rely on `reflect-metadata` and emitted types are
-tied to the older form and to a compiler that emits them.
-
-The same CHO application runs with both. It needs no `reflect-metadata` and no
-compiler plugin: dependencies are declared explicitly, and are still checked
-against the constructor at compile time.
-
-```ts
-@Injectable([PORT, Logger]) // compile error: the constructor wants (Logger, number)
-class Server {
-  constructor(logger: Logger, port: number) {}
-}
-```
-
-See [Decorators](/guide/decorators).
-
-### Built for performance
-
-There is no reflection at runtime. The whole module graph is validated and
-linked once, when the application starts, so creating an instance afterwards
-needs no lookup. A mistake in the wiring (a missing provider, a circular
-dependency, a duplicate route) never waits for the first request to show up.
-
-## The packages
-
-| Package                 | For                                                                 |
-| ----------------------- | ------------------------------------------------------------------- |
-| `@chojs/web`            | HTTP applications                                                   |
-| `@chojs/command`        | Command-line applications                                           |
-| `@chojs/message`        | Applications that handle the messages of a broker                   |
-| `@chojs/vendor-cho`     | Middlewares for the built-in router of `@chojs/web`, such as CORS  |
-| `@chojs/vendor-hono`    | Running `@chojs/web` on [Hono](https://hono.dev)                    |
-| `@chojs/vendor-fastify` | Running `@chojs/web` on [Fastify](https://fastify.dev), Node.js only |
-| `@chojs/vendor-kafka`   | Running `@chojs/message` on Apache Kafka, Node.js only              |
-| `@chojs/core`           | The dependency injection engine underneath                          |
-
-All of them are published on [JSR](https://jsr.io/@chojs).
-
-An application imports from **one** package: `@chojs/web`, `@chojs/command` or
-`@chojs/message`. Each re-exports what an application needs from the core (`@Module`,
-`@Controller`, `@Injectable`, `token`, `provider`), so you never import
-`@chojs/core` yourself. A web application can add one adapter package, and a
-message application adds the adapter of its broker. An application that serves
-HTTP and handles messages uses both packages,
-[on one injector](/message/with-web).
-
-## How the documentation is organized
-
-- **[Getting started](/guide/getting-started)** installs CHO and runs a first
-  application on each runtime.
-- **[Dependency injection](/di/overview)** explains modules, providers and
-  tokens. It applies to every kind of application.
-- **[Web applications](/web/quick-start)**,
-  **[Command-line applications](/command/quick-start)** and
-  **[Message applications](/message/quick-start)** are the guides of the
-  three packages.
-- **[Reference](/reference/web)** lists the API, the error messages and the
-  debug logging.
-- **[Advanced](/advanced/core)** is for people who build on the core itself.
+For a new project directory, begin with [project setup](/guide/getting-started). To share a catalog between applications, read [module scope](/di/modules) and [sharing an injector](/message/with-web).

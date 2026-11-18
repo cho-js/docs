@@ -1,209 +1,34 @@
-# Testing
+# Test a subscription without a broker
 
-`app.handle` takes a message, so a test needs no broker, no container and no
-network.
+Test a consumer by asserting what happened to a delivered record. Use the same `app.handle` boundary for valid input, invalid input and topic lookup. It runs the actual middleware and error policy.
 
-```ts
-const app = await ChoMessage.create(App);
+## Exercise parsing and routing
 
-await app.handle("orders.created", {
-  value: JSON.stringify({ id: "42", email: "ada@example.com" }),
-  key: "42",
-});
-
-await app.close();
-```
-
-`handle` runs what the broker would: the middlewares, the handler and the
-error handler. It resolves when the message is handled, and **rejects, with
-the error, when it failed**.
-
-## Replacing providers
-
-A handler answers nothing, so a test looks at what the handler did. The
-`overrides` option replaces providers with fakes, anywhere in the module
-graph, without changing a module:
+Save as `inventory_test.ts` beside `app.ts` from the [inventory quick start](/message/quick-start). Run `deno test inventory_test.ts`.
 
 ```ts
-import { provider } from "@chojs/message";
-
-class FakeMailer {
-  readonly sent: string[] = [];
-  confirm(order: { id: string }) {
-    this.sent.push(order.id);
-  }
-}
-
-const mailer = new FakeMailer();
-const app = await ChoMessage.create(App, {
-  overrides: [provider({ provide: Mailer, factory: () => mailer })],
-});
-
-await app.handle("orders.created", { value: '{"id":"42","email":"a@b.c"}' });
-assert.deepEqual(mailer.sent, ["42"]);
-```
-
-An override that replaces nothing is an error, so a stale test fails loudly.
-The rules are in [Lifecycle](/di/lifecycle#overrides-for-tests).
-
-## Handled, or failed
-
-```ts
-// handled: resolves
-await app.handle("orders.created", { value: '{"id":"42","email":"a@b.c"}' });
-
-// failed: rejects, with the error of the handler
-await assert.rejects(
-  app.handle("orders.created", { value: "not json" }),
-  SyntaxError,
-);
-```
-
-A message that an [error handler](/message/error-handling) settles with `true`
-resolves; one that a [middleware](/message/middlewares) drops resolves too. To
-tell them from a message that was handled, assert on the fakes.
-
-## A full test, on each runtime
-
-The test body is the same; only the test runner differs.
-
-::: code-group
-
-```ts [Deno]
-import { assertEquals, assertRejects } from "jsr:@std/assert";
-import { ChoMessage, provider } from "@chojs/message";
-import { App, Mailer } from "./app.ts";
-
-Deno.test("orders.created", async () => {
-  const sent: string[] = [];
-  const app = await ChoMessage.create(App, {
-    overrides: [
-      provider({
-        provide: Mailer,
-        factory: () => ({ confirm: (order: { id: string }) => sent.push(order.id) }),
-      }),
-    ],
-  });
-
-  await app.handle("orders.created", { value: '{"id":"7","email":"a@b.c"}' });
-  assertEquals(sent, ["7"]);
-
-  await assertRejects(() => app.handle("orders.created", { value: "not json" }));
-  await app.close();
-});
-
-// deno test
-```
-
-```ts [Node.js]
 import assert from "node:assert/strict";
-import { test } from "node:test";
-import { ChoMessage, provider } from "@chojs/message";
-import { App, Mailer } from "./app.ts";
+import { createApp } from "./app.ts";
 
-test("orders.created", async () => {
-  const sent: string[] = [];
-  const app = await ChoMessage.create(App, {
-    overrides: [
-      provider({
-        provide: Mailer,
-        factory: () => ({ confirm: (order: { id: string }) => sent.push(order.id) }),
-      }),
-    ],
-  });
-
-  await app.handle("orders.created", { value: '{"id":"7","email":"a@b.c"}' });
-  assert.deepEqual(sent, ["7"]);
-
-  await assert.rejects(app.handle("orders.created", { value: "not json" }));
-  await app.close();
-});
-
-// npx tsx --test
-```
-
-```ts [Bun]
-import { expect, test } from "bun:test";
-import { ChoMessage, provider } from "@chojs/message";
-import { App, Mailer } from "./app.ts";
-
-test("orders.created", async () => {
-  const sent: string[] = [];
-  const app = await ChoMessage.create(App, {
-    overrides: [
-      provider({
-        provide: Mailer,
-        factory: () => ({ confirm: (order: { id: string }) => sent.push(order.id) }),
-      }),
-    ],
-  });
-
-  await app.handle("orders.created", { value: '{"id":"7","email":"a@b.c"}' });
-  expect(sent).toEqual(["7"]);
-
-  await expect(app.handle("orders.created", { value: "not json" })).rejects.toThrow();
-  await app.close();
-});
-
-// bun test
-```
-
-:::
-
-## Testing the wiring
-
-`ChoMessage.create` connects to nothing, so creating the application is a
-test of its own: every provider resolves, every topic is valid, and no topic
-is declared twice.
-
-```ts
-test("the application is wired", async () => {
-  const app = await ChoMessage.create(App);
-
-  assert.deepEqual(
-    app.routes.map((route) => route.topic),
-    ["orders.created", "orders.cancelled"],
-  );
-  await app.close();
+Deno.test("inventory accepts an ISBN and rejects a malformed shipment", async () => {
+  const app = await createApp();
+  try {
+    await app.handle("books.received", { value: '{"isbn":"9780140268867"}' });
+    await assert.rejects(
+      app.handle("books.received", { value: '{"isbn":42}' }),
+      /Expected a string isbn/,
+    );
+    await assert.rejects(app.handle("books.missing"), /no handler/);
+  } finally {
+    await app.close();
+  }
 });
 ```
 
-## Keys, headers and bytes
+A rejection assertion should match the expected cause. Otherwise a typo in the topic could make a validation test pass. Pass `new TextEncoder().encode(payload)` as the value to exercise binary delivery. Supply `headers` and `key` explicitly when a middleware depends on them.
 
-```ts
-await app.handle("orders.created", {
-  value: new Uint8Array([1, 2, 3]), // bytes, for a binary format
-  key: "42",
-  headers: { "message-id": "abc", "tenant": "acme" },
-});
+## Assert a side effect
 
-await app.handle("orders.created"); // a message with no value
-```
+Use `overrides` to replace a declared mailer, writer or store with a recording implementation. Await delivery, then assert on its calls. To test that HTTP sees the write, [share the web injector](/message/with-web) and request the HTTP endpoint after delivery.
 
-`ctx.native` is `undefined` in such a test. A handler that reads it is tested
-with the route itself, which takes the adapter's message as its second
-argument:
-
-```ts
-const route = app.routes.find((route) => route.topic === "orders.created")!;
-
-await route.handle({ value: "{}" }, { partition: 0, offset: "12" });
-```
-
-## With a shared injector
-
-An application made with [`ChoMessage.from`](/message/with-web) is tested the
-same way. The overrides are given to the application that creates the
-injector:
-
-```ts
-const web = await ChoWeb.create(App, {
-  overrides: [provider({ provide: Mailer, factory: () => mailer })],
-});
-const messages = await ChoMessage.from(web.injector);
-
-await messages.handle("orders.created", { value: '{"id":"42"}' });
-
-await messages.close();
-await web.close();
-```
+A local `handle` test exercises one attempt. Verify broker-specific behavior, such as commits, redelivery and partition assignment, with the chosen adapter and a broker integration test.

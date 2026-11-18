@@ -1,117 +1,46 @@
-# Dependency injection
+# Inject a service into a controller
 
-Every kind of CHO application, web, command-line and message, is built from
-the same three things:
-
-| Concept        | What it is                                                                                       |
-| -------------- | ------------------------------------------------------------------------------------------------ |
-| **Provider**   | How a value is created: an `@Injectable` class, or a `provider()` object with a factory          |
-| **Controller** | An entry point the framework calls: a class with route handlers, commands or message handlers    |
-| **Module**     | A group of providers and controllers. It injects what it declares and what its imports export    |
-
-A **token** identifies something injectable: a class, a `token<T>()`, or a
-symbol. The **injector** validates the graph of a root module, creates the
-instances and releases them. You rarely meet it: `ChoWeb`, `ChoCommand` and
-`ChoMessage` create it for you.
-
-Everything on these pages is imported from `@chojs/web`, `@chojs/command` or
-`@chojs/message`, whichever your application uses.
-
-## An example
+Suppose two endpoints need the same catalog. Declare one provider and ask CHO to pass it to each controller. This makes the lifetime explicit and gives a test a place to substitute a different catalog.
 
 ```ts
-import { Controller, Injectable, Module, provider, token } from "@chojs/web";
+import { Args, Controller, Get, Injectable, Module, Param } from "@chojs/web";
 
-// A value that is not a class has a token.
-const DB_URL = token<string>("DB_URL");
-
-// A provider with dependencies, in constructor order.
-@Injectable([DB_URL])
-class Database {
-  constructor(readonly url: string) {}
+@Injectable()
+class Catalog {
+  readonly titles = new Map([["42", "The Odyssey"]]);
 }
 
-@Injectable([Database])
-class UserStore {
-  constructor(readonly db: Database) {}
+@Controller({ route: "books", dependencies: [Catalog] })
+class Books {
+  constructor(readonly catalog: Catalog) {}
+
+  @Get(":id")
+  @Args(Param("id"))
+  find(id: string) {
+    const title = this.catalog.titles.get(id);
+    return title === undefined
+      ? new Response("Unknown book", { status: 404 })
+      : { id, title };
+  }
 }
 
-// A module that keeps Database private and exports UserStore.
-@Module({
-  providers: [
-    provider({ provide: DB_URL, factory: () => "postgres://localhost/app" }),
-    Database,
-    UserStore,
-  ],
-  exports: [UserStore],
-})
-class UsersModule {}
-
-@Controller({ route: "users", dependencies: [UserStore] })
-class UsersController {
-  constructor(readonly store: UserStore) {}
-}
-
-// The root module is the application.
-@Module({ imports: [UsersModule], controllers: [UsersController] })
-class App {}
+@Module({ providers: [Catalog], controllers: [Books] })
+export class Library {}
 ```
 
-## Three rules
+## Trace the dependency
 
-These shape every application. They are decisions, not gaps.
+- `providers: [Catalog]` gives the module a declaration it can instantiate. `@Injectable()` describes how to build the class.
+- `dependencies: [Catalog]` tells CHO which token to resolve for the first constructor argument. The compiler checks the constructor against that list.
+- `controllers: [Books]` registers the HTTP entry point. When creating `Books`, CHO looks up `Catalog` in the module that declares `Books`.
 
-**Singletons.** A declaration has one instance per application, shared by
-everything that depends on it. Data that belongs to a request lives in the
-request's context (`ctx.state`), not in the container. A value that must be
-new each time is made by a factory function: provide the function, and call
-it.
+Within an application, callers resolving the same declaration receive the same instance. A controller can therefore keep a reference to the catalog. Keep request-specific data on [the request context](/web/context).
 
-**Every dependency is required.** An application does not start with a missing
-dependency: it is a wiring error, reported when the application is created. For
-something that may be absent, provide a default.
+## Choose the next step
 
-**Modules are not configured.** A module is a fixed declaration and takes no
-parameters. What needs configuration is a value, and a value is created by a
-provider. See [Modules](/di/modules#modules-are-not-configured).
-
-## Asynchronous by default
-
-Every value is created by a factory that can be `async`. A provider can open a
-connection or read a file before its value is ready, and everything that
-depends on it simply waits:
-
-```ts
-const DB = token<Database>("DB");
-
-@Module({
-  providers: [
-    provider({
-      provide: DB,
-      factory: async () => await Database.connect("postgres://…"),
-    }),
-    UserStore, // @Injectable([DB]): created once the connection is open
-  ],
-})
-class App {}
-```
-
-## Fails before it starts
-
-Creating the application reads and validates the whole module graph first,
-synchronously. Every wiring mistake is reported there, before a single
-instance exists:
-
-- a missing provider: `Cannot resolve Database (argument #0) of UserStore in
-  module App. Provide it there or import a module that exports it.`
-- a circular dependency: `Circular dependency detected in module App: A → B → A`
-- a missing decorator: `Class UserStore is not injectable. Did you forget
-  @Injectable?`
-
-The full list is in [Error messages](/reference/errors).
-
-## Next
-
-- [Tokens and providers](/di/providers)
-- [Modules](/di/modules): scopes, imports and exports
-- [Lifecycle](/di/lifecycle): creation, disposal and overrides for tests
+| Requirement | Mechanism |
+| --- | --- |
+| Inject a string, interface or asynchronously constructed client | [Typed tokens and factory providers](/di/providers) |
+| Use one catalog across features | [Export it from a module](/di/modules) |
+| Release a client or replace it during a test | [Provider lifecycle and overrides](/di/lifecycle) |
+| Share instances between HTTP and message handlers | [Use one injector](/message/with-web) |

@@ -1,287 +1,49 @@
-# `@chojs/web` API
-
-Everything an application needs is exported by `@chojs/web`. The full,
-generated API documentation is on [JSR](https://jsr.io/@chojs/web/doc).
-
-## Entry points
-
-| Entry point         | For                                                        |
-| ------------------- | ---------------------------------------------------------- |
-| `@chojs/web`        | Applications                                               |
-| `@chojs/web/serve`  | Serving: `serve`                                           |
-| `@chojs/web/linker` | Adapters: `Linker`, `Linked`, `Route`                      |
-| `@chojs/web/graph`  | Introspection: `AppRef`, `FeatureRef`, `ControllerRef`, `MethodRef`, `NodeRef`, `ErrorHandlerRef` |
-
-## `ChoWeb`
-
-```ts
-class ChoWeb<T = unknown> {
-  // with a linker: T is the object of that linker's router
-  static create<T>(app: Class, options: ChoWebOptions<T>): Promise<ChoWeb<T>>;
-  // without one: the built-in router
-  static create(app: Class, options?: ChoWebOptions): Promise<ChoWeb<ChoRouter>>;
-
-  readonly handler: (req: Request) => Promise<Response>;
-  readonly routes: readonly Route[];
-  readonly graph: AppRef;
-  readonly linked: Linked<T>; // { instance: T, handler }
-  readonly injector: Injector; // for ChoMessage.from(app.injector)
-
-  close(): Promise<void>;
-}
-
-type ChoWebOptions<T = unknown> = {
-  linker?: Linker<T>; // default: new ChoLinker(), the built-in router
-  prefix?: string;
-  onError?: ChoWebErrorHandler;
-  overrides?: readonly Provider[];
-};
-```
-
-See [The application](/web/application).
-
-## `serve`
-
-```ts
-import { serve } from "@chojs/web/serve";
-
-function serve(
-  handler: (req: Request) => Response | Promise<Response>,
-  options?: {
-    port?: number; // default: 3000
-    hostname?: string;
-    signal?: AbortSignal; // closes the server
-    closeTimeout?: number; // milliseconds; default: none
-  },
-): Promise<ChoWebServer>;
-
-type ChoWebServer = {
-  readonly runtime: "deno" | "node" | "bun" | "workerd" | "edge" | "unknown";
-  readonly port: number;
-  readonly hostname: string;
-  close(): Promise<void>;
-};
-```
-
-Runs a `fetch`-style handler on the server of the current runtime: `Deno.serve`,
-`Bun.serve`, or the HTTP server of Node.js. `close()` waits for the requests in
-flight; with `closeTimeout`, the ones that are still in flight after that long
-are cut. See [Serving](/web/application#serving) and
-[Shutting down](/web/application#shutting-down).
-
-## The built-in router
-
-```ts
-class ChoLinker implements Linker<ChoRouter> {
-  constructor(options?: {
-    notFound?: (req: Request) => Response | Promise<Response>;
-    middlewares?: readonly ChoWebMiddlewareFn[]; // run for every request
-  });
-  link(routes: readonly Route[]): Linked<ChoRouter>;
-}
-
-class ChoRouter {
-  readonly routes: readonly Route[];
-  match(method: string, pathname: string):
-    | { route: Route; params: Readonly<Record<string, string>> }
-    | undefined;
-  readonly fetch: (req: Request) => Promise<Response>;
-}
-```
-
-Both are exported by `@chojs/web`. See [The built-in router](/adapters/cho).
-
-## Decorators
-
-### Dependency injection
-
-| Decorator                       | On      | Options                                                           |
-| ------------------------------- | ------- | ----------------------------------------------------------------- |
-| `@Injectable(dependencies?)`    | A class | The dependencies, in constructor order                            |
-| `@Controller(options?)`         | A class | `dependencies`, `route`                                           |
-| `@Module(options?)`             | A class | `imports`, `providers`, `controllers`, `exports`, `dependencies`, `route` |
-
-### Routes
-
-| Decorator                                                                  | On       | Argument                                     |
-| -------------------------------------------------------------------------- | -------- | -------------------------------------------- |
-| `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Head`, `@Options` `(route)` | A method | The handler's route, such as `":id"` or `""` |
-
-| `@Sse(route, options?)` | A method | The route of a stream of [server-sent events](/web/sse); options `method` (`"GET"` by default) and `keepAlive` |
-
-A method has one of them.
-
-### Middlewares and errors
-
-| Decorator                     | On                              | Argument                                                  |
-| ----------------------------- | ------------------------------- | --------------------------------------------------------- |
-| `@Middlewares(...middlewares)` | A module, a controller, a handler | Functions `(ctx, next)`, or classes with `handle(ctx, next)` |
-| `@Catch(handler)`             | A module, a controller, a handler | A function `(error, ctx)`, or a class with `handle(error, ctx)` |
-
-### Handler arguments and documentation
-
-| Decorator        | On                                | Argument                                                                |
-| ---------------- | --------------------------------- | ----------------------------------------------------------------------- |
-| `@Args(...args)` | A handler                         | The arguments, in the order of the parameters                           |
-| `@Doc(options)`  | A module, a controller, a handler | `summary`, `description`, `tags`, `deprecated`, `responses`, `hidden`   |
-
-See [Handler arguments](/web/arguments), [Validation](/web/validation) and
-[Describing the API](/web/api-docs).
-
-## Functions
-
-| Function                                | Returns                                         |
-| --------------------------------------- | ----------------------------------------------- |
-| `token<T>(description)`                 | A unique `InjectionToken<T>`                    |
-| `provider({ provide, deps?, factory })` | A provider object, with `factory` typed from `deps` |
-| `Param`, `Query`, `Header`, `Body`, `Form` `(key?, validator?)` | An argument for `@Args`: the whole source, or one key of it |
-| `validate({ onInvalid? })`              | The validation middleware, for `@Middlewares`   |
-
-## Types
-
-### The context
-
-```ts
-interface ChoWebContext {
-  readonly req: Request;
-  readonly params: Readonly<Record<string, string>>;
-  readonly url: URL;
-  readonly state: Map<PropertyKey, unknown>;
-  readonly native: unknown;
-}
-```
-
-### Handlers, middlewares, error handlers
-
-```ts
-type ChoWebHandler = (ctx: ChoWebContext) => unknown;
-
-type ChoWebNext = () => Promise<Response>;
-
-type ChoWebMiddlewareFn = (
-  ctx: ChoWebContext,
-  next: ChoWebNext,
-) => Response | void | Promise<Response | void>;
-
-type ChoWebMiddleware =
-  | ChoWebMiddlewareFn
-  | Class<{ handle: ChoWebMiddlewareFn }>;
-
-type ChoWebErrorHandlerFn = (error: unknown, ctx: ChoWebContext) => unknown;
-
-type ChoWebErrorHandler =
-  | ChoWebErrorHandlerFn
-  | Class<{ handle: ChoWebErrorHandlerFn }>;
-```
-
-### Adapters
-
-```ts
-type Route = {
-  readonly method: string; // "GET"
-  readonly path: string; //   "/api/users/:id"
-  readonly name: string; //   "UsersController.get"
-  handle(
-    req: Request,
-    params?: Readonly<Record<string, string>>,
-    native?: unknown,
-    state?: Map<PropertyKey, unknown>, // the request's state, if it has one
-  ): Promise<Response>;
-};
-
-interface Linked<T> {
-  readonly instance: T;
-  readonly handler: (req: Request) => Promise<Response>;
-}
-
-interface Linker<T> {
-  link(routes: readonly Route[]): Linked<T>;
-}
-```
-
-### Arguments and validation
-
-```ts
-type ChoWebArg<T> = ((ctx: ChoWebContext) => T | Promise<T>) & {
-  readonly info?: {
-    readonly source: "param" | "query" | "header" | "body" | "form";
-    readonly key?: string;
-    readonly validator?: ChoWebValidator;
-  };
-};
-
-type ChoWebValidator<T> = { parse(value: unknown): T | Promise<T> };
-
-type ChoWebInvalid = {
-  readonly source: "param" | "query" | "header" | "body" | "form";
-  readonly key?: string;
-  readonly error: unknown;
-};
-
-type ChoWebDoc = {
-  summary?: string;
-  description?: string;
-  tags?: readonly string[];
-  deprecated?: boolean;
-  responses?: Record<number, { description?: string; schema?: ChoWebValidator }>;
-  hidden?: boolean;
-};
-```
-
-### Server-sent events
-
-```ts
-type ChoWebSseEvent<T = unknown> = {
-  data: T; // a string as it is, anything else as JSON
-  event?: string;
-  id?: string;
-  retry?: number; // milliseconds
-};
-
-type ChoWebSseOptions = {
-  method?: ChoWebSseMethod; // default: "GET"
-  keepAlive?: number; // milliseconds; default: none
-};
-
-type ChoWebSseMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-
-// What an @Sse handler returns, now or as a promise.
-type ChoWebSseResult = AsyncIterable<ChoWebSseEvent | string> | Response;
-```
-
-See [Server-sent events](/web/sse).
-
-### Others
-
-`WebModuleOptions`, `WebControllerOptions`, and from the core `ModuleOptions`,
-`ControllerOptions`, `InjectableOptions`, `InjectionToken`, `Provider`,
-`WithDependencies`.
-
-## Adapter packages
-
-| Package                 | Exports                                |
-| ----------------------- | -------------------------------------- |
-| `@chojs/vendor-cho`     | The [middlewares](/adapters/middlewares) of the built-in router: `cors`, `bodyLimit`, `secureHeaders`, `logger`, `timeout`, `requestId`, `etag`, `basicAuth`, `bearerAuth`, `compress` |
-| `@chojs/vendor-hono`    | `HonoLinker`, `HonoLinked`, `fromHono` |
-| `@chojs/vendor-fastify` | `FastifyLinker`, `FastifyNative`, `FastifyHook`, `fromFastify` |
-
-## Summary tables
-
-### Result of a handler
-
-| Returned                                    | Sent                              |
-| ------------------------------------------- | --------------------------------- |
-| A `Response`                                | As is                             |
-| Nothing                                     | `204 No Content`                  |
-| A string                                    | `text/plain;charset=UTF-8`        |
-| Bytes, a `Blob`, a `ReadableStream`, a form | As is, like `new Response(value)` |
-| Anything else                               | JSON, `application/json`          |
-
-### Route levels
-
-| Level         | Declared by                      |
-| ------------- | -------------------------------- |
-| Global prefix | `prefix` of `ChoWeb.create`      |
-| Feature       | `route` of `@Module`             |
-| Controller    | `route` of `@Controller`         |
-| Handler       | The argument of `@Get`, …        |
+# HTTP API reference
+
+Import application classes, decorators and argument readers from `@chojs/web`. Separate entry points cover listener startup (`@chojs/web/serve`), the router contract (`@chojs/web/linker`) and graph nodes (`@chojs/web/graph`). [Generated signatures on JSR](https://jsr.io/@chojs/web/doc)
+
+## Application and listener
+
+| API | Result or effect |
+| --- | --- |
+| `await ChoWeb.create(Root, options?)` | Initializes the injector and returns a linked application. Options are `prefix`, `linker`, `onError` and `overrides` |
+| `app.handler(request)` | Promise of a Fetch `Response` |
+| `app.routes` | Compiled routes with `method`, `path`, `name` and `handle` |
+| `app.graph` | Feature, controller and method nodes, including declared inputs and documentation |
+| `app.linked.instance` | Native router. Defaults to `ChoRouter` |
+| `app.injector` | Injector that owns the initialized graph |
+| `await app.close()` | Disposes dependencies and causes subsequent `app.handler` calls to return `503` |
+| `await serve(app.handler, options?)` | Starts a listener on Deno, Bun or Node and returns `{ runtime, hostname, port, close }` |
+
+`serve` accepts `port` (default `3000`, `0` for an allocated port), `hostname`, `signal` and `closeTimeout` in milliseconds. Await `server.close()` before `app.close()`. [Application lifecycle](/web/application)
+
+## Declarations
+
+| API | Declares |
+| --- | --- |
+| `@Module({ imports, providers, controllers, exports, dependencies, route })` | Module scope, dependencies and optional feature path |
+| `@Controller({ dependencies, route })` | Constructor inputs and optional controller path |
+| `@Injectable(dependencies?)`, `token<T>(description)`, `provider({ provide, deps?, factory })` | Class and factory providers and typed lookup keys |
+| `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Head`, `@Options` | One HTTP method per handler. Each takes a relative route string |
+| `@Sse(route, { method?, keepAlive? }?)` | An async event stream. Defaults to `GET` |
+| `@Args(...readers)` | Ordered method inputs, followed by the optional `ChoWebContext` |
+| `@Middlewares(...items)`, `@Catch(handler)` | Route middleware and the nearest route error handler |
+| `@Doc(options)` | Descriptions, tags and related documentation metadata |
+
+## Input and output types
+
+| Surface | Types or helpers |
+| --- | --- |
+| Request | `ChoWebContext` exposes `req`, `url`, `params`, `state` and `native` |
+| Input | `Param`, `Query`, `Header`, `Body`, `Form` and custom `ChoWebArg<T>` functions |
+| Validation | `ChoWebValidator<T>` supplies `parse`. `validate({ onInvalid? })` activates validators |
+| Middleware | `ChoWebMiddlewareFn`, `ChoWebNext`, `ChoWebMiddleware` |
+| Errors | `ChoWebErrorHandlerFn`, `ChoWebErrorHandler` |
+| Events | `ChoWebSseEvent<T>`, `ChoWebSseOptions`, `ChoWebSseResult` |
+| Metadata | `ChoWebDoc`, `ChoWebDocResponse`, `ChoWebArgInfo` |
+
+A normal method may return a value or a promise. An SSE method returns an async iterable or an explicit `Response`. A middleware returns a `Response` or continues downstream. [Responses](/web/responses) · [Middleware](/web/middlewares) · [Events](/web/sse)
+
+## Router contract
+
+`Linker<T>.link(routes)` returns a `Linked<T>` with `instance` and `handler`. `ChoLinker` accepts `{ notFound?, middlewares? }`. Its `ChoRouter` exposes `routes`, `match(method, pathname)` and `fetch(request)`. [Adapter comparison](/adapters/) · [Implement a linker](/adapters/custom)

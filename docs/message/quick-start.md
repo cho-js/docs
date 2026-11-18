@@ -1,115 +1,18 @@
-# Message quick start
+# Receive an inventory message
 
-`@chojs/message` builds applications that handle the messages of a broker, such
-as Kafka or NATS, with decorators. Controllers declare message handlers;
-`ChoMessage` gives their topics to a broker adapter, which subscribes to them.
+Deliver a shipment notice to a handler, inspect its JSON payload and close the application. This first example runs entirely in one process. Install `@chojs/message` using [project setup](/guide/getting-started).
 
-It is the sibling of [`@chojs/web`](/web/quick-start): the same modules,
-controllers, middlewares and error handlers, with a **topic** where `@chojs/web`
-has a route.
+## 1. Subscribe to a topic
 
-- **The broker stays outside.** A handler receives a message as plain data: its
-  value, its key and its headers. Nothing in a controller depends on the client
-  library of the broker.
-- **One handler for a topic.** A topic is a name, with no pattern, so it means
-  the same on every broker.
-- **No message is lost silently.** A message is acknowledged after its handler
-  has returned, and an error handler that only logs leaves it failed.
-- **Testable with no broker.** `app.handle(topic, message)` gives a message to
-  its handler.
-- **One set of instances with a web application.** `ChoMessage.from` builds a
-  message application on the injector of a `ChoWeb`.
-- **Fails early.** A bad topic, a duplicate topic or a missing provider is
-  reported when the application is created, not on the first message.
+Save the following as `app.ts`. The controller and method names in the decorators combine into the literal topic `books.received`. The handler checks the incoming data before using it.
 
-::: tip Broker adapters
-[`@chojs/vendor-kafka`](/message/kafka) connects an application to Apache
-Kafka, on Node.js. For another broker, an application delivers its messages
-[by hand](/message/application#delivering-a-message-by-hand), or with a
-[linker of its own](/message/adapters), which is some forty lines for most
-client libraries.
-:::
+<<< @/examples/message/app.ts
 
-## Install
+## 2. Deliver a message
 
-::: code-group
+Save the entry point as `main.ts`. The key identifies the delivery in this example. The topic selects the handler.
 
-```sh [Deno]
-deno add jsr:@chojs/message
-```
-
-```sh [Node.js]
-npx jsr add @chojs/message
-npm install -D tsx typescript
-```
-
-```sh [Bun]
-bunx jsr add @chojs/message
-```
-
-:::
-
-## A first application
-
-```ts
-import {
-  ChoMessage,
-  type ChoMessageContext,
-  Controller,
-  Injectable,
-  Module,
-  Subscribe,
-} from "@chojs/message";
-
-type Order = { id: string; email: string };
-
-@Injectable()
-class Mailer {
-  async confirm(order: Order) {
-    console.log(`mail to ${order.email}: order ${order.id} is confirmed`);
-  }
-}
-
-@Controller({ topic: "orders", dependencies: [Mailer] })
-class OrdersController {
-  constructor(readonly mailer: Mailer) {}
-
-  @Subscribe("created") // the topic orders.created
-  async created(ctx: ChoMessageContext) {
-    const order = ctx.json<Order>();
-    await this.mailer.confirm(order);
-    // returning without an error: the message is handled
-  }
-
-  @Subscribe("cancelled") // the topic orders.cancelled
-  cancelled(ctx: ChoMessageContext) {
-    console.log(ctx.topic, ctx.key, ctx.text());
-  }
-}
-
-@Module({ providers: [Mailer], controllers: [OrdersController] })
-class App {}
-
-const app = await ChoMessage.create(App);
-```
-
-`ChoMessage.create` builds the injector, creates every instance and checks
-every topic. It connects to nothing.
-
-## Give it a message
-
-Without a broker, a message is delivered by hand. `handle` resolves when the
-message is handled, and rejects, with the error, when it failed:
-
-```ts
-await app.handle("orders.created", {
-  value: JSON.stringify({ id: "42", email: "ada@example.com" }),
-  key: "42",
-});
-// mail to ada@example.com: order 42 is confirmed
-
-await app.close();
-```
+<<< @/examples/message/main.ts
 
 ::: code-group
 
@@ -127,35 +30,12 @@ bun run main.ts
 
 :::
 
-## Connect it to a broker
+Expect `Received 9780140268867 on books.received`. The promise returned by `handle` resolves when the handler and its middleware finish.
 
-A broker is not called, it is connected to. The application takes a **linker**,
-the adapter of a broker, and starts:
+## 3. Exercise a failure
 
-```ts
-import { KafkaLinker } from "@chojs/vendor-kafka";
+Change `value` to `'{"isbn":17}'` and run the program again. The handler throws `Expected a string isbn` and `handle` rejects. The `finally` block releases the application in either case. Changing the topic to `books.missing` tests a different failure, because there is no subscription for that name.
 
-const app = await ChoMessage.create(App, {
-  linker: new KafkaLinker({ brokers: ["localhost:9092"], groupId: "mailer" }),
-});
+## Connect a broker
 
-await app.start(); // connects, and subscribes to the two topics
-```
-
-This is the [Kafka adapter](/message/kafka), which runs on Node.js. For
-another broker, [Broker adapters](/message/adapters) shows how to write a
-linker. The repository has a runnable example with a broker kept in memory,
-[`hello-world-message.ts`](https://github.com/cho-js/cho/blob/main/examples/hello-world-message.ts).
-
-## What to read next
-
-| Topic                                        | Page                                             |
-| -------------------------------------------- | ------------------------------------------------ |
-| The four levels of a topic, and its rules    | [Topics](/message/topics)                        |
-| The context, and the outcome of a message    | [Handlers and the context](/message/handlers)    |
-| Dropping, timing, shared setup               | [Middlewares](/message/middlewares)              |
-| `@Catch`, and what settles a failed message  | [Error handling](/message/error-handling)        |
-| Options, `start()`, `handle()`, `close()`    | [The application](/message/application)          |
-| One injector for HTTP and messages           | [With a web application](/message/with-web)      |
-| Tests                                        | [Testing](/message/testing)                      |
-| Connecting a broker                          | [Broker adapters](/message/adapters)             |
+Once the handler works in memory, pass a linker to `ChoMessage.create` and call `await app.start()`. The linker subscribes to the compiled topics and forwards deliveries into the same handlers. For a Node.js deployment, follow the [Kafka guide](/message/kafka) to configure retries and dead-letter handling.

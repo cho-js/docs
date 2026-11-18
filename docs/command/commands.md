@@ -1,184 +1,31 @@
-# Commands
+# Choose a command layout
 
-Commands are methods of **controllers**: classes decorated with
-`@Controller()` and listed in the `controllers` of a `@Module`.
+Decide what the first positional word means to the person running the tool. If `library "The Odyssey"` acts on a title, use `@Main`. If `library label "The Odyssey"` selects one of several operations, use `@Action("label")`.
 
-```ts
-@Help("File system commands")
-@Controller({ dependencies: [Disk] })
-class FileSystem {
-  constructor(readonly disk: Disk) {}
-
-  @Help("Copy a file")
-  @Action("copy")
-  copy(ctx: ChoCommandContext) {}
-}
-
-@Module({ providers: [Disk], controllers: [FileSystem] })
-class App {}
-```
-
-The usual [dependency injection](/di/overview) rules apply: a controller
-receives its `dependencies` in its constructor, resolved in the scope of the
-module that declares it. Controllers can be declared in any module of the
-application, imported ones included. A controller without command methods is
-ignored.
-
-## `@Main(flags?)`
-
-Marks the method that runs for every command line. The application has exactly
-one, and no `@Action`.
+## One implicit command
 
 ```ts
+import { Controller, Main, type ChoCommandContext } from "@chojs/command";
+
 @Controller()
-class ListFiles {
-  @Help("List the files of a directory")
-  @Main({ boolean: ["all"], alias: { a: "all" } })
-  main(ctx: ChoCommandContext) {
-    if (ctx.args._.length !== 1) {
-      throw new Error("expected one directory");
-    }
-    console.log(`listing ${ctx.args._[0]}`);
+class Count {
+  @Main()
+  count({ args }: ChoCommandContext) {
+    console.log(args._.length);
   }
 }
 ```
 
-```console
-$ ls -a src
-```
+Register `Count` in the module's `controllers` list. Running the application with `["a", "b"]` prints `2`. The context identifies the command as `"main"`. All positionals remain available to the handler.
 
-## `@Action(name, flags?)`
+## Named actions
 
-Marks the method that runs for `app <name>`.
+Use `@Action(name, flags?)` on each public instance method and register its controller. Names must be unique across the application. An action receives its arguments with the matched name removed. The [shelf-label tutorial](/command/quick-start) shows a complete action, module and process entry point.
 
-```ts
-@Action("copy", { boolean: ["force"] })
-copy(ctx: ChoCommandContext) {}
+A command application must declare either one `@Main` or one or more named actions. CHO checks the complete module graph during creation, so a second `@Main` in an imported module also fails. A controller's ordinary helper methods remain private to its implementation unless decorated as commands.
 
-@Action("rm")
-remove(ctx: ChoCommandContext) {}
-```
+## Group and extend commands
 
-- The name is a non-empty string, without whitespace, that does not start
-  with `-`: a word the command line can pass as is, and not as a flag. Any
-  other character is allowed (`x-y`, `v1.2`, `42`).
-- Names share **one namespace** across the whole application. Two actions with
-  the same name, in any controllers or modules, are an error.
-- There are no groups or nested subcommands. Controllers group actions in the
-  help output only.
+Controllers can group actions such as inventory and reporting. Give each controller a `@Help` heading to group those actions in global help. Separate modules can own their providers while contributing commands to the same executable.
 
-`flags` declares the flags the command accepts: see
-[Flags and arguments](/command/flags).
-
-## `@Help(text)`
-
-Help text, printed by `--help`:
-
-- on a controller, it describes the group of commands the controller holds;
-- on a command method, it describes the command.
-
-```ts
-@Help("Remote repositories")
-@Controller()
-class Remotes {
-  @Help(`Add a remote
-The name must be unique. The URL is not checked.`)
-  @Action("remote-add")
-  add(ctx: ChoCommandContext) {}
-}
-```
-
-The text must be a non-empty string. It can span several lines: where only one
-line fits (a group heading, the list of commands), the first line is used. See
-[Help output](/command/help).
-
-## What a command returns
-
-The exit code of the run:
-
-| Returned                             | Exit code |
-| ------------------------------------ | --------- |
-| A non-negative integer `n`           | `n`       |
-| Anything else, or nothing            | `0`       |
-| The command throws                   | `1`, or what an [error handler](/command/errors) returns |
-
-```ts
-@Action("check")
-async check(ctx: ChoCommandContext) {
-  const problems = await this.linter.run(ctx.args._);
-  return problems.length > 0 ? 1 : 0;
-}
-```
-
-A command can be `async`. It runs on its controller instance, so `this` works.
-
-## Rules
-
-- A command method is a public, non-static method with a string name.
-- A method has at most one `@Main` or `@Action`. `@Help` combines with either,
-  in any order.
-- The mode follows from the whole application, when `ChoCommand.create` runs:
-
-  | The application has                    | Mode             |
-  | -------------------------------------- | ---------------- |
-  | Exactly one `@Main`, no `@Action`      | A single command |
-  | One or more `@Action`, no `@Main`      | Multiple actions |
-  | No command, both kinds, or two `@Main` | An error         |
-
-## Inherited commands
-
-A controller also has the commands it inherits from a base class. An override
-keeps the inherited command unless it declares one itself:
-
-```ts
-class BaseCommands {
-  @Help("Show the status")
-  @Action("status")
-  status(ctx: ChoCommandContext) {}
-}
-
-@Controller()
-class Commands extends BaseCommands {
-  @Middlewares(timing) // added after the parent's middlewares
-  override status(ctx: ChoCommandContext) {} // still the "status" action
-}
-```
-
-`@Help` or `@Middlewares` on the override add to what the parent declared;
-`@Action(…)` on it replaces the command.
-
-## Several controllers and modules
-
-Controllers group related actions; modules group controllers with the
-providers they need.
-
-```ts
-@Help("Branches")
-@Controller({ dependencies: [Repo] })
-class Branches {
-  @Help("List branches")
-  @Action("branch")
-  list() {}
-
-  @Help("Switch branch")
-  @Action("switch")
-  switch(ctx: ChoCommandContext) {}
-}
-
-@Help("Remotes")
-@Controller({ dependencies: [Repo, Network] })
-class Remotes {
-  @Help("Download from a remote")
-  @Action("fetch")
-  fetch(ctx: ChoCommandContext) {}
-}
-
-@Module({
-  providers: [Repo, Network],
-  controllers: [Branches, Remotes],
-})
-class App {}
-```
-
-Only what the command that runs needs is created: `app branch` never creates
-`Network`.
+A subclass inherits decorated commands from its base class. An override can keep the command mapping or declare another one. Check global help after moving commands between controllers to verify the public names and grouping.

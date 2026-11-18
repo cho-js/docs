@@ -1,179 +1,38 @@
-# Testing
+# Test an HTTP application in memory
 
-`app.handler` takes a `Request` and resolves to a `Response`, so a test needs
-no server, no port and no HTTP client.
+Send a standard `Request` directly to `app.handler`. This exercises routing, middleware, argument validation, dependency injection and response conversion. The test can inspect the same status, headers and body a network client would receive.
 
-```ts
-const app = await ChoWeb.create(App);
+## Test a write followed by a read
 
-const response = await app.handler(new Request("http://localhost/v1/users/42"));
+Place `catalog_test.ts` next to the two files from [the writable catalog](/web/example). Run `deno test catalog_test.ts`.
 
-assert.equal(response.status, 200);
-assert.deepEqual(await response.json(), { id: "42", name: "Ada" });
+<<< @/examples/catalog/catalog_test.ts
 
-await app.close();
-```
+The test reads the resource through the URL returned by the server. A broken `Location` therefore fails the test even when the store inserted the book. A fresh application per test keeps data isolated.
 
-## Replacing providers
+## Replace an external dependency
 
-The `overrides` option replaces providers with fakes, anywhere in the module
-graph, without changing a module:
+When a provider normally opens a database or calls an upstream API, replace its token during creation. For the catalog example:
 
 ```ts
-import { provider } from "@chojs/web";
-
-class FakeStore {
-  find(id: string) {
-    return { id, name: "Test" };
-  }
-}
-
-const app = await ChoWeb.create(App, {
-  overrides: [provider({ provide: UserStore, factory: () => new FakeStore() })],
-});
-```
-
-An override that replaces nothing is an error, so a stale test fails loudly.
-The rules are in [Lifecycle](/di/lifecycle#overrides-for-tests).
-
-## A full test, on each runtime
-
-The test body is the same; only the test runner differs.
-
-::: code-group
-
-```ts [Deno]
-import { assertEquals } from "jsr:@std/assert";
 import { ChoWeb, provider } from "@chojs/web";
-import { App, UserStore } from "./app.ts";
+import { Library } from "./app.ts";
+import { Catalog } from "./catalog.ts";
 
-Deno.test("GET /v1/users/:id", async () => {
-  const app = await ChoWeb.create(App, {
-    overrides: [
-      provider({
-        provide: UserStore,
-        factory: () => ({ find: (id: string) => ({ id, name: "Test" }) }),
-      }),
-    ],
-  });
-
-  const res = await app.handler(new Request("http://localhost/v1/users/7"));
-
-  assertEquals(res.status, 200);
-  assertEquals(await res.json(), { id: "7", name: "Test" });
-  await app.close();
+const fixture = new Catalog();
+const book = fixture.add("The Iliad");
+const app = await ChoWeb.create(Library, {
+  prefix: "api",
+  overrides: [provider({ provide: Catalog, factory: () => fixture })],
 });
-
-// deno test
-```
-
-```ts [Node.js]
-import assert from "node:assert/strict";
-import { test } from "node:test";
-import { ChoWeb, provider } from "@chojs/web";
-import { App, UserStore } from "./app.ts";
-
-test("GET /v1/users/:id", async () => {
-  const app = await ChoWeb.create(App, {
-    overrides: [
-      provider({
-        provide: UserStore,
-        factory: () => ({ find: (id: string) => ({ id, name: "Test" }) }),
-      }),
-    ],
-  });
-
-  const res = await app.handler(new Request("http://localhost/v1/users/7"));
-
-  assert.equal(res.status, 200);
-  assert.deepEqual(await res.json(), { id: "7", name: "Test" });
+try {
+  const response = await app.handler(new Request("http://library/api/books/" + book.id));
+  console.log(response.status); // 200
+} finally {
   await app.close();
-});
-
-// npx tsx --test
-```
-
-```ts [Bun]
-import { expect, test } from "bun:test";
-import { ChoWeb, provider } from "@chojs/web";
-import { App, UserStore } from "./app.ts";
-
-test("GET /v1/users/:id", async () => {
-  const app = await ChoWeb.create(App, {
-    overrides: [
-      provider({
-        provide: UserStore,
-        factory: () => ({ find: (id: string) => ({ id, name: "Test" }) }),
-      }),
-    ],
-  });
-
-  const res = await app.handler(new Request("http://localhost/v1/users/7"));
-
-  expect(res.status).toBe(200);
-  expect(await res.json()).toEqual({ id: "7", name: "Test" });
-  await app.close();
-});
-
-// bun test
-```
-
-:::
-
-## Sending a body
-
-```ts
-const res = await app.handler(
-  new Request("http://localhost/v1/users", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ name: "Grace" }),
-  }),
-);
-assert.equal(res.status, 201);
-```
-
-## Arguments and validation
-
-Nothing changes for a handler with [arguments](/web/arguments): send the
-request, and assert on the response. A request that is not valid is answered
-`400` by the [validation middleware](/web/validation), with what failed:
-
-```ts
-const res = await app.handler(
-  new Request("http://localhost/v1/users/7", { method: "PUT", body: "{}" }),
-);
-assert.equal(res.status, 400);
-assert.deepEqual(
-  [(await res.json()).source],
-  ["body"],
-);
-```
-
-To check that every handler with a validator is validated, read the graph:
-
-```ts
-for (const feature of app.graph.features) {
-  for (const controller of feature.controllers) {
-    for (const method of controller.methods) {
-      const has_validator = method.args.some((arg) => arg.info?.validator);
-      assert.ok(!has_validator || method.validated, method.name);
-    }
-  }
 }
 ```
 
-## Tips
+## Select the test boundary
 
-- **Export the root module** from a file that does not start a server, so tests
-  import it without side effects. Keep `serve` in `main.ts`.
-- **Test one feature** by creating the application from the feature module
-  instead of the root: any module can be a root.
-- **Any adapter works** in tests. With the [Fastify adapter](/adapters/fastify),
-  `app.handler` sends the request through Fastify's `inject()`, with no network
-  connection.
-- **Close the application** at the end of a test, so that what it created (a
-  fake connection, a timer) is released.
-- **Assert on wiring errors.** `ChoWeb.create` rejects on a bad graph; do not
-  match on the message text, which can change between releases
-  ([Error messages](/reference/errors)).
+Use the ordinary application and linker when testing route precedence or a not-found response. Use the adapter's native test facility when asserting native plugin behavior. Use a listening server for transport concerns such as client disconnects and connection draining. [Fastify tests](/adapters/fastify) · [Shutdown](/recipes/shutdown)

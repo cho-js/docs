@@ -1,167 +1,77 @@
-# Hono adapter
+# Serve CHO routes with Hono
 
-`@chojs/vendor-hono` registers the routes of a CHO web application on a
-[Hono](https://hono.dev) application. It runs wherever Hono does: Deno,
-Node.js, Bun and edge runtimes.
+Use `HonoLinker` to mount compiled routes on Hono. This gives controllers access to Hono middleware and native context while preserving the request and response interface used by the [HTTP tutorial](/web/quick-start).
 
-## Install
+## Install and run
 
-::: code-group
-
-```sh [Deno]
-deno add jsr:@chojs/web jsr:@chojs/vendor-hono
-```
-
-```sh [Node.js]
-npx jsr add @chojs/web @chojs/vendor-hono
-```
-
-```sh [Bun]
-bunx jsr add @chojs/web @chojs/vendor-hono
-```
-
-:::
-
-Hono comes with the adapter. Add it to your own dependencies (`hono`) when you
-create the Hono application yourself, as below.
-
-## Usage
-
-Pass a `HonoLinker` to `ChoWeb.create`:
+Add `@chojs/vendor-hono` using the JSR installer for your runtime. For example, run `deno add jsr:@chojs/vendor-hono` in the HTTP tutorial project. Replace its `main.ts` with:
 
 ```ts
 import { ChoWeb } from "@chojs/web";
-import { HonoLinker } from "@chojs/vendor-hono";
-
-const app = await ChoWeb.create(App, { linker: new HonoLinker() });
-
-app.linked.instance; // the Hono application
-```
-
-Serve it like any CHO web application:
-
-::: code-group
-
-```ts [Deno, Node.js, Bun]
 import { serve } from "@chojs/web/serve";
+import { HonoLinker } from "@chojs/vendor-hono";
+import { Library } from "./app.ts";
 
+const app = await ChoWeb.create(Library, { prefix: "api", linker: new HonoLinker() });
 await serve(app.handler, { port: 3000 });
 ```
 
-```ts [Cloudflare Workers]
-let app: Promise<ChoWeb> | undefined;
-
-export default {
-  async fetch(req: Request) {
-    app ??= ChoWeb.create(App, { linker: new HonoLinker() });
-    return (await app).handler(req);
-  },
-};
-```
-
-:::
+Request `/api/books/42` to verify that the controller still receives the path parameter. Allocate a fresh linker for each application.
 
 ## Using Hono middlewares
 
-Hono middlewares (`cors()`, `basicAuth()`, `etag()`, …) are written for Hono's
-context. There are two ways to use them.
-
-### On a handler, a controller or a feature
-
-`fromHono` turns a Hono middleware into a CHO middleware, for
-[`@Middlewares`](/web/middlewares):
-
-```ts
-import { basicAuth } from "hono/basic-auth";
-import { etag } from "hono/etag";
-import { Controller, Get, Middlewares } from "@chojs/web";
-import { fromHono } from "@chojs/vendor-hono";
-
-@Middlewares(fromHono(basicAuth({ username: "ada", password: "secret" })))
-@Controller({ route: "admin" })
-class AdminController {
-  @Middlewares(fromHono(etag()))
-  @Get("report")
-  report() {
-    return { users: 3 };
-  }
-}
-```
-
-The Hono middleware runs with Hono's context, at its place among the CHO
-middlewares of the route:
-
-| In the Hono middleware            | What happens                                                   |
-| --------------------------------- | -------------------------------------------------------------- |
-| `await next()`                    | The rest of the CHO chain runs, and `c.res` is its response    |
-| Changing `c.res`, or `c.header()` | Changes the response, as in Hono                               |
-| Returning a `Response`            | Answers the request                                            |
-| Throwing an `HTTPException`       | Answers with the exception's response, as Hono does            |
-| Throwing anything else            | The error goes to the CHO [error handlers](/web/error-handling) |
-
-It can be mixed with CHO middlewares in the same `@Middlewares`, and what it
-sets on Hono's context (`c.set("user", …)`) is there for the handler, through
-`ctx.native`.
-
-::: warning Only on this adapter
-A middleware made with `fromHono` needs Hono's context: on another adapter it
-fails the request.
-:::
-
-### On every request
-
-Add the middleware to a Hono application and give it to the linker. The routes
-are registered after it, so it wraps every route, and it also runs for the
-requests no route matches. That is where a middleware such as `cors()` belongs,
-so that it answers preflight requests of every path:
+When importing from `hono` directly, add Hono to the application's dependencies too. To wrap every request, configure the Hono instance before linking:
 
 ```ts
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { logger } from "hono/logger";
 
 const hono = new Hono();
-hono.use(logger());
-hono.use(cors());
-hono.notFound((c) => c.json({ error: "not found" }, 404));
-hono.onError((error, c) => c.json({ error: "internal error" }, 500));
-
-const app = await ChoWeb.create(App, { linker: new HonoLinker(hono) });
+hono.use(cors({ origin: "https://catalog.example" }));
+hono.notFound((c) => c.json({ error: "Unknown route" }, 404));
+const app = await ChoWeb.create(Library, { linker: new HonoLinker(hono) });
 ```
 
-The same Hono application takes your `onError` and `notFound` handlers, and
-any route you add to it yourself.
+To run a Hono middleware on just one CHO controller or method, wrap it with `fromHono` from `@chojs/vendor-hono` and pass the result to `@Middlewares`. It runs at that position in the CHO chain and receives Hono's own context.
 
-## Reaching Hono from a handler
+## Use native bindings
 
-Handlers, middlewares and error handlers receive a `ChoWebContext`, not Hono's
-`Context`. Hono's is its `native` property, for what only Hono can do:
+`ctx.native` contains Hono's `Context`, including `env` when supplied by the host. On a worker that needs bindings, forward the worker's `request`, `env` and execution context to the native Hono application's `fetch`. In controllers that need only the standard request, use `ctx.req`. Configure unmatched requests on Hono and route failures through [CHO error handlers](/web/error-handling).
+
+### Forward worker bindings
+
+For a Worker deployed with Hono, install `hono` directly so you can type its environment. This entry point accepts a `BRANCH` binding, forwards each request's bindings to Hono and keeps the compiled routes in the worker instance. A deployment can supply a different branch name without rebuilding the controllers.
 
 ```ts
-import type { Context } from "hono";
+import { Hono, type Context } from "hono";
+import {
+  ChoWeb, type ChoWebContext, Controller, Get, Module,
+} from "@chojs/web";
+import { HonoLinker } from "@chojs/vendor-hono";
 
-@Get("env")
-env(ctx: ChoWebContext) {
-  return (ctx.native as Context).env; // the bindings of an edge runtime
+type Bindings = { BRANCH: string };
+
+@Controller()
+class Branch {
+  @Get("branch")
+  current(ctx: ChoWebContext) {
+    const native = ctx.native as Context<{ Bindings: Bindings }>;
+    return { branch: native.env.BRANCH };
+  }
 }
+
+@Module({ controllers: [Branch] })
+class Library {}
+
+const router = new Hono();
+const ready = ChoWeb.create(Library, { linker: new HonoLinker(router) });
+
+export default {
+  async fetch(request: Request, env: Bindings) {
+    await ready;
+    return router.fetch(request, env);
+  },
+};
 ```
 
-A handler that uses it only runs on this adapter.
-
-## How it works
-
-The adapter only matches requests. `@chojs/web` builds each route as one
-function that runs its middlewares, its handler and its error handler; the
-adapter registers it on Hono with its method and full path, and calls it with
-the raw `Request`, Hono's decoded path parameters and Hono's context.
-
-## Behavior
-
-| Topic               | Behavior                                                                                                                   |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Matching order      | Routes are matched in declaration order: declare static routes before parameter routes (`@Get("me")` before `@Get(":id")`) |
-| `HEAD` requests     | Run the `@Head` handler of the route, matched before the others. Without one, Hono answers from `@Get`, without the body   |
-| Unhandled errors    | A route that fails with no `@Catch` and no `onError` goes to Hono's error handler, which logs it and answers `500`         |
-| Unmatched requests  | Answered by Hono's `notFound`                                                                                              |
-| HTTP methods        | Any method is registered as given                                                                                          |
-| One linker, one app | A second `link()` on the same linker throws: its Hono application already holds the routes of the first                    |
+With `BRANCH=central` on the Worker, `GET /branch` returns `{"branch":"central"}`. If middleware needs `waitUntil`, also forward the worker's execution context as the third argument to `router.fetch`.

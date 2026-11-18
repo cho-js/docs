@@ -1,175 +1,33 @@
-# Error handling
+# Translate route failures into HTTP responses
 
-An error thrown by a handler or a middleware goes to the nearest error
-handler. What the error handler returns is the response.
-
-```ts
-import { Catch } from "@chojs/web";
-
-class NotFound extends Error {}
-
-@Catch((error, ctx) =>
-  error instanceof NotFound
-    ? new Response(`no user ${ctx.params.id}`, { status: 404 })
-    : Response.json({ error: "internal error" }, { status: 500 })
-)
-@Controller({ route: "users", dependencies: [UserStore] })
-class UsersController {
-  constructor(readonly store: UserStore) {}
-
-  @Get(":id")
-  get(ctx: ChoWebContext) {
-    const user = this.store.find(ctx.params.id!);
-    if (!user) throw new NotFound();
-    return user;
-  }
-}
-```
-
-## Where an error goes
-
-`@Catch(handler)` applies to a handler, a controller or a feature module. An
-error goes to the nearest one:
-
-1. the `@Catch` of the handler, else
-2. the `@Catch` of the controller, else
-3. the `@Catch` of the feature module, else
-4. the `onError` option of the application, else
-5. the adapter, which answers `500`.
-
-Only one of them runs: the nearest. A class or a method has at most one
-`@Catch`.
+Handle expected failures close to the route that understands them. Use the application's `onError` for a consistent fallback across features.
 
 ```ts
-@Catch((error) => Response.json({ error: String(error) }, { status: 500 }))
-@Controller({ route: "users" })
-class UsersController {
-  @Catch((error, ctx) =>
-    new Response(`no user ${ctx.params.id}`, { status: 404 })
-  )
-  @Get(":id")
-  get(ctx: ChoWebContext) {/* ... */}
-}
-```
+class MissingBook extends Error {}
 
-## The application's error handler
-
-The `onError` option of `ChoWeb.create` is the fallback for every route, in
-every feature, that no `@Catch` covers:
-
-```ts
-const app = await ChoWeb.create(App, {
-  onError: (error, ctx) => {
+const app = await ChoWeb.create(Library, {
+  onError(error, ctx) {
+    if (error instanceof MissingBook) {
+      return Response.json({ error: "Book not found" }, { status: 404 });
+    }
     console.error(ctx.req.method, ctx.url.pathname, error);
-    return Response.json({ error: "internal error" }, { status: 500 });
+    return Response.json({ error: "Internal error" }, { status: 500 });
   },
 });
 ```
 
-It handles the errors of routes only. A request that matches no route never
-reaches it: that answer belongs to the [adapter](/adapters/#behavior).
+## Where an error goes
+
+CHO selects one handler for each route. It checks the method's `@Catch`, then the controller's, the declaring feature module's and finally `onError`. A class with `handle(error, ctx)` may serve as an error handler. Declare it as a visible provider. Application-level handlers resolve in the root module.
 
 ## What an error handler returns
 
-Its result is converted like a handler's result
-([Responses](/web/responses)): a `Response` as is, an object as JSON, and so
-on. It can be `async`.
+A returned value follows the [response conversion rules](/web/responses). Returning an error object alone therefore produces JSON with status `200`. Return an explicit `Response` to set a failure status. Returning `undefined` leaves the original error unhandled. Throwing inside the selected handler also rejects the route. The HTTP adapter decides how to render that failure.
 
-::: warning An error handler that returns nothing has not handled the error
-A handler's `undefined` is a `204`. An error handler's is not, or a handler
-that only logs would report every failed request as a success. The error goes
-on to the adapter instead, which answers `500`.
-
-```ts
-@Catch((error) => {
-  console.error(error); // logged, still a 500
-})
-```
-
-To answer with an empty body, return a `Response`:
-`new Response(null, { status: 204 })`.
-:::
-
-When an error handler throws, the error goes to the adapter too.
-
-## Error handler classes
-
-An error handler can be a class with a `handle(error, ctx)` method, created by
-the injector like a [middleware class](/web/middlewares#middleware-classes):
-
-```ts
-@Injectable([Logger])
-class ReportError {
-  constructor(readonly logger: Logger) {}
-
-  handle(error: unknown, ctx: ChoWebContext) {
-    this.logger.error(ctx.req.method, ctx.url.pathname, error);
-    return Response.json({ error: "internal error" }, { status: 500 });
-  }
-}
-
-@Catch(ReportError)
-@Module({ providers: [Logger, ReportError], controllers: [UsersController] })
-class UsersModule {}
-```
-
-A class given to `@Catch` is created in the scope of the feature module; one
-given to `onError`, in the scope of the root module.
-
-## A pattern: HTTP errors
-
-Errors that carry their own status keep handlers short and the mapping in one
-place:
-
-```ts
-export class HttpError extends Error {
-  constructor(readonly status: number, message: string) {
-    super(message);
-  }
-}
-
-// a handler
-if (!user) throw new HttpError(404, "user not found");
-
-// the application
-const app = await ChoWeb.create(App, {
-  onError: (error) =>
-    error instanceof HttpError
-      ? Response.json({ error: error.message }, { status: error.status })
-      : Response.json({ error: "internal error" }, { status: 500 }),
-});
-```
-
-## Arguments and invalid requests
-
-A handler that declares [arguments](/web/arguments) can fail before it is
-called:
-
-- **An argument that throws** (a body that is not JSON, a function of your own
-  that throws) fails the request with its error. It goes to the nearest error
-  handler, like an error of the handler itself.
-- **A request that is not valid** is not an error: when the
-  [validation middleware](/web/validation) is on the route, it answers `400`
-  itself, and no error handler is called. To change that answer, use its
-  `onInvalid` option.
-
-## Errors in a stream of events
-
-An error handler answers a request. An error in a stream of
-[server-sent events](/web/sse) that has started comes too late for that: the
-`200` is sent. Such an error is **not** given to `@Catch` or to `onError`; the
-stream is cut, and the server prints the error. Catch it in the handler to log
-it, or to tell the client ([Server-sent events](/web/sse#errors)).
-
-## Unhandled errors
-
-Without any error handler at any level, the error goes to the adapter:
-
-| Adapter                 | Unhandled error                                           |
-| ----------------------- | --------------------------------------------------------- |
-| Built in                | Logged with `console.error`; `500`                        |
-| `@chojs/vendor-hono`    | `onError` of the Hono application; logged, `500`          |
-| `@chojs/vendor-fastify` | The error handler of the Fastify application; `500`       |
-
-With [debug logging](/reference/debugging) enabled, every error a `@Catch`
-handler receives is logged with the request's method and path.
+| Observation | Where to handle it |
+| --- | --- |
+| A known route fails in middleware or in a method | `@Catch` or `onError` |
+| A built-in argument reader rejects invalid input under `validate()` | [`onInvalid`](/web/validation) |
+| No route matches the URL and verb | The [adapter's not-found hook](/adapters/) |
+| An SSE iterator fails after response headers have been sent | Inside the [stream producer](/web/sse) |
+| An invalid route or provider prevents startup | Catch the rejection from `ChoWeb.create` at the entry point |

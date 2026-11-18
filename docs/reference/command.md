@@ -1,125 +1,43 @@
-# `@chojs/command` API
+# Command API reference
 
-Everything an application needs is exported by `@chojs/command`. The full,
-generated API documentation is on [JSR](https://jsr.io/@chojs/command/doc).
+Import the application factory, decorators and context types from `@chojs/command`. The package re-exports the dependency injection declarations used to build a command module. [Generated signatures on JSR](https://jsr.io/@chojs/command/doc)
 
-## `ChoCommand`
+## Application
 
-```ts
-class ChoCommand {
-  static create(app: Class, options?: ChoCommandOptions): ChoCommand;
+| API | Contract |
+| --- | --- |
+| `ChoCommand.create(Root, options?)` | Synchronous graph validation. Returns a reusable command application |
+| `app.run(argv: string[])` | Resolves to a numeric exit status. Expects the arguments after the executable and script |
+| `app.close()` | Asynchronously releases initialized resources |
+| `app[Symbol.asyncDispose]()` | Enables block-scoped async disposal |
 
-  run(argv: string[]): Promise<number>; // the exit code
-  close(): Promise<void>;
-}
+Options are `name` (default `"chojs"`), `version`, `parseOptions`, `overrides` and `onError`. `--help` and `--version` are reserved long flags. See [launching a CLI](/command/application).
 
-type ChoCommandOptions = {
-  name?: string; //               default "chojs"
-  version?: string;
-  parseOptions?: ParserOptions;
-  onError?: ChoCommandErrorHandler;
-  overrides?: readonly Provider[];
-};
-```
+## Decorators and providers
 
-See [The application](/command/application).
+| API | Target and behavior |
+| --- | --- |
+| `@Main(flags?)` | One implicit command in the application |
+| `@Action(name, flags?)` | Named command. Names are unique, contain no whitespace and cannot begin with a dash |
+| `@Help(text)` | Controller group or method help. The first line serves as its summary |
+| `@Middlewares(...items)` | Module, controller or method. Calls downstream through `next()` |
+| `@Catch(handler)` | Selects an error handler for that scope |
+| `@Module`, `@Controller`, `@Injectable` | Declare ownership and constructor dependencies |
+| `token<T>`, `provider` | Identify values and declare factories |
 
-## Decorators
+## Arguments and handlers
 
-### Dependency injection
+`CommandFlags` supports `boolean`, `string`, `collect`, `negatable`, `alias`, `default` and `describe`. `ParserOptions` configures the application parser, including options such as `stopEarly` and `"--"`. Local flag definitions are merged for the selected action. [Flag semantics](/command/flags)
 
-| Decorator                    | On      | Options                                                          |
-| ---------------------------- | ------- | ---------------------------------------------------------------- |
-| `@Injectable(dependencies?)` | A class | The dependencies, in constructor order                           |
-| `@Controller(options?)`      | A class | `dependencies`                                                   |
-| `@Module(options?)`          | A class | `imports`, `providers`, `controllers`, `exports`, `dependencies` |
+| `ChoCommandContext` member | Value |
+| --- | --- |
+| `args` | `ChoArgs` with `_` for positional strings and fields for parsed flags |
+| `argv` | Original list passed to `run` |
+| `command` | `"main"` or the selected action name |
+| `state` | Per-run `Map<PropertyKey, unknown>` |
 
-### Commands
+Use `ChoCommandMiddlewareFn` and `ChoCommandNext` for function middleware. `ChoCommandMiddleware` also accepts a class with `handle`. The analogous error-handler types are `ChoCommandErrorHandlerFn` and `ChoCommandErrorHandler`.
 
-| Decorator               | On                     | Arguments                                   |
-| ----------------------- | ---------------------- | ------------------------------------------- |
-| `@Main(flags?)`         | A method               | The flags the command declares              |
-| `@Action(name, flags?)` | A method               | The action name, and the flags it declares  |
-| `@Help(text)`           | A controller, a method | The help text                               |
+## Exit codes
 
-### Middlewares and errors
-
-| Decorator                      | On                               | Argument                                                        |
-| ------------------------------ | -------------------------------- | --------------------------------------------------------------- |
-| `@Middlewares(...middlewares)` | A module, a controller, a command | Functions `(ctx, next)`, or classes with `handle(ctx, next)`   |
-| `@Catch(handler)`              | A module, a controller, a command | A function `(error, ctx)`, or a class with `handle(error, ctx)` |
-
-## Functions
-
-| Function                                | Returns                                             |
-| --------------------------------------- | --------------------------------------------------- |
-| `token<T>(description)`                 | A unique `InjectionToken<T>`                        |
-| `provider({ provide, deps?, factory })` | A provider object, with `factory` typed from `deps` |
-
-## Types
-
-### The context
-
-```ts
-interface ChoCommandContext {
-  readonly args: ChoArgs; //   { _: string[], [flag]: … }
-  readonly argv: readonly string[];
-  readonly command: string; // "main", or the action name
-  readonly state: Map<PropertyKey, unknown>;
-}
-```
-
-### Flags
-
-```ts
-type CommandFlags = {
-  boolean?: readonly string[]; //   flags without a value
-  string?: readonly string[]; //    flags whose value is kept as typed
-  collect?: readonly string[]; //   flags that can repeat
-  negatable?: readonly string[]; // boolean flags with a --no-<name> form
-  alias?: Readonly<Record<string, string | readonly string[]>>;
-  default?: Readonly<Record<string, unknown>>;
-  describe?: Readonly<Record<string, string>>;
-};
-```
-
-`ParserOptions`, for the `parseOptions` option, takes `boolean`, `string`,
-`collect`, `negatable`, `alias`, `default`, `stopEarly`, `"--"` and `unknown`.
-
-### Commands, middlewares, error handlers
-
-| Type                       | Is                                                                   |
-| -------------------------- | -------------------------------------------------------------------- |
-| `ChoCommandHandler`        | A command method: `(ctx) => unknown`                                 |
-| `ChoCommandNext`           | `next`: runs the rest of the chain, resolves to its exit code        |
-| `ChoCommandMiddlewareFn`   | `(ctx, next) =>` an exit code or nothing                             |
-| `ChoCommandMiddleware`     | A middleware function, or a class with `handle(ctx, next)`           |
-| `ChoCommandErrorHandlerFn` | `(error, ctx) =>` an exit code or anything else                      |
-| `ChoCommandErrorHandler`   | An error handler function, or a class with `handle(error, ctx)`      |
-
-### Others
-
-`ChoArgs`, and from the core `ModuleOptions`, `ControllerOptions`,
-`InjectableOptions`, `InjectionToken`, `Provider`, `WithDependencies`.
-
-## Summary tables
-
-### Exit codes
-
-| Situation                                              | Exit code |
-| ------------------------------------------------------ | --------- |
-| The command returns a non-negative integer `n`         | `n`       |
-| The command returns anything else, or nothing          | `0`       |
-| `--help`, `--version`, or no action (multiple actions) | `0`       |
-| A middleware returns a non-negative integer `n`        | `n`       |
-| The command fails, and its error handler returns `n`   | `n`       |
-| The command fails, and its error handler returns anything else | `1` |
-| The command fails, without an error handler            | `1`       |
-| The command fails, and its error handler fails too     | `2`       |
-| An unknown action (multiple actions)                   | `1`       |
-
-Exit codes above `255` are capped at `255`.
-
-### Reserved flags
-
-`--help` and `--version`. Short flags are left to the commands.
+A valid code is a non-negative integer, capped at `255`. A normal command with no code succeeds with `0`. Unhandled command errors and unknown actions produce `1`. A failing error handler produces `2`. A successful error handler may choose its own code. [Full exit-code rules](/command/errors)

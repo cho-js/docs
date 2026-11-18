@@ -1,139 +1,35 @@
-# The built-in router
+# Configure the built-in router
 
-`@chojs/web` matches requests to routes with the standard
-[URL Pattern API](https://developer.mozilla.org/docs/Web/API/URL_Pattern_API),
-and nothing else. There is no HTTP library underneath, no dependency, and
-nothing to install: it is the router `ChoWeb.create` uses when it is given no
-linker.
+`ChoWeb.create(Library)` uses `ChoLinker` by default. It compiles routes into `URLPattern` objects when the application starts. It requires no additional router package.
 
-## Runtime support
-
-The router needs the global `URLPattern`:
-
-| Runtime            | Supported                               |
-| ------------------ | --------------------------------------- |
-| Deno               | Yes                                     |
-| Node.js            | 24 and later                            |
-| Bun                | 1.3.4 and later                         |
-| Cloudflare Workers | Yes                                     |
-| Anything else      | When `typeof URLPattern === "function"` |
-
-On a runtime without it, `ChoWeb.create` fails with an error that says so. Use
-the [Hono adapter](/adapters/hono) there.
-
-## Usage
-
-Give `ChoWeb.create` no linker:
-
-```ts
-import { ChoWeb } from "@chojs/web";
-import { serve } from "@chojs/web/serve";
-
-const app = await ChoWeb.create(App);
-
-await serve(app.handler, { port: 3000 }); // Deno, Node.js and Bun
-```
-
-On Cloudflare Workers and other edge runtimes there is no server to start: the
-entry module exports the handler.
-
-```ts
-let app: Promise<ChoWeb> | undefined;
-
-export default {
-  async fetch(req: Request) {
-    app ??= ChoWeb.create(App);
-    return (await app).handler(req);
-  },
-};
-```
-
-The router is the `ChoLinker` class of `@chojs/web`. Create it yourself to
-give it options:
+## Customize unmatched requests
 
 ```ts
 import { ChoLinker, ChoWeb } from "@chojs/web";
+import { Library } from "./app.ts";
 
-const app = await ChoWeb.create(App, { linker: new ChoLinker() });
-```
-
-## Unmatched requests
-
-A request no route matches is answered with `404` and the text `Not Found`.
-Give the linker a `notFound` handler to answer it yourself:
-
-```ts
-const linker = new ChoLinker({
-  notFound: (req) =>
-    Response.json({ error: "not found", path: new URL(req.url).pathname }, {
-      status: 404,
-    }),
-});
-
-const app = await ChoWeb.create(App, { linker });
-```
-
-## Middlewares of the router
-
-The router takes middlewares of its own. Unlike the middlewares of
-[`@Middlewares`](/web/middlewares), they run for **every** request, in order,
-the requests no route matches included:
-
-```ts
-import { ChoLinker, ChoWeb } from "@chojs/web";
-import { cors } from "@chojs/vendor-cho";
-
-const app = await ChoWeb.create(App, {
-  linker: new ChoLinker({ middlewares: [cors()] }),
+const app = await ChoWeb.create(Library, {
+  prefix: "api",
+  linker: new ChoLinker({
+    notFound: (request) => Response.json(
+      { error: "No route", path: new URL(request.url).pathname },
+      { status: 404 },
+    ),
+  }),
 });
 ```
 
-They are functions `(ctx, next)`, like any CHO middleware, and wrap everything
-the router does, the `notFound` answer included.
+Request `/missing` to check your not-found response. Throwing from an existing method is a different path and follows [route error handling](/web/error-handling). By default a miss returns `404 Not Found`, and an unhandled route failure is logged and answered with `500`.
 
-- Each request gives them a context of their own: `ctx.params` are those of
-  the route that matched (empty when there is none). Its `ctx.state` is shared
-  with the route: what a middleware of the router sets there (a request id,
-  the authenticated user) reaches the middlewares and the handler of the route.
-- A route that fails reaches them as the `500` response.
-- A middleware of the router that fails is logged with `console.error`, and
-  the request is answered `500`.
-
-[`@chojs/vendor-cho`](/adapters/middlewares) has the middlewares an HTTP
-library would bring: `cors`, `bodyLimit`, `secureHeaders`, `logger`, `timeout`,
-`requestId`, `etag`, `basicAuth`, `bearerAuth` and `compress`.
-
-## The router
-
-`app.linked.instance` is the `ChoRouter` of the application:
+## Inspect a match
 
 ```ts
-const router = app.linked.instance;
-
-router.routes; //                    the routes, in declaration order
-router.match("GET", "/users/42"); // { route, params: { id: "42" } }, or undefined
-router.fetch; //                     the request handler, the same function as app.handler
+const match = app.linked.instance.match("GET", "/api/books/42");
+console.log(match?.route.name, match?.params); // Books.find, { id: "42" }
 ```
 
-There is no runtime context on this router: `ctx.native` is `undefined`.
+`match` tests an exact verb and pathname without running middleware or invoking the method. `fetch` also implements the `HEAD` fallback to `GET` and returns a bodyless response. For a full request test, use `app.handler`, which additionally observes the application's closed state.
 
-## How it works
+## Wrap the router
 
-The router only matches requests. `@chojs/web` builds each route as one
-function that runs its middlewares, its handler and its error handler; the
-router makes one `URLPattern` for each route, and calls the first route whose
-method and pattern match with the `Request` and the decoded path parameters.
-
-## Behavior
-
-| Topic              | Behavior                                                                                                                   |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| Matching order     | Routes are matched in declaration order: declare static routes before parameter routes (`@Get("me")` before `@Get(":id")`) |
-| Paths              | Matched as written: case and a trailing slash count. A parameter matches one segment, never an empty one                   |
-| Path parameters    | Percent-decoded. One that cannot be decoded is passed as it was sent                                                       |
-| `HEAD` requests    | Run the `@Head` handler of the route. Without one, the `@Get` handler answers, without the body                            |
-| Unhandled errors   | A route that fails with no `@Catch` and no `onError` is logged with `console.error`, and answered with `500`               |
-| Unmatched requests | Answered by the `notFound` option; `404` by default, also when the path exists under another method                        |
-| Middlewares        | The `middlewares` option: they wrap every request, the `notFound` answer included                                          |
-| HTTP methods       | Any method is matched as given                                                                                             |
-| Several apps       | A linker can be used for several applications: each `link()` makes a new router                                            |
+Supply `middlewares` to `new ChoLinker({ middlewares })` for behavior that applies even when no route matches. Use this scope for CORS preflight, request IDs or access logging. The router shares request state with the selected route. [Configure HTTP middleware](/adapters/middlewares)

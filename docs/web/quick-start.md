@@ -1,104 +1,25 @@
-# Web quick start
+# Serve a book as JSON
 
-`@chojs/web` builds HTTP applications with decorators. Controllers declare
-route handlers; `ChoWeb` turns the application into a `fetch`-style request
-handler that any server can call.
+Build a read-only endpoint at `GET /api/books/:id`. You will define a route, start the server and send a request. Begin in a [project with `@chojs/web` installed](/guide/getting-started).
 
-- **Built on web standards.** Handlers receive the standard `Request` and
-  answer with a standard `Response`.
-- **No HTTP library needed.** A router on the standard URL Pattern API is
-  built in, so an application depends on `@chojs/web` alone.
-- **Or bring your own router.** A small [adapter](/adapters/) matches requests
-  to routes on another library, such as Hono or Fastify.
-- **Same behavior on every adapter.** Middlewares, error handling and the
-  conversion of results are done by `@chojs/web` itself.
-- **Fails early.** A bad route, a duplicate route or a missing provider is
-  reported when the application is created, not on the first request.
+## 1. Define the application
 
-## Install
+Save this file as `app.ts`.
 
-::: code-group
+<<< @/examples/web/app.ts
 
-```sh [Deno]
-deno add jsr:@chojs/web
-```
+The path has three pieces here. The application contributes `api`, the controller contributes `books` and the method captures one segment as `id`. CHO passes its decoded value to `find` and serializes the returned object as JSON. The fixed title keeps the example focused on routing.
 
-```sh [Node.js]
-npx jsr add @chojs/web
-```
+## 2. Start a local server
 
-```sh [Bun]
-bunx jsr add @chojs/web
-```
+Save this file beside it as `main.ts`. Keeping the listener in a separate file lets a test import `app.ts` directly.
 
-:::
-
-Nothing else is needed: the [built-in router](/adapters/cho) matches the
-requests. An [adapter](/adapters/) can replace it.
-
-## An application
-
-```ts
-import {
-  ChoWeb,
-  type ChoWebContext,
-  Controller,
-  Get,
-  Injectable,
-  Module,
-  Post,
-} from "@chojs/web";
-
-@Injectable()
-class UserStore {
-  find(id: string) {
-    return { id, name: "Ada" };
-  }
-}
-
-@Controller({ route: "users", dependencies: [UserStore] })
-class UsersController {
-  constructor(readonly store: UserStore) {}
-
-  @Get(":id") // GET /v1/users/42
-  get(ctx: ChoWebContext) {
-    return this.store.find(ctx.params.id!); // sent as JSON
-  }
-
-  @Post("") // POST /v1/users
-  async create(ctx: ChoWebContext) {
-    const user = await ctx.req.json(); // ctx.req is the standard Request
-    return Response.json(user, { status: 201 });
-  }
-}
-
-@Module({ route: "v1", providers: [UserStore], controllers: [UsersController] })
-class App {}
-
-const app = await ChoWeb.create(App);
-```
-
-::: tip Parameters instead of the context
-A handler can also declare what it receives:
-`@Args(Param("id"))` on `get(id: string)`, or `@Args(Body())` on
-`create(user: unknown)`. See [Handler arguments](/web/arguments).
-:::
-
-## Serve it
-
-`app.handler` is a plain `(req: Request) => Promise<Response>`. `serve` gives
-it to the server of the runtime: the same line runs on Deno, Node.js and Bun.
-
-```ts
-import { serve } from "@chojs/web/serve";
-
-await serve(app.handler, { port: 3000 });
-```
+<<< @/examples/web/main.ts
 
 ::: code-group
 
 ```sh [Deno]
-deno run --allow-net --allow-env main.ts
+deno run --allow-net main.ts
 ```
 
 ```sh [Node.js]
@@ -111,26 +32,28 @@ bun run main.ts
 
 :::
 
-```console
-$ curl http://localhost:3000/v1/users/42
-{"id":"42","name":"Ada"}
+## 3. Check the route
 
-$ curl -X POST http://localhost:3000/v1/users -d '{"name":"Grace"}'
-{"name":"Grace"}
+In a second terminal, run:
+
+```console
+$ curl -i http://127.0.0.1:3000/api/books/42
 ```
 
-## What to read next
+Expect status `200`, a JSON content type and the body `{"id":"42","title":"The Odyssey"}`. Try `/books/42` without the application prefix to see the router's `404`. Stop the server with Ctrl+C.
 
-| Topic                                | Page                                   |
-| ------------------------------------ | -------------------------------------- |
-| How paths are built and matched      | [Routing](/web/routing)                |
-| What a handler receives              | [Request context](/web/context)        |
-| Declaring the id, the query, the body as parameters | [Handler arguments](/web/arguments) |
-| Validating a request, with zod or your own | [Validation](/web/validation)    |
-| What a handler can return            | [Responses](/web/responses)            |
-| Authentication, logging, timing      | [Middlewares](/web/middlewares)        |
-| Turning errors into responses        | [Error handling](/web/error-handling)  |
-| Options, shutdown, introspection     | [The application](/web/application)    |
-| Summaries, tags and responses, for OpenAPI | [Describing the API](/web/api-docs) |
-| Tests without a server               | [Testing](/web/testing)                |
-| A complete application               | [Example: a REST API](/web/example)    |
+## Exercise the same route in memory
+
+```ts
+import { createApp } from "./app.ts";
+
+const app = await createApp();
+try {
+  const response = await app.handler(new Request("http://library/api/books/42"));
+  console.log(response.status, await response.json());
+} finally {
+  await app.close();
+}
+```
+
+Next, [build a catalog that accepts writes](/web/example) or [test the endpoint](/web/testing).

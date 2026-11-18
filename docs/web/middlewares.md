@@ -1,261 +1,38 @@
-# Middlewares
+# Run middleware around a route
 
-A middleware wraps what comes after it: the next middlewares, then the
-handler. `@Middlewares(...)` applies to a feature module, a controller or a
-handler.
+A web middleware receives the request context and a `next` function. Calling `next()` runs the remaining middleware and eventually the handler. Await it to measure elapsed time or inspect the final response.
 
 ```ts
-import { type ChoWebMiddlewareFn, Middlewares } from "@chojs/web";
+import { type ChoWebMiddlewareFn } from "@chojs/web";
 
-const auth: ChoWebMiddlewareFn = (ctx, next) =>
-  ctx.req.headers.has("authorization")
-    ? next()
-    : new Response("unauthorized", { status: 401 }); // answers early
-
-const timing: ChoWebMiddlewareFn = async (ctx, next) => {
-  const start = Date.now();
-  const response = await next();
-  response.headers.set("x-time", `${Date.now() - start}ms`);
-  return response;
-};
-
-@Middlewares(auth) // every route of the controller
-@Controller({ route: "admin" })
-class AdminController {
-  @Middlewares(timing) // this route only
-  @Get("stats")
-  stats() {
-    return { users: 3 };
-  }
-}
-```
-
-## What a middleware can do
-
-A middleware is called with the [context](/web/context) and `next`:
-
-- **`next()`** runs the rest of the chain and resolves to its `Response`.
-- **Returning a `Response`** answers the request with it: without calling
-  `next()` to answer early, or after it to replace the response.
-- **Returning nothing** after calling `next()` passes the response on, so
-  `await next();` alone is enough.
-
-::: code-group
-
-```ts [Before the handler]
-const requireJson: ChoWebMiddlewareFn = (ctx, next) =>
-  ctx.req.headers.get("content-type")?.includes("application/json")
-    ? next()
-    : new Response("expected JSON", { status: 415 });
-```
-
-```ts [After the handler]
-const noStore: ChoWebMiddlewareFn = async (_ctx, next) => {
-  const response = await next();
-  response.headers.set("cache-control", "no-store");
-  return response;
-};
-```
-
-```ts [Around the handler]
-const log: ChoWebMiddlewareFn = async (ctx, next) => {
+export const timing: ChoWebMiddlewareFn = async (ctx, next) => {
   const start = performance.now();
-  try {
-    await next(); // returns nothing: the response is passed on
-  } finally {
-    const ms = Math.round(performance.now() - start);
-    console.log(ctx.req.method, ctx.url.pathname, `${ms}ms`);
-  }
-};
-```
-
-```ts [Preparing the context]
-const loadUser: ChoWebMiddlewareFn = async (ctx, next) => {
-  ctx.state.set("user", await findUser(ctx.req));
-  return next();
-};
-```
-
-:::
-
-A middleware that calls `next()` twice, returns something that is not a
-`Response`, or returns nothing without calling `next()`, makes the request
-fail; the error goes to the [error handler](/web/error-handling).
-
-## Middleware classes
-
-A middleware can also be a class with a `handle(ctx, next)` method. It is
-created by the injector, so it can have dependencies:
-
-```ts
-@Injectable([Tokens])
-class Auth {
-  constructor(readonly tokens: Tokens) {}
-
-  handle(ctx: ChoWebContext, next: ChoWebNext) {
-    const user = this.tokens.user(ctx.req.headers.get("authorization"));
-    if (!user) {
-      return new Response("unauthorized", { status: 401 });
-    }
-    ctx.state.set("user", user); // for the handler
-    return next();
-  }
-}
-
-@Middlewares(Auth)
-@Controller({ route: "admin" })
-class AdminController {
-  @Get("me")
-  me(ctx: ChoWebContext) {
-    return ctx.state.get("user");
-  }
-}
-
-@Module({
-  providers: [Tokens, Auth], // the class is a provider of the feature module
-  controllers: [AdminController],
-})
-class AdminModule {}
-```
-
-The class is created in the scope of the feature module, so it must be a
-provider visible there: one of its `providers`, or exported by a module it
-imports. Like every provider it is a singleton, created when the application
-is.
-
-## Levels and order
-
-```ts
-@Middlewares(a) //        feature: every route of the module
-@Module({ controllers: [UsersController] })
-class UsersModule {}
-
-@Middlewares(b, c) //     controller: every route of the controller
-@Controller({ route: "users" })
-class UsersController {
-  @Middlewares(d) //      handler: this route only
-  @Get(":id")
-  get() {}
-}
-
-// a → b → c → d → get → d → c → b → a
-```
-
-A request runs the feature's middlewares, then the controller's, then the
-handler's, each in declaration order.
-
-**Middlewares belong to their routes.** They only run for a request that
-matches a route they apply to: never for another feature's or controller's
-routes, nor for a request that matches nothing.
-
-## The validation middleware
-
-`@chojs/web` comes with one middleware: `validate()`. It runs the validators
-of the [arguments](/web/arguments) of the handlers it covers, and answers `400`
-for a request that is not valid.
-
-```ts
-import { Middlewares, validate } from "@chojs/web";
-
-@Middlewares(validate())
-@Controller({ route: "users" })
-class UsersController {}
-```
-
-It is declared like any other middleware, on a handler, a controller or a
-feature module. Its place among the others does not matter: validation always
-happens after every middleware of the route, just before the handler. See
-[Validation](/web/validation).
-
-## Middlewares of the HTTP library
-
-Hono and Fastify come with their own middlewares, written for their own
-context. Each adapter has a function that makes one a CHO middleware, so it can
-be declared on a handler, a controller or a feature like any other:
-
-::: code-group
-
-```ts [Hono]
-import { basicAuth } from "hono/basic-auth";
-import { fromHono } from "@chojs/vendor-hono";
-
-@Middlewares(fromHono(basicAuth({ username: "ada", password: "secret" })))
-@Controller({ route: "admin" })
-class AdminController {}
-```
-
-```ts [Fastify]
-import { fromFastify } from "@chojs/vendor-fastify";
-
-// a Fastify hook: fastify.basicAuth, fastify.rateLimit(), or your own
-@Middlewares(fromFastify(fastify.basicAuth))
-@Controller({ route: "admin" })
-class AdminController {}
-```
-
-:::
-
-They keep their place among the CHO middlewares of the route. A middleware
-made this way only runs on its own adapter: it ties the controller to it. See
-the [Hono](/adapters/hono#using-hono-middlewares) and
-[Fastify](/adapters/fastify#using-fastify-options-plugins-and-hooks) pages.
-
-## Ready-made middlewares
-
-For the built-in router, `@chojs/vendor-cho` has the middlewares an HTTP
-library would bring: `cors`, `bodyLimit`, `secureHeaders`, `logger`, `timeout`,
-`requestId`, `etag`, `basicAuth`, `bearerAuth` and `compress`. See
-[Middlewares](/adapters/middlewares).
-
-## Application-wide middlewares
-
-There is no global CHO middleware, because features are independent. For
-something that wraps every request, unmatched ones included, use the HTTP
-library through the adapter:
-
-::: code-group
-
-```ts [Built-in router]
-import { ChoLinker, ChoWeb } from "@chojs/web";
-import { cors } from "@chojs/vendor-cho";
-
-const app = await ChoWeb.create(App, {
-  linker: new ChoLinker({ middlewares: [cors()] }),
-});
-```
-
-```ts [Hono]
-import { Hono } from "hono";
-import { cors } from "hono/cors";
-
-const hono = new Hono();
-hono.use(cors());
-
-const app = await ChoWeb.create(App, { linker: new HonoLinker(hono) });
-```
-
-```ts [Fastify]
-import Fastify from "fastify";
-import cors from "@fastify/cors";
-
-const fastify = Fastify();
-await fastify.register(cors);
-
-const app = await ChoWeb.create(App, { linker: new FastifyLinker(fastify) });
-```
-
-```ts [Any adapter]
-// app.handler is a function: wrap it.
-const handler = async (req: Request) => {
-  const response = await app.handler(req);
-  response.headers.set("x-powered-by", "cho");
+  const response = await next();
+  console.log(ctx.req.method, ctx.url.pathname, response.status,
+    Math.round(performance.now() - start) + "ms");
   return response;
 };
-
-await serve(handler); // from "@chojs/web/serve"
 ```
 
-:::
+## Choose the scope
 
-This is the place for what must also run for the requests no route matches,
-such as CORS preflight requests.
+Apply `@Middlewares(timing)` to one method, a controller, or the module that declares those controllers. For a matched route, incoming work proceeds in this order:
+
+1. Feature module middleware.
+2. Controller middleware.
+3. Method middleware.
+4. Argument readers and the method.
+
+After `await next()`, execution unwinds in reverse order. A root module that only imports features contributes no middleware to their routes. For every incoming request, including a preflight or a miss, use [router middleware](/adapters/middlewares).
+
+## Short-circuit or continue
+
+A middleware can return its own `Response` before calling `next()`. For example, a guard may return a `403` before the request body is read. If it returns nothing, it must have called `next()` so CHO can use the downstream response. Calling `next()` twice is an error.
+
+```ts
+@Middlewares(timing, validate())
+@Controller({ route: "books" })
+class Books { /* route methods */ }
+```
+
+A middleware that needs a provider can be an injectable class with `handle(ctx, next)`. Register the class in the declaring module's visible providers and pass the class itself to `@Middlewares`. Share per-request data through [`ctx.state`](/web/context).
