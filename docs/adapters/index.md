@@ -12,6 +12,8 @@ A linker registers CHO's compiled routes with a router. Choose it at `ChoWeb.cre
 
 ## Behavior
 
+On Cloudflare Workers, both the built-in router and Hono run in CHO's dedicated `workerd` test suite. Use the built-in router for a Fetch entry point with `URLPattern`. Choose Hono when your application needs its native middleware or context. [Run a Worker locally](/guide/cloudflare-workers)
+
 The linker receives each route with its full path and method. CHO already handles DI, argument evaluation, validation, response conversion and route-level errors. The router decides which route matches and what to send when none does.
 
 | Behavior | Built-in | Hono | Fastify |

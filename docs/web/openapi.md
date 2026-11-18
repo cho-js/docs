@@ -2,6 +2,8 @@
 
 Give the [writable book catalog](/web/example) a page where a client can explore its endpoints and download an OpenAPI 3.1.1 document. The catalog already declares its paths, arguments, validators and response statuses. `@chojs/openapi` reads them from the initialized web application.
 
+OpenAPI generation is tested in Cloudflare's `workerd` alongside the server runtimes. For a minified Worker bundle, set `keep_names = true` in `wrangler.toml` to preserve tags derived from controller class names. [Cloudflare Workers setup](/guide/cloudflare-workers)
+
 ## 1. Add the package
 
 Start with `app.ts` and `catalog.ts` from the catalog tutorial. Install the OpenAPI extra alongside a version of `@chojs/web` that supports `app.mount`.

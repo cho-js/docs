@@ -5,6 +5,7 @@ Choose the package that owns your entry point. You can add another package later
 | Build | Install | First working example |
 | --- | --- | --- |
 | HTTP API | `@chojs/web` | [Serve a book as JSON](/web/quick-start) |
+| Cloudflare Worker | `@chojs/web` | [Serve an HTTP endpoint with a Worker binding](/guide/cloudflare-workers) |
 | Command-line tool | `@chojs/command` | [Print a shelf label](/command/quick-start) |
 | Message consumer | `@chojs/message` | [Receive an inventory message](/message/quick-start) |
 

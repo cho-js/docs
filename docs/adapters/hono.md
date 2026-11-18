@@ -75,3 +75,5 @@ export default {
 ```
 
 With `BRANCH=central` on the Worker, `GET /branch` returns `{"branch":"central"}`. If middleware needs `waitUntil`, also forward the worker's execution context as the third argument to `router.fetch`.
+
+With either router, a provider or controller can also import `env` and `waitUntil` from `cloudflare:workers`. Use that approach when a service needs a binding independently of Hono's native context. [Worker bindings and startup](/guide/cloudflare-workers#connect-a-binding-to-a-provider)

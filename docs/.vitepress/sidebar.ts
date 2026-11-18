@@ -6,6 +6,7 @@ const setup = {
     { text: "How CHO fits together", link: "/guide/introduction" },
     { text: "Set up a project", link: "/guide/getting-started" },
     { text: "Runtime setup", link: "/guide/runtimes" },
+    { text: "Run on Cloudflare Workers", link: "/guide/cloudflare-workers" },
     { text: "Configure decorators", link: "/guide/decorators" },
   ],
 };

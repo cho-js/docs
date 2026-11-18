@@ -62,9 +62,9 @@ onUnmounted(() => {
 <section class="cho-hero" aria-labelledby="hero-title">
 <div class="cho-wrap cho-hero-grid">
 <div class="cho-hero-copy">
-<a class="cho-badge" :href="withBase('/message/contracts')"><b>New</b> Typed message contracts <span aria-hidden="true">↗</span></a>
+<a class="cho-badge" :href="withBase('/guide/cloudflare-workers')"><b>New</b> Cloudflare Workers support <span aria-hidden="true">↗</span></a>
 <h1 id="hero-title">One framework.<br><span class="cho-grad">Every runtime.</span></h1>
-<p class="cho-lead">Build modular HTTP, command-line and message applications with a tiny TypeScript framework. Keep your code. Choose your runtime.</p>
+<p class="cho-lead">Build enterprise applications in TypeScript. Share business logic across HTTP APIs, command-line tools and message workers, with explicit module boundaries and dependency checks at startup.</p>
 <div class="cho-actions">
 <a class="cho-btn primary" :href="withBase('/guide/getting-started')">Get started <span>→</span></a>
 <a class="cho-btn" href="https://github.com/cho-js/cho" target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">↗</span></a>
@@ -125,7 +125,7 @@ await serve(app.handler, { port: 3000 });
 </div>
 
 <nav class="cho-section-nav" aria-label="Explore CHO">
-<div class="cho-wrap"><span>A small core. A lot of possibility.</span><a href="#one-shape">One shape</a><a href="#portable">Portable</a><a href="#type-safe">Type-safe</a><a href="#batteries-included">In the box <span aria-hidden="true">↓</span></a></div>
+<div class="cho-wrap"><span>Framework overview</span><a href="#one-shape">One shape</a><a href="#portable">Portable</a><a href="#type-safe">Type-safe</a><a href="#batteries-included">In the box <span aria-hidden="true">↓</span></a></div>
 </nav>
 
 <section id="one-shape" class="cho-sec tint">
@@ -241,11 +241,11 @@ await app.close();
 <div class="cho-copy" data-r="right">
 <span class="cho-eyebrow">02 · Portable</span>
 <h2>Your application.<br><span class="cho-grad">Your stack.</span></h2>
-<p>Build on the web's <code>Request</code> and <code>Response</code>, not a library's API. Swap the router underneath without rewriting the controllers above.</p>
+<p>CHO tests HTTP applications on four runtimes: Deno, Node.js, Bun and Cloudflare Workers. A dedicated CI job runs the Workers tests in <code>workerd</code>, including requests that use bindings and background tasks.</p>
 <ul class="cho-ticks">
 <li>A router is built in, on the standard <code>URLPattern</code>.</li>
-<li>Hono or Fastify with one option, and no change to a controller.</li>
-<li><code>serve(app.handler)</code> picks the server of the runtime it runs on.</li>
+<li>Use Hono on all four runtimes or Fastify on Node.js.</li>
+<li>Call <code>serve(app.handler)</code> in a server process or export <code>fetch: app.handler</code> on Workers.</li>
 </ul>
 <a class="cho-more" :href="withBase('/guide/runtimes')">Runtimes and adapters <span>→</span></a>
 </div>
@@ -345,9 +345,8 @@ UsersController.get and AdminController.find</span>
 <section id="batteries-included" class="cho-sec tint">
 <div class="cho-wrap">
 <div class="cho-head" data-r>
-<span class="cho-eyebrow">Small core. Thoughtful details.</span>
-<h2>The everyday essentials.<br><span class="cho-grad">Already here.</span></h2>
-<p>What an application needs every day is in the box, and behaves the same on every adapter.</p>
+<h2>Testing and running<br><span class="cho-grad">production services.</span></h2>
+<p>Test handlers in memory, validate incoming data and resume event processing after downtime with a durable consumer.</p>
 </div>
 <div class="cho-bento">
 <a class="wide" :href="withBase('/web/middlewares')" data-r style="--d: 0"><small>@Middlewares · @Catch</small><h3>Middlewares and error handlers, at every level</h3><p>On a module, a controller or one method. As a function, or as a class the injector creates, with dependencies of its own.</p></a>
@@ -357,7 +356,7 @@ UsersController.get and AdminController.find</span>
 <a :href="withBase('/command/quick-start')" data-r style="--d: 2"><small>@Main · @Action</small><h3>Command lines that explain themselves</h3><p><code>--help</code> is generated from the flags each command declares. <code>run()</code> returns the exit code.</p></a>
 <a :href="withBase('/message/jetstream')" data-r style="--d: 0"><small>NATS JetStream</small><h3>Resume event processing after downtime</h3><p>A durable consumer picks up stored events, retries failed deliveries and can send exhausted messages to a dead-letter stream.</p></a>
 <a :href="withBase('/message/with-web')" data-r style="--d: 1"><small>ChoMessage.from(web.injector)</small><h3>HTTP and messages, one set of instances</h3><p>One database pool, one cache, for the requests and for the messages of the same process.</p></a>
-<a :href="withBase('/recipes/')" data-r style="--d: 2"><small>Recipes</small><h3>The everyday tasks, worked out</h3><p>Streaming, downloads, uploads, forwarding a request and shutting down gracefully, checked on three runtimes.</p></a>
+<a :href="withBase('/message/kafka')" data-r style="--d: 2"><small>Apache Kafka</small><h3>Consume Kafka events on three runtimes</h3><p>Run the same consumer on Node.js, Deno or Bun. Broker tests cover offset commits, retries and partition ordering.</p></a>
 </div>
 </div>
 </section>

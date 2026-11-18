@@ -1,13 +1,13 @@
 # Run CHO on your platform
 
-The HTTP tutorials use a Fetch-compatible handler. A local process needs a listener to turn incoming connections into `Request` objects. A worker platform already supplies the request. The same controller can serve both.
+CHO has four officially supported runtimes: **Deno, Node.js, Bun and Cloudflare Workers**. HTTP controllers use the same Fetch handler on all four. A server process opens a listener. Cloudflare calls the Worker's exported `fetch` handler. Choose the runtime for each entry point according to the adapters it uses.
 
 | Platform | Execute decorated TypeScript | Receive an HTTP request | Read CLI arguments |
 | --- | --- | --- | --- |
 | Deno | `deno run` | `serve(app.handler)` | `Deno.args` |
 | Node.js | `tsx` or compiled ESM | `serve(app.handler)` or Fastify | `process.argv.slice(2)` |
 | Bun | `bun run` | `serve(app.handler)` | `process.argv.slice(2)` |
-| Fetch-based worker | Platform build tool | Export a `fetch` entry point | — |
+| Cloudflare Workers | Bundle with Wrangler | Export `{ fetch: app.handler }` | — |
 
 ## Deno
 
@@ -35,7 +35,7 @@ Use Node.js 24 with the built-in router, or select Hono where `URLPattern` is un
 
 Install with `bunx jsr add @chojs/web` and run `bun run main.ts`. Use a Bun runtime that provides `URLPattern` for the built-in router. When debugging differences between adapters, exercise `app.handler` in the same runtime you deploy.
 
-## Edge runtimes
+## Cloudflare Workers
 
 For the [HTTP quick start](/web/quick-start), put this worker entry point beside `app.ts`. The first request creates the application. Concurrent requests share the initialization promise.
 
@@ -54,8 +54,16 @@ export default {
 };
 ```
 
-If controllers need platform-specific bindings, pass those through the adapter's native context. The [Hono guide](/adapters/hono) describes how to access it. For configuration of CHO's own loggers on a host without `process.env`, see [debug logging](/reference/debugging).
+Use lazy creation for providers that perform I/O. If providers only compute values or read binding configuration, create the app at module scope. The [Workers guide](/guide/cloudflare-workers) shows a complete entry point, bindings and a local verification request. It also explains which packages run in the dedicated `workerd` CI job.
 
 ## Background consumers
 
-Manual message delivery runs wherever the message package runs. The [NATS adapter](/message/nats) accepts a connection from the runtime's transport on Deno, Node.js or Bun. The [Kafka adapter](/message/kafka) targets a long-running Node.js process.
+| Capability | Node.js | Deno | Bun | Cloudflare Workers |
+| --- | --- | --- | --- | --- |
+| Built-in HTTP router, Hono, OpenAPI and dependency injection | Yes | Yes | Yes | Tested in `workerd` |
+| `@chojs/message` local delivery through `app.handle` | Yes | Yes | Yes | Tested in `workerd` |
+| Kafka producer and consumer | Native client runtime | Tested on 2.9 | Tested on 1.4 | — |
+| NATS broker adapter | Yes | Yes | Yes | — |
+| Fastify HTTP adapter | Yes | — | — | — |
+
+Kafka uses the Node compatibility layers on Deno and Bun. For installation, Deno permissions and broker verification, follow the [Kafka guide](/message/kafka). For NATS, supply the [transport for your runtime](/message/nats).

@@ -9,7 +9,7 @@ export default defineConfig({
   base,
   title: "CHO",
   description:
-    "A tiny decorator-based framework for modular HTTP, command-line and message applications, on Deno, Node.js, Bun and edge runtimes.",
+    "CHO is a TypeScript framework for enterprise applications. Run HTTP APIs on Deno, Node.js, Bun and Cloudflare Workers, and Kafka consumers on Node.js, Deno and Bun.",
   lang: "en-US",
   cleanUrls: true,
   lastUpdated: true,

@@ -20,7 +20,7 @@ for topic in books.received books.received.failed; do
 done
 ```
 
-Each topic has one partition so the offset changes below are easy to follow. Start `npx tsx worker.ts` in the project directory and leave it running.
+Each topic has one partition so the offset changes below are easy to follow. Start `worker.ts` using the [command for your runtime](/message/kafka#start-the-consumer) and leave it running.
 
 ## 2. Publish a valid and an invalid shipment
 
@@ -52,3 +52,25 @@ For a fresh topic containing just these two records, wait for `CURRENT-OFFSET` t
 If the dead-letter consumer waits indefinitely, check the worker's broker address, group membership and selected `@Catch` policy. A handler that settles an error with `true` or a fallback reply bypasses the adapter's retries and dead-letter publication. Enable `CHO_DEBUGLOG=cho:message,cho:kafka` before starting the worker to inspect that distinction.
 
 Stop the worker and run `docker stop cho-docs-kafka` to discard the local broker and its temporary data.
+
+## Check the adapter on your runtime
+
+From the CHO checkout with dependencies installed, run `tools/brokers.sh start kafka` on a machine with Docker and port 9092 free. Choose one command below to exercise the real-broker tests, including committed offsets, retries, partition ordering and consumer group rebalancing. Setting `KAFKA_BROKERS` enables the integration suite.
+
+::: code-group
+
+```sh [Node.js]
+KAFKA_BROKERS=localhost:9092 npx tsx --test vendor/kafka/kafka_test.ts
+```
+
+```sh [Deno]
+KAFKA_BROKERS=localhost:9092 deno test --allow-read --allow-net --allow-env vendor/kafka/kafka_test.ts
+```
+
+```sh [Bun]
+KAFKA_BROKERS=localhost:9092 bun test --timeout 120000 vendor/kafka/kafka_test.ts
+```
+
+:::
+
+Run `docker stop cho-kafka` to remove the test broker started by the helper. To save CI time, the project runs the Kafka integration suite against a real broker on Node.js only. The same suite runs locally on all three server runtimes. CI runs the broker-independent Kafka tests and the real NATS/JetStream suite on Node.js, Deno and Bun. Cloudflare Workers has its own [workerd test job](/guide/cloudflare-workers#what-runs-in-workerd).

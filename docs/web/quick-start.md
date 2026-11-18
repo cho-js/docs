@@ -56,4 +56,4 @@ try {
 }
 ```
 
-Next, [build a catalog that accepts writes](/web/example) or [test the endpoint](/web/testing).
+Next, [build a catalog that accepts writes](/web/example), [test the endpoint](/web/testing) or [serve a Fetch handler on Cloudflare Workers](/guide/cloudflare-workers).

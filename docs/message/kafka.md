@@ -1,12 +1,25 @@
 # Consume inventory events from Kafka
 
-`@chojs/vendor-kafka` connects a CHO message application to Kafka through `@platformatic/kafka` on Node.js. Start with a reachable broker, a `books.received` topic and the `Library` module from the [inventory tutorial](/message/quick-start). Provision the dead-letter topic used below as well.
+`@chojs/vendor-kafka` runs on **Node.js, Deno and Bun**. The upstream client, `@platformatic/kafka`, targets Node.js (22.22 or 24.6 and later). CHO has also tested the adapter against a real broker on Deno 2.9 and Bun 1.4 through their Node compatibility layers. Recheck the broker tests when upgrading the client on those runtimes.
+
+The broker tests use a plaintext connection. TLS, SASL and compression are outside that coverage. [Cloudflare Workers](/guide/cloudflare-workers) supports local CHO message handling. Run the Kafka consumer in a server process.
+
+To save CI time, the dedicated Kafka integration job uses Node.js. To run the same real-broker suite on Deno or Bun, see [Verify Kafka delivery and retries](/message/kafka-check#check-the-adapter-on-your-runtime).
 
 ## Start the consumer
 
-In the Node.js project containing `app.ts`, install the adapter with `npx jsr add @chojs/vendor-kafka`. Save the following as `worker.ts` and run `npx tsx worker.ts`.
+Start with `app.ts` from the [inventory tutorial](/message/quick-start) and provision the topics `books.received` and `books.received.failed`. Install the adapter and run the same `worker.ts` with the commands for your runtime.
+
+| Runtime | Install | Start |
+| --- | --- | --- |
+| Node.js | `npx jsr add @chojs/vendor-kafka` | `npx tsx worker.ts` |
+| Deno | `deno add jsr:@chojs/vendor-kafka` | `deno run --allow-read --allow-net --allow-env worker.ts` |
+| Bun | `bunx jsr add @chojs/vendor-kafka` | `bun run worker.ts` |
+
+On Deno the client reads a file during import, before it opens its network connection. Include read access as well as network and environment access.
 
 ```ts
+import process from "node:process";
 import { ChoMessage } from "@chojs/message";
 import { KafkaLinker } from "@chojs/vendor-kafka";
 import { Library } from "./app.ts";
