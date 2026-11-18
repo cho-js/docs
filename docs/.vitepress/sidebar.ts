@@ -29,6 +29,14 @@ const injection = {
   ],
 };
 
+const diRecipes = {
+  text: "DI recipes",
+  items: [
+    { text: "Values, classes, aliases and factories", link: "/di/recipes/bindings" },
+    { text: "Shared, transient and per-request values", link: "/di/recipes/lifetimes" },
+  ],
+};
+
 const http = {
   text: "HTTP applications",
   items: [
@@ -127,7 +135,7 @@ const extensions = {
   ],
 };
 
-const guide = [setup, tutorials, injection];
+const guide = [setup, tutorials, injection, diRecipes];
 const web = [http, adapters, recipes];
 const api = [reference, extensions];
 

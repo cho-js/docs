@@ -30,14 +30,14 @@ export default defineConfig({
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());`,
     ],
-      [
-        "script",
-        {
-            "data-website-id": '{ "token": "2c003d76cd43430b92975026f1ff7632" }',
-            src: "https://static.cloudflareinsights.com/beacon.min.js",
-            type: "module",
-        },
-      ]
+      // [
+      //   "script",
+      //   {
+      //       "data-website-id": '{ "token": "2c003d76cd43430b92975026f1ff7632" }',
+      //       src: "https://static.cloudflareinsights.com/beacon.min.js",
+      //       type: "module",
+      //   },
+      // ]
   ],
   markdown: {
     theme: { light: "github-light", dark: "github-dark" },

@@ -46,3 +46,5 @@ When CHO creates `Printer` it resolves `LABEL_PREFIX` first. That factory receiv
 For three constructor parameters, list all three tokens in the same order. TypeScript can catch incompatible types. Two string tokens have the same value type, so their relative order still needs review. Use typed tokens for value inference. Symbols also work as runtime keys.
 
 To replace one of these declarations for a test, pass a provider with the original `provide` token in [`overrides`](/di/lifecycle).
+
+For working equivalents of `useValue`, `useClass`, `useExisting`, `useFactory` and multi-providers, follow the [provider recipes](/di/recipes/bindings).

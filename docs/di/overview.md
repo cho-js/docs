@@ -41,6 +41,8 @@ Within an application, callers resolving the same declaration receive the same i
 | Requirement | Mechanism |
 | --- | --- |
 | Inject a string, interface or asynchronously constructed client | [Typed tokens and factory providers](/di/providers) |
+| Supply a fixed value, select an implementation or alias an existing service | [Provider recipes](/di/recipes/bindings) |
+| Create a fresh object per operation or share it within one request | [Lifetime recipes](/di/recipes/lifetimes) |
 | Use one catalog across features | [Export it from a module](/di/modules) |
 | Release a client or replace it during a test | [Provider lifecycle and overrides](/di/lifecycle) |
 | Share instances between HTTP and message handlers | [Use one injector](/message/with-web) |
