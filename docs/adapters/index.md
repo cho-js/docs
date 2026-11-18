@@ -21,5 +21,6 @@ The linker receives each route with its full path and method. CHO already handle
 | Customize a miss | `notFound` option | `hono.notFound` | `setNotFoundHandler` |
 | In-memory request testing | `app.handler` | `app.handler` | `app.handler` or `inject` |
 | Stream over the network | Fetch handler | Fetch handler | Native Fastify listener |
+| Register routes with `app.mount` | Also accepts mounts after a request | Before the first request | Before `ready()`, `listen()` or the first injected request |
 
 On all three adapters, put literal routes before parameter routes and use Web APIs in controllers when you want to keep a choice of host. [Built-in router](/adapters/cho) · [Hono](/adapters/hono) · [Fastify](/adapters/fastify) · [Implement a linker](/adapters/custom)

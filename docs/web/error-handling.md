@@ -18,7 +18,7 @@ const app = await ChoWeb.create(Library, {
 
 ## Where an error goes
 
-CHO selects one handler for each route. It checks the method's `@Catch`, then the controller's, the declaring feature module's and finally `onError`. A class with `handle(error, ctx)` may serve as an error handler. Declare it as a visible provider. Application-level handlers resolve in the root module.
+For a declared route, CHO checks the method's `@Catch`, then the controller's, the declaring feature module's and finally `onError`. A class with `handle(error, ctx)` may serve as an error handler. Declare it as a visible provider. Application-level handlers resolve in the root module.
 
 ## What an error handler returns
 
@@ -27,6 +27,7 @@ A returned value follows the [response conversion rules](/web/responses). Return
 | Observation | Where to handle it |
 | --- | --- |
 | A known route fails in middleware or in a method | `@Catch` or `onError` |
+| A handler or middleware registered with `app.mount` throws | The application's `onError`, then the adapter if the error is unhandled |
 | A built-in argument reader rejects invalid input under `validate()` | [`onInvalid`](/web/validation) |
 | No route matches the URL and verb | The [adapter's not-found hook](/adapters/) |
 | An SSE iterator fails after response headers have been sent | Inside the [stream producer](/web/sse) |

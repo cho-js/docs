@@ -1,9 +1,9 @@
 import {
-  Args, Body, ChoWeb, Controller, Get, Middlewares, Module, Param, Post, validate,
+  Args, Body, ChoWeb, Controller, Doc, Get, Middlewares, Module, Param, Post, validate,
 } from "@chojs/web";
 import { Catalog } from "./catalog.ts";
 
-const title = {
+export const bookTitle = {
   parse(value: unknown): string {
     if (typeof value !== "string" || value.trim() === "") {
       throw new Error("Supply a non-empty title");
@@ -17,8 +17,13 @@ const title = {
 class Books {
   constructor(readonly catalog: Catalog) {}
 
+  @Doc({
+    operationId: "createBook",
+    summary: "Add a book to the catalog",
+    responses: { 201: { description: "Book created", contentType: "application/json" } },
+  })
   @Post("")
-  @Args(Body("title", title))
+  @Args(Body("title", bookTitle))
   create(title: string) {
     const book = this.catalog.add(title);
     return Response.json(book, {
@@ -27,6 +32,11 @@ class Books {
     });
   }
 
+  @Doc({
+    operationId: "findBook",
+    summary: "Find a book by ID",
+    responses: { 404: { description: "Book not found" } },
+  })
   @Get(":id")
   @Args(Param("id"))
   find(id: string) {

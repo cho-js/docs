@@ -13,6 +13,8 @@ A route identifies a public instance method by HTTP verb and path. Use `@Get`, `
 
 Only the module that declares the controller contributes a path. Importing `BooksModule` from `AdminModule` does not give its routes an `admin` prefix. Use the application prefix to mount every feature together.
 
+Programmatic routes registered after creation supply their entire path, independent of these four levels. [Mount a route](/web/mounted-routes)
+
 ## Matching order
 
 ```ts

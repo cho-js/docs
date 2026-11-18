@@ -8,7 +8,8 @@ Import application classes, decorators and argument readers from `@chojs/web`. S
 | --- | --- |
 | `await ChoWeb.create(Root, options?)` | Initializes the injector and returns a linked application. Options are `prefix`, `linker`, `onError` and `overrides` |
 | `app.handler(request)` | Promise of a Fetch `Response` |
-| `app.routes` | Compiled routes with `method`, `path`, `name` and `handle` |
+| `app.mount(method, route, handler, options?)` | Registers a full path on the linked router. Accepts `ChoWebMountMethod` and `ChoWebMountOptions` (`name`, `middlewares`). Returns `void` |
+| `app.routes` | Declared and mounted routes with `method`, `path`, `name` and `handle` |
 | `app.graph` | Feature, controller and method nodes, including declared inputs and documentation |
 | `app.linked.instance` | Native router. Defaults to `ChoRouter` |
 | `app.injector` | Injector that owns the initialized graph |
@@ -28,7 +29,7 @@ Import application classes, decorators and argument readers from `@chojs/web`. S
 | `@Sse(route, { method?, keepAlive? }?)` | An async event stream. Defaults to `GET` |
 | `@Args(...readers)` | Ordered method inputs, followed by the optional `ChoWebContext` |
 | `@Middlewares(...items)`, `@Catch(handler)` | Route middleware and the nearest route error handler |
-| `@Doc(options)` | Descriptions, tags and related documentation metadata |
+| `@Doc(options)` | Operation IDs, summaries, response statuses and media types, descriptions, tags, security, deprecation and visibility. [Field reference](/web/api-docs) |
 
 ## Input and output types
 
@@ -40,10 +41,14 @@ Import application classes, decorators and argument readers from `@chojs/web`. S
 | Middleware | `ChoWebMiddlewareFn`, `ChoWebNext`, `ChoWebMiddleware` |
 | Errors | `ChoWebErrorHandlerFn`, `ChoWebErrorHandler` |
 | Events | `ChoWebSseEvent<T>`, `ChoWebSseOptions`, `ChoWebSseResult` |
-| Metadata | `ChoWebDoc`, `ChoWebDocResponse`, `ChoWebArgInfo` |
+| Metadata | `ChoWebDoc`, `ChoWebDocResponse`, `ChoWebDocSecurity`, `ChoWebArgInfo` |
 
 A normal method may return a value or a promise. An SSE method returns an async iterable or an explicit `Response`. A middleware returns a `Response` or continues downstream. [Responses](/web/responses) · [Middleware](/web/middlewares) · [Events](/web/sse)
 
 ## Router contract
 
-`Linker<T>.link(routes)` returns a `Linked<T>` with `instance` and `handler`. `ChoLinker` accepts `{ notFound?, middlewares? }`. Its `ChoRouter` exposes `routes`, `match(method, pathname)` and `fetch(request)`. [Adapter comparison](/adapters/) · [Implement a linker](/adapters/custom)
+`Linker<T>.link(routes)` returns a `Linked<T>` with `instance`, `handler` and `mount(route)`. `ChoLinker` accepts `{ notFound?, middlewares? }`. Its `ChoRouter` exposes `routes`, `mount(route)`, `match(method, pathname)` and `fetch(request)`. [Adapter comparison](/adapters/) · [Implement a linker](/adapters/custom)
+
+## OpenAPI extra
+
+Import `openApi(app, options)` from `@chojs/openapi` to serve the specification and optional UI. Use `openApiDocument(app, options)` for a plain document or `docsPage(options)` for standalone HTML. [Publish an OpenAPI document](/web/openapi)

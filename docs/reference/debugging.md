@@ -6,6 +6,7 @@ Select a debug context before creating the application. CHO writes its diagnosti
 | --- | --- |
 | `cho:di` | Module scopes, resolutions, provider creation and failures |
 | `cho:web` | Registered method/path pairs, startup errors and route exceptions |
+| `cho:openapi` | OpenAPI document generation and validators whose schemas could not be converted |
 | `cho:command` | Discovered actions, selected command, duration and exit status |
 | `cho:message` | Complete topics, graph creation and delivery failures |
 | `cho:kafka` | Subscription, retry, dead-letter handling, commit failures and shutdown |

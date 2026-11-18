@@ -36,6 +36,7 @@ const http = {
     { text: "Build a writable catalog", link: "/web/example" },
     { text: "Test the catalog", link: "/web/testing" },
     { text: "Route matching", link: "/web/routing" },
+    { text: "Mount a route", link: "/web/mounted-routes" },
     { text: "Request context", link: "/web/context" },
     { text: "Handler arguments", link: "/web/arguments" },
     { text: "Input validation", link: "/web/validation" },
@@ -45,6 +46,7 @@ const http = {
     { text: "Error handling", link: "/web/error-handling" },
     { text: "Application lifecycle", link: "/web/application" },
     { text: "API descriptions", link: "/web/api-docs" },
+    { text: "Publish OpenAPI documentation", link: "/web/openapi" },
   ],
 };
 

@@ -28,4 +28,6 @@ A matched operation creates a fresh context with its own state map. The compiled
 
 ## Locate the implementation
 
+Packages in `extras/` consume framework internals such as the declaration graph and are maintained alongside the framework. For example, `extras/openapi` walks `app.graph` to generate an API contract, then uses `app.mount` to serve it. The two mounted endpoints appear in the runtime route list while the graph still describes the original controllers. Applications opt in by installing the extra. [Generate an OpenAPI document](/web/openapi)
+
 The package specifications sit beside the graph builders and tests. Follow the package closest to the failing boundary. [Core](https://github.com/cho-js/cho/blob/main/core/specs.md) · [Web](https://github.com/cho-js/cho/blob/main/web/specs.md) · [Command](https://github.com/cho-js/cho/blob/main/command/specs.md) · [Message](https://github.com/cho-js/cho/blob/main/message/specs.md)

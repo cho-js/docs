@@ -16,7 +16,7 @@ console.log("Listening on", server.port);
 
 | Option | Effect |
 | --- | --- |
-| `prefix` | Prepends relative segments to every route |
+| `prefix` | Prepends relative segments to controller routes |
 | `linker` | Registers compiled routes with a router. Defaults to `ChoLinker` |
 | `onError` | Supplies the fallback error handler for matched routes |
 | `overrides` | Replaces matching provider declarations before initialization |
@@ -25,7 +25,9 @@ If initialization or linking fails, creation rejects and CHO attempts to release
 
 ## What the application exposes
 
-Use `app.handler` for serving and request tests. Use `app.routes` to inspect final method/path pairs and their controller names. `app.graph` retains feature, controller and method metadata for tools such as [API documentation generators](/web/api-docs). `app.linked.instance` exposes the selected adapter's native application. `app.injector` can be shared with a [message consumer](/message/with-web).
+Use `app.handler` for serving and request tests. Use `app.routes` to inspect final method/path pairs and their diagnostic names. `app.graph` retains feature, controller and method metadata for tools such as [API documentation generators](/web/api-docs). `app.linked.instance` exposes the selected adapter's native application. `app.injector` can be shared with a [message consumer](/message/with-web).
+
+After creation, call `app.mount` to register endpoints that depend on the initialized application. These join `app.routes` with their own names and full paths. Register them before a listener, test request or adapter readiness check. [Mount a route](/web/mounted-routes) · [Publish OpenAPI documentation](/web/openapi)
 
 ## Shut down the listener
 

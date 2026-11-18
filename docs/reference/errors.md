@@ -32,6 +32,8 @@ Identify the operation that failed before choosing where to handle it. A rejecte
 | --- | --- |
 | Invalid route at definition or startup | Use `""` for the root or relative segments like `"books/:id"`. Remove leading/trailing slashes and wildcards |
 | Duplicate route | Inspect complete paths and verbs. Parameter names are ignored when detecting a duplicate |
+| `app.mount` fails during registration | Check existing and proposed method/path pairs. Mount before Hono's first request or Fastify's readiness check |
+| OpenAPI generation rejects an operation ID or security requirement | Give each visible operation a unique ID and declare every referenced scheme in `securitySchemes`. [API descriptions](/web/api-docs) |
 | `ChoLinker needs the URL Pattern API` | Check `typeof URLPattern` in the serving runtime or use a Hono linker |
 | A validated argument arrives as raw text | Ensure `validate()` covers the route. Inspect `method.validated` or enable `cho:web` |
 | Middleware returned no response | Return a `Response` or call `next()` exactly once |
