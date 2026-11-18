@@ -103,6 +103,8 @@ const messages = {
     { text: "Receive an inventory message", link: "/message/quick-start" },
     { text: "Topic names", link: "/message/topics" },
     { text: "Delivery context", link: "/message/handlers" },
+    { text: "Read and validate arguments", link: "/message/arguments" },
+    { text: "Share a message contract", link: "/message/contracts" },
     { text: "Return a reply", link: "/message/replies" },
     { text: "Message middleware", link: "/message/middlewares" },
     { text: "Failed deliveries", link: "/message/error-handling" },
@@ -110,6 +112,7 @@ const messages = {
     { text: "Application lifecycle", link: "/message/application" },
     { text: "Share a store with HTTP", link: "/message/with-web" },
     { text: "Request and reply over NATS", link: "/message/nats" },
+    { text: "Durable events with JetStream", link: "/message/jetstream" },
     { text: "Consume from Kafka", link: "/message/kafka" },
     { text: "Verify Kafka delivery and retries", link: "/message/kafka-check" },
     { text: "Implement a broker adapter", link: "/message/adapters" },
@@ -119,6 +122,7 @@ const messages = {
 const reference = {
   text: "Reference",
   items: [
+    { text: "Documentation status", link: "/reference/status" },
     { text: "HTTP API", link: "/reference/web" },
     { text: "Command API", link: "/reference/command" },
     { text: "Message API", link: "/reference/message" },

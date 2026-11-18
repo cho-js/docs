@@ -62,7 +62,7 @@ onUnmounted(() => {
 <section class="cho-hero" aria-labelledby="hero-title">
 <div class="cho-wrap cho-hero-grid">
 <div class="cho-hero-copy">
-<a class="cho-badge" :href="withBase('/message/quick-start')"><b>New</b> Meet @chojs/message <span aria-hidden="true">↗</span></a>
+<a class="cho-badge" :href="withBase('/message/contracts')"><b>New</b> Typed message contracts <span aria-hidden="true">↗</span></a>
 <h1 id="hero-title">One framework.<br><span class="cho-grad">Every runtime.</span></h1>
 <p class="cho-lead">Build modular HTTP, command-line and message applications with a tiny TypeScript framework. Keep your code. Choose your runtime.</p>
 <div class="cho-actions">
@@ -90,7 +90,7 @@ import { serve } from "@chojs/web/serve";
 
 @Controller()
 class HelloController {
-  @Get("/")
+  @Get("")
   hello() {
     return { message: "Hello, world!" };
   }
@@ -207,7 +207,7 @@ const code = await app.run(Deno.args); // the exit code
 ```ts [Messages]
 import {
   ChoMessage,
-  type ChoMessageContext,
+  Args, Value,
   Controller,
   Module,
   Subscribe,
@@ -216,9 +216,9 @@ import {
 @Controller({ topic: "orders" })
 class OrdersController {
   @Subscribe("created") // the topic orders.created
-  created(ctx: ChoMessageContext) {
-    console.log(ctx.key, ctx.json());
-    // returning without an error: the message is handled
+  @Args(Value<string>("id"))
+  created(id: string) {
+    console.log("Received order", id);
   }
 }
 
@@ -227,6 +227,7 @@ class App {}
 
 const app = await ChoMessage.create(App);
 await app.handle("orders.created", { key: "42", value: '{"id":"42"}' });
+await app.close();
 ```
 
 :::
@@ -354,7 +355,7 @@ UsersController.get and AdminController.find</span>
 <a :href="withBase('/web/arguments')" data-r style="--d: 0"><small>@Args · validate()</small><h3>Typed arguments, validated</h3><p>Declare what a handler reads from the request. A Zod schema, or any object with a <code>parse</code> method, checks it.</p></a>
 <a :href="withBase('/web/sse')" data-r style="--d: 1"><small>@Sse</small><h3>Server-sent events</h3><p>A handler is an async generator. Each <code>yield</code> is an event, and a client that leaves ends the loop.</p></a>
 <a :href="withBase('/command/quick-start')" data-r style="--d: 2"><small>@Main · @Action</small><h3>Command lines that explain themselves</h3><p><code>--help</code> is generated from the flags each command declares. <code>run()</code> returns the exit code.</p></a>
-<a :href="withBase('/message/handlers')" data-r style="--d: 0"><small>@Subscribe</small><h3>No message lost silently</h3><p>A message is acknowledged after its handler returns. An error handler that only logs leaves it failed.</p></a>
+<a :href="withBase('/message/jetstream')" data-r style="--d: 0"><small>NATS JetStream</small><h3>Resume event processing after downtime</h3><p>A durable consumer picks up stored events, retries failed deliveries and can send exhausted messages to a dead-letter stream.</p></a>
 <a :href="withBase('/message/with-web')" data-r style="--d: 1"><small>ChoMessage.from(web.injector)</small><h3>HTTP and messages, one set of instances</h3><p>One database pool, one cache, for the requests and for the messages of the same process.</p></a>
 <a :href="withBase('/recipes/')" data-r style="--d: 2"><small>Recipes</small><h3>The everyday tasks, worked out</h3><p>Streaming, downloads, uploads, forwarding a request and shutting down gracefully, checked on three runtimes.</p></a>
 </div>

@@ -56,6 +56,7 @@ gtag('js', new Date());`,
       {
         text: "v3",
         items: [
+          { text: "Documentation status", link: "/reference/status" },
           { text: "Packages on JSR", link: "https://jsr.io/@chojs" },
           { text: "Releases", link: "https://github.com/cho-js/cho/releases" },
           { text: "Contributing", link: "https://github.com/cho-js/cho/blob/main/CONTRIBUTING.md" },

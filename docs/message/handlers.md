@@ -1,6 +1,6 @@
 # Read and handle a delivery
 
-A subscription method receives a `ChoMessageContext`. Use the topic to identify the event contract and the body to read its data. Returning from the method signals that your handling work finished, so await any write that must succeed before acknowledgment.
+A method declared with `@Subscribe("topic")` receives a `ChoMessageContext` by default. To receive selected fields as parameters, use [argument readers](/message/arguments). To share a typed payload and reply with the caller, subscribe to a [contract](/message/contracts). Await any write that must succeed before a durable consumer acknowledges the event.
 
 | Member | Value for one delivery |
 | --- | --- |

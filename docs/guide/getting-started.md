@@ -44,7 +44,7 @@ Each tutorial supplies its own `app.ts` and entry point. Use those contents for 
 
 ### Run examples against the development version
 
-Message replies, `HttpError` and stable framework error codes were added on `main` after the 3.4.0 tags. If you are using 3.4.0 and want to try these examples with Deno, clone the [CHO repository](https://github.com/cho-js/cho), save the example under its `examples/` directory and run it from the repository root. Deno resolves `@chojs/*` imports against the local workspace. For the [shelf lookup](/message/replies), the command is `deno run examples/replies.ts`.
+Message arguments, typed contracts, NATS JetStream, message replies, `HttpError` and stable error codes landed on `main` after the 3.4.0 tags. To try these examples with Deno, clone the [CHO repository](https://github.com/cho-js/cho), save the example under its `examples/` directory and run it from the repository root. Deno resolves `@chojs/*` imports against the local workspace. For the [typed shelf lookup](/message/contracts), run `deno run examples/contracts.ts`.
 
 ## Check the environment
 

@@ -55,11 +55,15 @@ After retry exhaustion without a dead-letter destination, or if writing the dead
 
 ## Design for redelivery
 
+The inventory tutorial throws its own `TypeError` for an invalid ISBN, so that example exercises the ordinary retry policy. If a route instead uses [CHO validation](/message/arguments) and the delivery rejects with `CHO_MESSAGE_INVALID_MESSAGE`, Kafka skips retries and immediately applies the dead-letter policy.
+
 A successful application write can precede a failed offset commit. Use a stable event identifier for writes that must tolerate repeated delivery. Increasing concurrency allows different partitions to progress independently. Records in the same partition remain ordered, including during retries.
 
 The adapter exposes `{ message, attempt }` through `ctx.native` as `KafkaNative`. The first attempt is `1`. Use the native message for raw key or repeated header bytes. For publishing, the linked client exposes `app.linked.instance.producer.send({ messages })`. Direct `app.handle` tests bypass Kafka. For a reproducible two-record exercise, [verify Kafka delivery and retries](/message/kafka-check).
 
 ## Publish with the linked producer
+
+For a [typed event](/message/contracts), retain the `KafkaLinker` passed to `ChoMessage.create` and use `new ChoMessageClient(linker.sender)` from `@chojs/message`. For example, given a `BookReceived` contract, call `await client.publish(BookReceived, { isbn }, { key: copyId })`. The Kafka sender is ready once the application is created. The producer connects on first use. Calling `request` rejects with `CHO_MESSAGE_NO_REPLIES`.
 
 To publish a follow-up event from the worker process, use the producer on the started application. The following fragment sends the same shape that the inventory handler accepts:
 

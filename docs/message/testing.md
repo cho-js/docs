@@ -34,6 +34,8 @@ For a subscription that answers its caller, assert that the reply exists, then d
 
 ## Assert a side effect
 
+When the producer and handler share a contract, create a `ChoMessageClient(localSender(app))` and assert on `await client.request(contract, payload)`. This exercises both JSON conversions and the reply validator. A missing local topic rejects with `CHO_MESSAGE_UNKNOWN_TOPIC`. Timeouts, remote error mapping and durable redelivery need the corresponding broker. [Runnable contract example](/message/contracts) · [JetStream delivery check](/message/jetstream)
+
 Use `overrides` to replace a declared mailer, writer or store with a recording implementation. Await delivery, then assert on its calls. To test that HTTP sees the write, [share the web injector](/message/with-web) and request the HTTP endpoint after delivery.
 
 A local `handle` test exercises one attempt. Verify broker-specific behavior, such as commits, redelivery and partition assignment, with the chosen adapter and a broker integration test.

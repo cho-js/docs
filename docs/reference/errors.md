@@ -89,6 +89,10 @@ Use `isChoError(error)` to read the code when several failures share one reporti
 | Retries stop intake | Check retry exhaustion, dead-letter setup, producer errors and `onFatal`. The failed offset can remain uncommitted |
 | An existing consumer group ignores `from: "earliest"` | The adapter resumes committed offsets. `from` controls the fallback for a group without one |
 | `CHO_NATS_NOT_STARTED` | Await `app.start()` before reading the NATS connection from `app.linked.instance` |
+| `CHO_MESSAGE_INVALID_MESSAGE` | Inspect `error.cause` and the argument reader or contract request validator. An unhandled validation failure goes straight to the broker's invalid-message policy |
+| `CHO_MESSAGE_UNEXPECTED_REPLY` | Check the responding service's JSON encoding and the reply validator in the shared contract |
+| `CHO_NATS_STREAM_NOT_FOUND` | Enable JetStream and provision every named stream before starting the application |
+| `CHO_NATS_DUPLICATE_CONSUMER` | Inspect the durable names derived from the queue and route. Dots become underscores, so different topics can produce the same consumer name |
 | `CHO_NATS_REPLY_FAILED` | Check the server's payload limit and the reply headers. Use printable ASCII header names without spaces or colons, and single-line values |
 
 [Delivery outcomes](/message/error-handling) · [NATS request failures](/message/nats#map-a-failure-for-the-caller) · [Kafka policy](/message/kafka)

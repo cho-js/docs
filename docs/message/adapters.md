@@ -13,6 +13,10 @@ The message package owns parsing, middleware and error handling. An adapter owns
 
 Import `Linker`, `Linked`, `Route` and `Delivery` from `@chojs/message/linker`. Keys and headers are strings. Values may be bytes, a string or `null`. Use `native` for broker-specific details that portable handlers can ignore.
 
+## Expose a sender for clients
+
+The routes passed to `link` handle incoming deliveries. For outgoing [contract messages](/message/contracts), expose a `sender` implementing `Sender` from `@chojs/message/linker`. Its `publish(topic, delivery)` sends bytes with optional key and headers. Implement `request(topic, delivery, options?)` for a broker with replies and honor the caller's timeout. A publish-only sender can omit that method. `ChoMessageClient` then rejects requests with `CHO_MESSAGE_NO_REPLIES`.
+
 ## Keep delivery and acknowledgment distinct
 
 This callback illustrates the boundary with a client that exposes `ack` and `retry` operations. Adapt those operations to the actual broker.

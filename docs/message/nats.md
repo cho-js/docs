@@ -35,11 +35,11 @@ Read the service-error header before decoding the payload. The missing copy prod
 | Returns nothing | Receives an empty reply | Processing ends |
 | Fails after CHO error handling | Receives a service-error reply | The event is lost. The failure appears in the adapter's debug output when enabled |
 
-Core NATS delivers at most once. It has no replay, acknowledgment or retry for a failed delivery. Use a request when the caller needs to know the outcome. For durable consumption with retries and dead-letter publication, see the [Kafka guide](/message/kafka). The NATS adapter supports Core NATS subjects and queue groups. JetStream consumers require a separate integration.
+Core NATS delivers at most once. Use a request when the caller needs to know the outcome. For durable events on the same connection, configure [JetStream streams and consumers](/message/jetstream). For typed requests across services, share a [message contract](/message/contracts) and give `linker.sender` to `ChoMessageClient`. The NATS sender uses a default request timeout of 1000 ms.
 
 ## Map a failure for the caller
 
-An `@Catch` that returns a fallback value produces an ordinary successful reply. If the delivery still fails, the NATS adapter invokes `errorReply(error, message)`. Return `{ code, description, value? }` for a known failure, as the example does for `UnknownCopy`. Returning `undefined` uses the default empty reply with `Nats-Service-Error-Code: 500` and `Nats-Service-Error: Internal Error`. Enable the adapter's debug output to see the original exception.
+An `@Catch` that returns a fallback value produces an ordinary successful reply. If a `ReplyError` reaches the adapter, its code and description go directly to the requester. For other failures, `errorReply(error, message)` can supply `{ code, description, value? }`, as the example does for `UnknownCopy`. Returning `undefined` selects the default empty service-error reply. Invalid input rejected by CHO validation gets `400 Bad Request` and other failures get `500 Internal Error`. Enable the adapter's debug output to see the original exception.
 
 ## Configure a worker
 

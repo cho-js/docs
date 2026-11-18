@@ -35,6 +35,8 @@ CHO selects the closest `@Catch` on the method, controller or declaring feature 
 
 ## Verify the effect
 
+For a request, throw `new ReplyError(404, "Unknown copy")` when the caller should receive a specific public failure. CHO applies the selected `@Catch` first. If the failure reaches Core NATS, a typed requester can match it with `isReplyError(error, 404)`. For a durable event, a `ReplyError` follows the ordinary failure policy. An unhandled `CHO_MESSAGE_INVALID_MESSAGE` skips ordinary retries on Kafka and JetStream. [Message contracts](/message/contracts) · [JetStream failure policy](/message/jetstream#choose-the-failure-policy)
+
 Test the distinction by delivering a known bad record with `app.handle` and asserting whether the promise resolves or rejects. Manual delivery makes one attempt. The [Kafka adapter](/message/kafka) adds retries, offset commits and optional dead-letter publication.
 
 With [Core NATS](/message/nats#map-a-failure-for-the-caller), an unhandled failure during a request produces a service-error reply. A fallback returned by `@Catch` is sent as a successful reply. A failed event published without a reply address receives no further attempt. Enable `cho:nats` debug logging to see the exception.

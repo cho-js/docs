@@ -17,6 +17,8 @@ copy-99 unknown copy
 
 ## Choose the reply format
 
+These rules apply to a subscription declared with a topic string. A [contract subscription](/message/contracts) encodes the handler's return value as JSON, including a string. Its typed client decodes that JSON and runs the reply validator if one was supplied.
+
 | Subscription returns | What the caller receives |
 | --- | --- |
 | Nothing or `undefined` | `undefined`. Handling succeeded without a reply |

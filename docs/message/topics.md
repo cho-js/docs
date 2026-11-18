@@ -13,6 +13,8 @@ CHO joins nonempty parts with a dot. A module that imports a feature contributes
 
 ## Check the producer's contract
 
+A [message contract](/message/contracts) names the whole application topic before the deployment prefix. For example, a contract for `library.books.received` can be handled under module `library` and controller `books`. A client and server configured with `prefix: "prod"` then address `prod.library.books.received`.
+
 ```ts
 const app = await ChoMessage.create(Library, { prefix: "prod" });
 console.table(app.routes.map(({ topic, name }) => ({ topic, name })));
