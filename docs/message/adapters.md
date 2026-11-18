@@ -22,13 +22,15 @@ import type { Delivery, Route } from "@chojs/message/linker";
 
 interface BrokerRecord {
   delivery: Delivery;
+  sendReply?(value: Uint8Array): Promise<void>;
   ack(): Promise<void>;
   retry(error: unknown): Promise<void>;
 }
 
 async function dispatch(route: Route, record: BrokerRecord) {
   try {
-    await route.handle(record.delivery, record);
+    const reply = await route.handle(record.delivery, record);
+    if (reply && record.sendReply) await record.sendReply(reply.value);
   } catch (error) {
     await record.retry(error);
     return;
@@ -36,5 +38,7 @@ async function dispatch(route: Route, record: BrokerRecord) {
   await record.ack();
 }
 ```
+
+For a request with a reply address, bind `sendReply` to that address and carry over the broker's correlation ID. Event-only adapters can ignore the result. This example treats failure to send the reply as retryable, so delivery can run again.
 
 An acknowledgment failure happens after the handler may have written data. Account for redelivery when designing that write. Specify ordering, concurrency, retry limits and what happens when retries are exhausted. The [Kafka adapter](/message/kafka) documents these decisions for a concrete broker.

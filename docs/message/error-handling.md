@@ -2,14 +2,15 @@
 
 A handler that throws produces a rejected delivery unless the selected error handler explicitly settles it. This decision affects what a broker adapter may acknowledge.
 
-## Retry or drop
+## What the caller observes
 
 | Outcome | `app.handle` or `route.handle` | Broker adapter can… |
 | --- | --- | --- |
-| Subscription completes normally | Resolves | Acknowledge |
-| `@Catch` returns exactly `true` | Resolves | Acknowledge and advance |
-| `@Catch` returns `false`, `undefined` or another value | Rejects with the original error | Apply its failure policy |
-| `@Catch` throws | Rejects with the original error. The secondary failure is logged | Apply its failure policy |
+| Subscription completes normally | Resolves with its [encoded reply](/message/replies), or `undefined` for no reply | Forward a reply if supported, then acknowledge |
+| `@Catch` returns `true` | Resolves with `undefined` | Acknowledge without a reply |
+| `@Catch` returns an encodable value other than `true`, `false` or `undefined` | Resolves with a fallback reply, including for `0`, `null` or `""` | Forward a reply if supported, then acknowledge |
+| `@Catch` returns `false` or `undefined`, or no error handler is configured | Rejects with the original error | Apply its failure policy |
+| `@Catch` throws or returns a value that cannot be encoded | Rejects with the original error. The secondary failure is logged | Apply its failure policy |
 
 For example, a retired schema may be safe to discard while a failed database write needs another attempt.
 

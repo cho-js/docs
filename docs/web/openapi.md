@@ -73,4 +73,6 @@ try {
 }
 ```
 
+If generation fails with `CHO_OPENAPI_DUPLICATE_OPERATION_ID`, check the IDs on visible operations. For `CHO_OPENAPI_UNKNOWN_SECURITY_SCHEME`, compare the security requirements with the keys in `securitySchemes`. Tests can match either [framework code](/reference/errors) with `isChoError` from `@chojs/web`.
+
 `openApiDocument` returns a fresh object on each call. To generate HTML for an already hosted document, use `docsPage({ url: "/openapi.json", title: "Library catalog", ui: "redoc" })`. For operation IDs, response media types, inherited security and schema conversion, see [describe an HTTP API](/web/api-docs).

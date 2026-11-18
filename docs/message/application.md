@@ -23,7 +23,7 @@ try {
 }
 ```
 
-`handle` selects the exact topic and awaits its pipeline. An unknown topic rejects before a handler runs. This path works without `start` or a broker. Calling `start` on an application without a linker rejects.
+`handle` selects the exact topic and awaits its pipeline. On success it returns a [reply](/message/replies) or `undefined`. An unknown topic rejects with `CHO_MESSAGE_UNKNOWN_TOPIC` before a handler runs. This path works without `start` or a broker. Calling `start` on an application without a linker rejects.
 
 ## Manage a connected application
 

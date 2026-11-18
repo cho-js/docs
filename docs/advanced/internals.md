@@ -24,7 +24,7 @@ At this point CHO can validate wiring before running constructors. During resolu
 
 ## 4. Dispatch within one context
 
-A matched operation creates a fresh context with its own state map. The compiled middleware chain surrounds the endpoint. The HTTP endpoint evaluates request arguments and converts the method's return value to a response. The command pipeline produces a status. A message pipeline tracks completion and failure. Keeping the context local lets a single provider instance serve overlapping operations.
+A matched operation creates a fresh context with its own state map. The compiled middleware chain surrounds the endpoint. The HTTP endpoint evaluates request arguments and converts the method's return value to a response. The command pipeline produces a status. A message pipeline resolves with an optional encoded reply or rejects with the delivery error. Keeping the context local lets a single provider instance serve overlapping operations.
 
 ## Locate the implementation
 

@@ -19,6 +19,6 @@ For an image or encoded payload, use `ctx.value` directly. For plain text, use `
 
 ## Finish, fail or publish
 
-A normal return, including returning `false` from a subscription method, finishes the delivery successfully. Throw or reject to report failure. A return value has special meaning only in a [message error handler](/message/error-handling).
+Return nothing to finish an event, or return a value to answer the caller. For example, returning `false` from a subscription sends the JSON value `false`. Throw or reject to report failure. See [Return a reply](/message/replies) for encoding and [Failed deliveries](/message/error-handling) for the separate meaning of a boolean returned by `@Catch`.
 
 To publish a follow-up event, inject a producer that your application owns, or use the broker adapter's publishing API. `app.handle` invokes a local handler directly. [Kafka publishing](/message/kafka)

@@ -19,7 +19,7 @@ const app = await ChoWeb.create(Library, {
 });
 ```
 
-Request `/missing` to check your not-found response. Throwing from an existing method is a different path and follows [route error handling](/web/error-handling). By default a miss returns `404 Not Found`, and an unhandled route failure is logged and answered with `500`.
+Request `/missing` to check your not-found response. Throwing from an existing method is a different path and follows [route error handling](/web/error-handling). By default a miss returns `404 Not Found`, and a thrown `HttpError` uses its declared status. Other unhandled route failures are logged and answered with `500`. The built-in router also renders `HttpError` from its router-wide middleware and not-found hook.
 
 ## Inspect a match
 

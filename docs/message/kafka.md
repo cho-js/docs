@@ -47,7 +47,11 @@ Publish `{"isbn":"9780140268867"}` to `books.received` using your Kafka producer
 | `onFatal` | Throws the error | Called after a fatal stop for process-level reporting or recovery |
 | `client`, `consume` | Optional | Client and consumption settings. The adapter controls subscriptions and commits |
 
-A handled delivery commits its offset. A `@Catch` that returns `true` also marks it handled and bypasses retries. After retry exhaustion without a dead-letter destination, or if writing the dead letter fails, the consumer stops and leaves the failed offset uncommitted. Each dead letter carries the original payload and diagnostic headers including `cho-topic`, `cho-partition`, `cho-offset`, `cho-group`, `cho-attempts` and `cho-error`.
+A handled delivery commits its offset. An error handler can settle a record by returning `true` or a fallback reply. Both bypass retries.
+
+Kafka ignores reply bytes from subscriptions and error handlers and commits the handled record. With `cho:kafka` debugging enabled, the first ignored reply per route is logged. Use the linked producer below when a result needs its own Kafka record.
+
+After retry exhaustion without a dead-letter destination, or if writing the dead letter fails, the consumer stops and leaves the failed offset uncommitted. Each dead letter carries the original payload and diagnostic headers including `cho-topic`, `cho-partition`, `cho-offset`, `cho-group`, `cho-attempts` and `cho-error`.
 
 ## Design for redelivery
 

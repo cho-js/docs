@@ -27,7 +27,7 @@ const currentEdition: ChoMessageMiddlewareFn = async (ctx, next) => {
 };
 ```
 
-Returning before `next()` skips the remaining chain and **settles the delivery successfully**. Use this for records you intend to discard. Throw to leave a delivery failed. Returning `false` from middleware does not request a retry. Call `next()` at most once.
+Returning before `next()` skips the remaining chain and **settles the delivery successfully**. Use this for records you intend to discard. Throw to leave a delivery failed. Returning `false` from middleware does not request a retry. Call `next()` at most once. Its promise resolves to `void`. Middleware that calls it leaves the subscription's reply intact. Skipping it completes the delivery without a reply.
 
 ## Share dependencies and state
 

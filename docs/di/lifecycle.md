@@ -27,7 +27,7 @@ Register `auditProvider` in the owning module and grant the process write access
 
 ## Close in dependency order
 
-Stop the external source of work, allow active operations to finish, then release the injector. CHO disposes values in reverse creation order and disposes a shared object once. If disposal fails it continues with the remaining values and reports the failures in an `AggregateError`. See [HTTP shutdown](/recipes/shutdown) and [shared message consumers](/message/with-web).
+Stop the external source of work, allow active operations to finish, then release the injector. CHO disposes values in reverse creation order and disposes a shared object once. If disposal fails it continues with the remaining values and reports the failures in an `AggregateError`. Inspect each entry in `error.errors` for `CHO_CORE_DISPOSE_FAILED`. Its `cause` identifies what the disposer threw. [Framework error codes](/reference/errors) See [HTTP shutdown](/recipes/shutdown) and [shared message consumers](/message/with-web).
 
 ## Overrides for tests
 

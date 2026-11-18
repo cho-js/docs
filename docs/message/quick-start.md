@@ -30,7 +30,7 @@ bun run main.ts
 
 :::
 
-Expect `Received 9780140268867 on books.received`. The promise returned by `handle` resolves when the handler and its middleware finish.
+Expect `Received 9780140268867 on books.received`. The promise returned by `handle` resolves to `undefined` because this subscription returns nothing. To answer a lookup, [return a reply](/message/replies).
 
 ## 3. Exercise a failure
 

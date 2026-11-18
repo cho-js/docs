@@ -39,7 +39,8 @@ Import application classes, decorators and argument readers from `@chojs/web`. S
 | Input | `Param`, `Query`, `Header`, `Body`, `Form` and custom `ChoWebArg<T>` functions |
 | Validation | `ChoWebValidator<T>` supplies `parse`. `validate({ onInvalid? })` activates validators |
 | Middleware | `ChoWebMiddlewareFn`, `ChoWebNext`, `ChoWebMiddleware` |
-| Errors | `ChoWebErrorHandlerFn`, `ChoWebErrorHandler` |
+| HTTP failures | `HttpError`, `HttpErrorOptions`, `isHttpError` and `error.toResponse()`. [Status, headers and response bodies](/web/error-handling) |
+| Error handlers and diagnostics | `ChoWebErrorHandlerFn`, `ChoWebErrorHandler`, `ChoError`, `isChoError` and `ChoWebErrorCode`. [Stable codes](/reference/errors) |
 | Events | `ChoWebSseEvent<T>`, `ChoWebSseOptions`, `ChoWebSseResult` |
 | Metadata | `ChoWebDoc`, `ChoWebDocResponse`, `ChoWebDocSecurity`, `ChoWebArgInfo` |
 

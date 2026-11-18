@@ -49,6 +49,6 @@ docker exec cho-docs-kafka /opt/kafka/bin/kafka-consumer-groups.sh \
 
 For a fresh topic containing just these two records, wait for `CURRENT-OFFSET` to reach `2` and `LAG` to reach `0`. Stop the worker with Ctrl+C, then start it again with the same group. A new valid record should be handled once it arrives. The two earlier records already have committed offsets.
 
-If the dead-letter consumer waits indefinitely, check the worker's broker address, group membership and selected `@Catch` policy. A handler that settles an error with `true` bypasses the adapter's retries and dead-letter publication. Enable `CHO_DEBUGLOG=cho:message,cho:kafka` before starting the worker to inspect that distinction.
+If the dead-letter consumer waits indefinitely, check the worker's broker address, group membership and selected `@Catch` policy. A handler that settles an error with `true` or a fallback reply bypasses the adapter's retries and dead-letter publication. Enable `CHO_DEBUGLOG=cho:message,cho:kafka` before starting the worker to inspect that distinction.
 
 Stop the worker and run `docker stop cho-docs-kafka` to discard the local broker and its temporary data.

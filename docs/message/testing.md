@@ -8,6 +8,7 @@ Save as `inventory_test.ts` beside `app.ts` from the [inventory quick start](/me
 
 ```ts
 import assert from "node:assert/strict";
+import { isChoError } from "@chojs/message";
 import { createApp } from "./app.ts";
 
 Deno.test("inventory accepts an ISBN and rejects a malformed shipment", async () => {
@@ -18,7 +19,9 @@ Deno.test("inventory accepts an ISBN and rejects a malformed shipment", async ()
       app.handle("books.received", { value: '{"isbn":42}' }),
       /Expected a string isbn/,
     );
-    await assert.rejects(app.handle("books.missing"), /no handler/);
+    await assert.rejects(app.handle("books.missing"), (error) =>
+      isChoError(error, "CHO_MESSAGE_UNKNOWN_TOPIC")
+    );
   } finally {
     await app.close();
   }
@@ -26,6 +29,8 @@ Deno.test("inventory accepts an ISBN and rejects a malformed shipment", async ()
 ```
 
 A rejection assertion should match the expected cause. Otherwise a typo in the topic could make a validation test pass. Pass `new TextEncoder().encode(payload)` as the value to exercise binary delivery. Supply `headers` and `key` explicitly when a middleware depends on them.
+
+For a subscription that answers its caller, assert that the reply exists, then decode `reply.value` using the topic's format. Test a missing result separately from a successful empty reply. The [shelf lookup example](/message/replies) exercises both a regular and a fallback answer.
 
 ## Assert a side effect
 

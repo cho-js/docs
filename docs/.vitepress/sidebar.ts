@@ -95,6 +95,7 @@ const messages = {
     { text: "Receive an inventory message", link: "/message/quick-start" },
     { text: "Topic names", link: "/message/topics" },
     { text: "Delivery context", link: "/message/handlers" },
+    { text: "Return a reply", link: "/message/replies" },
     { text: "Message middleware", link: "/message/middlewares" },
     { text: "Failed deliveries", link: "/message/error-handling" },
     { text: "Test a subscription", link: "/message/testing" },
