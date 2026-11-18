@@ -34,6 +34,7 @@ Use `isChoError(error)` to read the code when several failures share one reporti
 | `@chojs/vendor-hono` | `ChoHonoErrorCode` | `CHO_HONO_WRONG_ADAPTER` |
 | `@chojs/vendor-fastify` | `ChoFastifyErrorCode` | `CHO_FASTIFY_MOUNT_TOO_LATE` |
 | `@chojs/vendor-kafka` | `ChoKafkaErrorCode` | `CHO_KAFKA_NO_DEAD_LETTER` |
+| `@chojs/vendor-nats` | `ChoNatsErrorCode` | `CHO_NATS_NOT_STARTED` |
 
 ## When errors happen
 
@@ -76,7 +77,7 @@ Use `isChoError(error)` to read the code when several failures share one reporti
 
 [Routing](/web/routing) · [Validation](/web/validation) · [Route errors](/web/error-handling)
 
-## Messages and Kafka
+## Message consumers and brokers
 
 | Symptom | Action |
 | --- | --- |
@@ -84,11 +85,13 @@ Use `isChoError(error)` to read the code when several failures share one reporti
 | `start` reports no linker | For manual delivery call `handle` directly. For a broker attach a linker during creation |
 | `no handler for the topic` | Compare the full literal topic with `app.routes`, including the deployment prefix |
 | The consumer acknowledges a record you expected to retry | Look for a normally returning handler, a middleware that skips `next()`, or `@Catch` returning `true` or a fallback reply |
-| `CHO_MESSAGE_INVALID_REPLY` | Inspect the subscription's return value. Return bytes, text or a JSON-serializable value. [Reply formats](/message/replies) |
+| `CHO_MESSAGE_INVALID_REPLY` | Check the payload's encoding. If you returned a `ChoMessageReply`, check for nested replies, empty header names or non-string header values. [Reply formats](/message/replies) |
 | Retries stop intake | Check retry exhaustion, dead-letter setup, producer errors and `onFatal`. The failed offset can remain uncommitted |
 | An existing consumer group ignores `from: "earliest"` | The adapter resumes committed offsets. `from` controls the fallback for a group without one |
+| `CHO_NATS_NOT_STARTED` | Await `app.start()` before reading the NATS connection from `app.linked.instance` |
+| `CHO_NATS_REPLY_FAILED` | Check the server's payload limit and the reply headers. Use printable ASCII header names without spaces or colons, and single-line values |
 
-[Delivery outcomes](/message/error-handling) · [Kafka policy](/message/kafka)
+[Delivery outcomes](/message/error-handling) · [NATS request failures](/message/nats#map-a-failure-for-the-caller) · [Kafka policy](/message/kafka)
 
 ## Command line
 

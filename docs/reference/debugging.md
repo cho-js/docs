@@ -10,6 +10,7 @@ Select a debug context before creating the application. CHO writes its diagnosti
 | `cho:command` | Discovered actions, selected command, duration and exit status |
 | `cho:message` | Complete topics, graph creation and delivery failures |
 | `cho:kafka` | Subscription, retry, dead-letter handling, commit failures and shutdown |
+| `cho:nats` | Subject subscriptions, queue groups, discarded replies and shutdown |
 
 ## Enable a focused trace
 

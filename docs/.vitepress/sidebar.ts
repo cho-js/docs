@@ -109,6 +109,7 @@ const messages = {
     { text: "Test a subscription", link: "/message/testing" },
     { text: "Application lifecycle", link: "/message/application" },
     { text: "Share a store with HTTP", link: "/message/with-web" },
+    { text: "Request and reply over NATS", link: "/message/nats" },
     { text: "Consume from Kafka", link: "/message/kafka" },
     { text: "Verify Kafka delivery and retries", link: "/message/kafka-check" },
     { text: "Implement a broker adapter", link: "/message/adapters" },

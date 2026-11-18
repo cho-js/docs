@@ -18,11 +18,11 @@ Import `Linker`, `Linked`, `Route` and `Delivery` from `@chojs/message/linker`. 
 This callback illustrates the boundary with a client that exposes `ack` and `retry` operations. Adapt those operations to the actual broker.
 
 ```ts
-import type { Delivery, Route } from "@chojs/message/linker";
+import type { Delivery, Reply, Route } from "@chojs/message/linker";
 
 interface BrokerRecord {
   delivery: Delivery;
-  sendReply?(value: Uint8Array): Promise<void>;
+  sendReply?(reply: Reply): Promise<void>;
   ack(): Promise<void>;
   retry(error: unknown): Promise<void>;
 }
@@ -30,7 +30,7 @@ interface BrokerRecord {
 async function dispatch(route: Route, record: BrokerRecord) {
   try {
     const reply = await route.handle(record.delivery, record);
-    if (reply && record.sendReply) await record.sendReply(reply.value);
+    if (reply && record.sendReply) await record.sendReply(reply);
   } catch (error) {
     await record.retry(error);
     return;
@@ -39,6 +39,6 @@ async function dispatch(route: Route, record: BrokerRecord) {
 }
 ```
 
-For a request with a reply address, bind `sendReply` to that address and carry over the broker's correlation ID. Event-only adapters can ignore the result. This example treats failure to send the reply as retryable, so delivery can run again.
+For a request with a reply address, bind `sendReply` to that address, send `reply.value`, copy `reply.headers` when supported and carry over the broker's correlation ID. Event-only adapters can ignore the result. This example treats failure to send the reply as retryable, so delivery can run again. The [Core NATS adapter](/message/nats) has its own policy, including an empty response when a request handler returns nothing.
 
 An acknowledgment failure happens after the handler may have written data. Account for redelivery when designing that write. Specify ordering, concurrency, retry limits and what happens when retries are exhausted. The [Kafka adapter](/message/kafka) documents these decisions for a concrete broker.

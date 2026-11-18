@@ -36,3 +36,5 @@ CHO selects the closest `@Catch` on the method, controller or declaring feature 
 ## Verify the effect
 
 Test the distinction by delivering a known bad record with `app.handle` and asserting whether the promise resolves or rejects. Manual delivery makes one attempt. The [Kafka adapter](/message/kafka) adds retries, offset commits and optional dead-letter publication.
+
+With [Core NATS](/message/nats#map-a-failure-for-the-caller), an unhandled failure during a request produces a service-error reply. A fallback returned by `@Catch` is sent as a successful reply. A failed event published without a reply address receives no further attempt. Enable `cho:nats` debug logging to see the exception.

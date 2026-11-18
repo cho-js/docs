@@ -24,8 +24,20 @@ copy-99 unknown copy
 | An `ArrayBuffer`, typed array or `DataView` | Binary data. For a view, only the bytes in its range are included |
 | A JSON value such as an object, array, boolean, number or `null` | UTF-8 JSON. Decode and parse it as in the example |
 
-A `Reply` contains a single `value: Uint8Array` field. Agree on a format per topic. A zero-length byte array or empty string produces a reply with zero bytes. Check `reply === undefined` when the distinction matters. If serialization fails, for example because a returned object contains a cycle, CHO sends `CHO_MESSAGE_INVALID_REPLY` to the selected [error handler](/message/error-handling).
+A `Reply` carries encoded bytes in `value` and optional string `headers`. A zero-length byte array or empty string produces a reply with zero bytes. Check `reply === undefined` when the distinction matters. If serialization fails, for example because a returned object contains a cycle, CHO sends `CHO_MESSAGE_INVALID_REPLY` to the selected [error handler](/message/error-handling).
+
+## Attach headers to a reply
+
+Import `ChoMessageReply` from `@chojs/message` when the caller also needs metadata. In the shelf lookup above, replace the successful return with the following.
+
+```ts
+return new ChoMessageReply({ found: true, shelf }, {
+  headers: { "Content-Type": "application/json" },
+});
+```
+
+The caller reads `reply.headers?.["Content-Type"]` and decodes `reply.value` as before. The wrapper works in both subscriptions and `@Catch` handlers. For a header-only acknowledgment, return `new ChoMessageReply(undefined, { headers: { "X-Result": "accepted" } })`. The caller receives a present reply with zero payload bytes. A plain object such as `{ value, headers }` is encoded as ordinary JSON.
 
 ## Receive the reply through a broker
 
-Direct delivery returns the reply to the local caller. For a remote caller, the [adapter](/message/adapters) must forward the bytes to the reply address and preserve any correlation information required by the broker. The [Kafka adapter](/message/kafka) consumes events and ignores returned replies. Use its producer to publish a follow-up event when another consumer needs the result.
+Direct delivery returns the reply to the local caller. With the [NATS adapter](/message/nats), a remote caller uses `nc.request` and receives both the bytes and the headers. The [Kafka adapter](/message/kafka) consumes events and ignores returned replies. Use its producer to publish a follow-up event when another consumer needs the result.

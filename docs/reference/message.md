@@ -23,7 +23,8 @@ Both factories accept `prefix`, `linker` and `onError`. Only `create` accepts `o
 | Type | Contract |
 | --- | --- |
 | `Delivery` | Optional `value` (bytes, string or null), `key` and string `headers` |
-| `Reply` | A reply envelope with `readonly value: Uint8Array`. Exported by both message and linker entry points |
+| `ChoMessageReply`, `ChoMessageReplyOptions` | Use `new ChoMessageReply(value?, { headers }?)` in a subscription or error handler to attach string headers. Import from `@chojs/message` |
+| `Reply` | Encoded result with `readonly value: Uint8Array` and optional `headers: Readonly<Record<string, string>>`. Exported by both message and linker entry points |
 | `ChoMessageContext` | `topic`, `key`, `headers`, byte `value`, `text()`, `json<T>()`, per-delivery `state` and `native` |
 | `ChoMessageHandler` | Receives the context. Return nothing to settle without replying, or a value to encode as a reply |
 | `ChoMessageNext` | Runs remaining middleware and handler, returning `Promise<void>` |
@@ -33,3 +34,5 @@ Both factories accept `prefix`, `linker` and `onError`. Only `create` accepts `o
 ## Broker contract
 
 A `Linker<T>` has `link(routes): Linked<T>`. A `Linked<T>` exposes `instance`, `start()` and `stop()`. A `Route` has `topic`, `name` and `handle(delivery, native?)`. Its `handle` method returns the same `Promise<Reply | undefined>` as manual delivery. The adapter decides how to forward a reply and when to acknowledge a record. See [reply formats](/message/replies) and [framework error codes](/reference/errors). For concrete retry and offset behavior, see [Kafka](/message/kafka).
+
+For request/reply over Core NATS, import `NatsLinker` and `ERROR_HEADERS` from `@chojs/vendor-nats`. After `await app.start()`, `app.linked.instance` is the active connection. [NATS setup and delivery behavior](/message/nats)

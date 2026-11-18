@@ -58,4 +58,4 @@ If controllers need platform-specific bindings, pass those through the adapter's
 
 ## Background consumers
 
-Manual message delivery runs wherever the message package runs. A broker connection introduces its own runtime requirements. The [Kafka adapter](/message/kafka) targets a long-running Node.js process.
+Manual message delivery runs wherever the message package runs. The [NATS adapter](/message/nats) accepts a connection from the runtime's transport on Deno, Node.js or Bun. The [Kafka adapter](/message/kafka) targets a long-running Node.js process.

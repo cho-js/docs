@@ -38,4 +38,4 @@ Change `value` to `'{"isbn":17}'` and run the program again. The handler throws 
 
 ## Connect a broker
 
-Once the handler works in memory, pass a linker to `ChoMessage.create` and call `await app.start()`. The linker subscribes to the compiled topics and forwards deliveries into the same handlers. For a Node.js deployment, follow the [Kafka guide](/message/kafka) to configure retries and dead-letter handling.
+Once the handler works in memory, pass a linker to `ChoMessage.create` and call `await app.start()`. The linker subscribes to the compiled topics and forwards deliveries into the same handlers. To have another service ask for a result over the network, follow the [NATS request/reply guide](/message/nats). For event processing on Node.js with retries and dead-letter handling, follow the [Kafka guide](/message/kafka).
