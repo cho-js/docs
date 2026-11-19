@@ -295,7 +295,7 @@ to describe it in the documentation of an application.
 export type ChoMessageArgInfo = {
     readonly source: ChoMessageArgSource;
     readonly key?: string;
-    readonly validator?: ChoMessageValidator;
+    readonly validator?: ChoValidator;
 };
 ```
 
@@ -391,8 +391,8 @@ as JSON. The types of both come from the contract.
 export class ChoMessageClient {
 
     constructor(sender: Sender, options?: ChoMessageClientOptions);
-    publish<Request>(contract: Contract<Request, any>, ...sent: ChoMessageSent<Request, ChoMessageSendOptions>): Promise<void>;
-    request<Request, Reply>(contract: Contract<Request, Reply>, ...sent: ChoMessageSent<Request, ChoMessageRequestOptions>): Promise<Reply>;
+    publish<Request, Sent = Request>(contract: Contract<Request, any, Sent, any>, ...sent: ChoMessageSent<Sent, ChoMessageSendOptions>): Promise<void>;
+    request<Request, Reply, Sent = Request>(contract: Contract<Request, Reply, Sent, any>, ...sent: ChoMessageSent<Sent, ChoMessageRequestOptions>): Promise<Reply>;
 }
 ```
 
@@ -506,8 +506,8 @@ class OrdersController {
 ## ChoMessageContractDecorator {#symbol-ChoMessageContractDecorator}
 
 The decorator `@Subscribe(contract)` returns. It only accepts a method that
-takes the request of the contract, then the context, and returns its
-reply: a handler that expects or gives something else does not compile.
+takes the request of the contract, then the context, and returns the input to the
+reply validator. A handler with incompatible types does not compile.
 
 It has both decorator call shapes: standard (TC39) `(method, context)`, and
 legacy / Bun `(prototype, name, descriptor)`.
@@ -522,12 +522,12 @@ export type ChoMessageContractDecorator<Request, Reply> = {
 ### Usage {#ChoMessageContractDecorator-usage}
 
 ```ts
-export function Subscribe<Request, Reply>(
-  contract: Contract<Request, Reply>,
-): ChoMessageContractDecorator<Request, Reply>;
+export function Subscribe<Request, Reply, Sent, Returned>(
+  contract: Contract<Request, Reply, Sent, Returned>,
+): ChoMessageContractDecorator<Request, Returned>;
 ```
 
-[Usage in message/decorators.ts](https://github.com/cho-js/cho/blob/30ad35bc87200c47e829d909c582887fc2c055aa/message/decorators.ts#L223)
+[Usage in message/decorators.ts](https://github.com/cho-js/cho/blob/913e9647671af610473c7cd6f69e37a685749158/message/decorators.ts#L223)
 
 ## ChoMessageContractResult {#symbol-ChoMessageContractResult}
 
@@ -721,7 +721,8 @@ What failed the validation of a message: given to `onInvalid`.
 export type ChoMessageInvalid = {
     readonly source: ChoMessageArgSource;
     readonly key?: string;
-    readonly error: unknown;
+    readonly issues: readonly ChoIssue[];
+    readonly error?: unknown;
 };
 ```
 
@@ -729,14 +730,14 @@ export type ChoMessageInvalid = {
 
 **`key`** Its key, when the argument is one key of the source.
 
-**`error`** What the validator threw, or the error of a value that cannot be parsed
+**`error`** Optional exception from parsing a value or decoding its payload
 as JSON.
 
 ### Usage {#ChoMessageInvalid-usage}
 
 ```ts
 function logInvalid(field: ChoMessageInvalid) {
-  console.warn(field.source, field.key, field.error);
+  console.warn(field.source, field.key, field.issues);
 }
 ```
 
@@ -967,11 +968,11 @@ The value to send for a contract, and the options: the value can be left
 out when the contract lets it be `undefined`.
 
 ```ts
-export type ChoMessageSent<Request, Options> = undefined extends Request ? [
-    value?: Request,
+export type ChoMessageSent<Sent, Options> = undefined extends Sent ? [
+    value?: Sent,
     options?: Options
 ] : [
-    value: Request,
+    value: Sent,
     options?: Options
 ];
 ```
@@ -979,18 +980,11 @@ export type ChoMessageSent<Request, Options> = undefined extends Request ? [
 ### Usage {#ChoMessageSent-usage}
 
 ```ts
-async publish<Request>(
-    // deno-lint-ignore no-explicit-any
-    contract: Contract<Request, any>,
-    ...sent: ChoMessageSent<Request, ChoMessageSendOptions>
-  ): Promise<void> {
-    const [value, options] = sent;
-    const topic = this.#topic("publish", contract);
-    await this.#sender.publish(topic, to_delivery(topic, value, options));
-  }
+const delivery: ChoMessageSent<string, ChoMessageSendOptions> = ["41", { key: "book" }];
+await client.publish(NextId, ...delivery);
 ```
 
-[Usage in message/client.ts](https://github.com/cho-js/cho/blob/30ad35bc87200c47e829d909c582887fc2c055aa/message/client.ts#L151)
+See the [transformed contract example](/message/contracts#use-different-types-on-the-wire-and-in-the-handler) for the definition of `NextId`.
 
 ## ChoMessageValidateOptions {#symbol-ChoMessageValidateOptions}
 
@@ -1024,41 +1018,15 @@ const says = (name: string) =>
 
 [Usage in message/handler-args_test.ts](https://github.com/cho-js/cho/blob/30ad35bc87200c47e829d909c582887fc2c055aa/message/handler-args_test.ts#L562)
 
-## ChoMessageValidator {#symbol-ChoMessageValidator}
-
-A validator: any object with a `parse` method that returns the value, or
-throws. It is the shape of a zod schema, so a zod schema is one.
-
-What `parse` returns is what the handler receives, so a validator can also
-convert a value. It can return a promise.
-
-```ts
-export type ChoMessageValidator<T = unknown> = {
-    parse(value: unknown): T | Promise<T>;
-};
-```
-
-### Usage {#ChoMessageValidator-usage}
-
-```ts
-const positive: ChoMessageValidator<number> = {
-  parse(value) {
-    const n = Number(value);
-    if (!(n > 0)) throw new Error("expected a positive number");
-    return n;
-  },
-};
-```
-
 ## Contract {#symbol-Contract}
 
 A contract: the topic of a message, what it holds, and what is replied.
 
 ```ts
-export type Contract<Request = unknown, Reply = undefined> = {
+export type Contract<Request = unknown, Reply = undefined, Sent = Request, Returned = Reply> = {
     readonly topic: string;
-    readonly request?: ChoMessageValidator<Request> | undefined;
-    readonly reply?: ChoMessageValidator<Reply> | undefined;
+    readonly request?: ChoValidator<Request> | undefined;
+    readonly reply?: ChoValidator<Reply> | undefined;
 };
 ```
 
@@ -1215,9 +1183,9 @@ An argument from the headers of the message.
 
 ```ts
 export function Header(): ChoMessageArg<Readonly<Record<string, string>>>;
-export function Header<T>(validator: ChoMessageValidator<T>): ChoMessageArg<T>;
+export function Header<T>(validator: ChoValidator<T>): ChoMessageArg<T>;
 export function Header(key: string): ChoMessageArg<string | undefined>;
-export function Header<T>(key: string, validator: ChoMessageValidator<T>): ChoMessageArg<T>;
+export function Header<T>(key: string, validator: ChoValidator<T>): ChoMessageArg<T>;
 ```
 
 ### Usage {#Header-usage}
@@ -1241,7 +1209,7 @@ An argument from the key of the message.
 
 ```ts
 export function Key(): ChoMessageArg<string | undefined>;
-export function Key<T>(validator: ChoMessageValidator<T>): ChoMessageArg<T>;
+export function Key<T>(validator: ChoValidator<T>): ChoMessageArg<T>;
 ```
 
 ### Usage {#Key-usage}
@@ -1764,7 +1732,7 @@ argument and its types from it: see the second signature.
 
 ```ts
 export function Subscribe(topic: string): ChoMethodDecorator;
-export function Subscribe<Request, Reply>(contract: Contract<Request, Reply>): ChoMessageContractDecorator<Request, Reply>;
+export function Subscribe<Request, Reply, Sent, Returned>(contract: Contract<Request, Reply, Sent, Returned>): ChoMessageContractDecorator<Request, Returned>;
 ```
 
 ### Usage {#Subscribe-usage}
@@ -1830,9 +1798,9 @@ An argument from the value of the message, parsed as JSON.
 
 ```ts
 export function Value<T = unknown>(): ChoMessageArg<T>;
-export function Value<T>(validator: ChoMessageValidator<T>): ChoMessageArg<T>;
+export function Value<T>(validator: ChoValidator<T>): ChoMessageArg<T>;
 export function Value<T = unknown>(key: string): ChoMessageArg<T>;
-export function Value<T>(key: string, validator: ChoMessageValidator<T>): ChoMessageArg<T>;
+export function Value<T>(key: string, validator: ChoValidator<T>): ChoMessageArg<T>;
 ```
 
 ### Usage {#Value-usage}
@@ -1851,15 +1819,14 @@ Make a contract.
 
 - `topic` is the whole topic of the message, without the prefix of an
   application.
-- `request` and `reply` are validators: objects with a `parse` method, as
-  a zod schema is. Both are optional. The types of the contract come from
-  them; without one, a type can be given by hand, `contract<Order>(…)`,
-  and nothing checks it.
+- Optional request and reply schemas can implement Standard Schema or expose a `parse` method. Type-only contracts perform no runtime validation.
 - A contract speaks JSON: the value of the message and the reply are sent
   as JSON, both ways.
 
 ```ts
-export function contract<Request = unknown, Reply = undefined>(options: Contract<Request, Reply>): Contract<Request, Reply>;
+export function contract<Request = unknown, Reply = undefined, Sent = Request, Returned = Reply>(
+  options: ContractOptions<Request, Reply, Sent, Returned>
+): Contract<Request, Reply, unknown extends Sent ? Request : Sent, unknown extends Returned ? Reply : Returned>;
 ```
 
 ### Usage {#contract-usage}
@@ -1958,8 +1925,8 @@ class OrdersController {
 Skip a message that is not valid
 ```ts
 validate({
-  onInvalid: ({ source, key, error }, ctx) => {
-    console.error(ctx.topic, source, key, error);
+  onInvalid: ({ source, key, issues }, ctx) => {
+    console.error(ctx.topic, source, key, issues);
     return true; // handled: it is not delivered again
   },
 });
@@ -1970,3 +1937,21 @@ validate({
 These declarations share their implementation with another entry point. Each link opens the full declaration.
 
 [`ChoCoreErrorCode`](/api/core#symbol-ChoCoreErrorCode), [`ChoError`](/api/core#symbol-ChoError), [`ConfigureOptions`](/api/core#symbol-ConfigureOptions), [`ControllerOptions`](/api/core#symbol-ControllerOptions), [`Injectable`](/api/core#symbol-Injectable), [`InjectableOptions`](/api/core#symbol-InjectableOptions), [`InjectionToken`](/api/core#symbol-InjectionToken), [`ModuleOptions`](/api/core#symbol-ModuleOptions), [`Provider`](/api/core#symbol-Provider), [`WithDependencies`](/api/core#symbol-WithDependencies), [`configure`](/api/core#symbol-configure), [`isChoError`](/api/core#symbol-isChoError), [`provider`](/api/core#symbol-provider), [`token`](/api/core#symbol-token)
+
+## Shared schema types
+
+These types are also importable directly from this package. [ChoValidator](/api/core#symbol-ChoValidator) · [ChoParseValidator](/api/core#symbol-ChoParseValidator) · [ChoIssue](/api/core#symbol-ChoIssue) · [ChoInput](/api/core#symbol-ChoInput) · [ChoOutput](/api/core#symbol-ChoOutput) · [StandardTypedV1](/api/core#symbol-StandardTypedV1) · [StandardSchemaV1](/api/core#symbol-StandardSchemaV1) · [StandardJSONSchemaV1](/api/core#symbol-StandardJSONSchemaV1)
+
+## ContractOptions {#symbol-ContractOptions}
+
+`ContractOptions<Request, Reply, Sent, Returned>` declares the topic and optional validators. Its `request` accepts `ChoValidator<Request, Sent>`; its `reply` accepts `ChoValidator<Reply, Returned>`. Defaults are `unknown`, `undefined`, `Request` and `Reply` respectively.
+
+```ts
+const decimal = z.string().regex(/^\d+$/).transform(Number);
+const options = {
+  topic: "catalog.next", request: decimal, reply: decimal,
+} satisfies ContractOptions<number, number, string, string>;
+const Next = contract(options);
+```
+
+[Sending and handling a transformed message](/message/contracts#use-different-types-on-the-wire-and-in-the-handler)

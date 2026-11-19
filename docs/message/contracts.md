@@ -8,7 +8,7 @@ Put the contract and its validators in a file or package both services import. T
 
 <<< @/examples/message/contracts.ts#contract
 
-A validator's `parse` result supplies its TypeScript type. For an event, omit `reply` and use `client.publish`. If you only need compile-time types, use `contract<Request, Reply>({ topic })`. Type parameters alone perform no runtime checks.
+A Standard Schema can describe different input and output types. For a parse-only validator, CHO infers both from the awaited result. For an event, omit `reply` and use `client.publish`. If you only need compile-time types, use `contract<Request, Reply>({ topic })`. Type parameters alone perform no runtime checks.
 
 ## Implement the subscriber
 
@@ -53,3 +53,27 @@ An empty answer is decoded as `undefined` before the reply validator runs. For c
 ## Move from an in-process client to NATS
 
 Keep the contract and the subscriber unchanged. Replace the local sender with the started NATS linker's sender and set a request timeout. Compare a domain error returned by the service with a request sent when nobody is listening. A caller can handle these failures differently.
+
+## Use different types on the wire and in the handler
+
+For an RPC that accepts a decimal ID, use a schema whose input is a string and whose output is a number. Both sides import the same contract. Here the reply also crosses the wire as a string.
+
+```ts
+import { z } from "zod";
+import { contract, Controller, Middlewares, Subscribe, validate } from "@chojs/message";
+
+const Decimal = z.string().regex(/^\d+$/).transform(Number);
+export const NextId = contract({ topic: "catalog.next", request: Decimal, reply: Decimal });
+
+@Middlewares(validate())
+@Controller({ topic: "catalog" })
+class Numbers {
+  @Subscribe(NextId)
+  next(id: number): string { return String(id + 1); }
+}
+
+// In the caller, using a connected client or a local sender:
+// const next = await client.request(NextId, "41"); // number: 42
+```
+
+The four contract parameters are `Contract<Request, Reply, Sent, Returned>`. Here they are `number, number, string, string`. The client serializes the sent value; the subscriber validates the decoded request. The handler returns the reply schema's input; the caller validates and transforms the decoded reply. A rejected reply value yields `CHO_MESSAGE_UNEXPECTED_REPLY`. An exception thrown inside Standard Schema's validation function propagates to the caller. For parse-only validators or an unspecified input type, contract inference uses the output as the wire type.

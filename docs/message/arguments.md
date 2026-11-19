@@ -17,6 +17,8 @@ List readers in parameter order. The method can also take [`ChoMessageContext`](
 
 ## Decide what invalid input does
 
+Use a [Standard Schema or parse-based validator](/guide/standard-schema). The invalid-input hook receives normalized issues. An exception thrown by a Standard Schema validation function follows the normal delivery error policy.
+
 Pass a validator as the last argument to a built-in reader. It can parse, transform or asynchronously check the value. [`validate()`](/api/message#symbol-validate) enables validators on the method, controller or declaring feature module. When several apply, the nearest one supplies the policy. Without that middleware the handler receives the raw reader results.
 
 By default an invalid field or malformed JSON read by [`Value`](/api/message#symbol-Value) fails the delivery. The selected [`@Catch`](/api/message#symbol-Catch) can handle the error. If it remains failed, Kafka and JetStream skip ordinary retries and apply their dead-letter policy. A Core NATS request receives a default `400 Bad Request` service reply.
@@ -25,8 +27,8 @@ To deliberately skip a malformed event, supply an `onInvalid` function to the va
 
 ```ts
 validate({
-  onInvalid: ({ source, key, error }, ctx) => {
-    console.warn(ctx.topic, source, key, error);
+  onInvalid: ({ source, key, issues }, ctx) => {
+    console.warn(ctx.topic, source, key, issues);
     return true;
   },
 });

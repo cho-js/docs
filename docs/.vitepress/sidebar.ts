@@ -4,6 +4,8 @@ const setup = {
   text: "Get started",
   items: [
     { text: "How CHO fits together", link: "/guide/introduction" },
+    { text: "Migrate from NestJS", link: "/guide/migration-from-nestjs" },
+    { text: "Validate with Standard Schema", link: "/guide/standard-schema" },
     { text: "One catalog, three entry points", link: "/guide/three-entry-points" },
     { text: "Set up a project", link: "/guide/getting-started" },
     { text: "Runtime setup", link: "/guide/runtimes" },

@@ -34,3 +34,5 @@ Deno, Node.js, Bun and Cloudflare Workers are the four officially supported runt
 - **Command line.** Pass the arguments after the executable and script to `run`. The launcher owns the process exit status. Embedded callers can invoke the same command and inspect the result. [Launch or embed a CLI](/command/application)
 
 Start with [project setup](/guide/getting-started) if you are creating a new directory. When reading existing code, use the import path to find its [public API and usage examples](/api/).
+
+Bringing an existing NestJS application? [Migrate a catalog feature from NestJS](/guide/migration-from-nestjs) walks through the same route before and after the move.

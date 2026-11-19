@@ -213,3 +213,17 @@ with_env({ CHO_DEBUG: "1", CHO_DEBUGLOG: undefined }, () => {
   assert.equal(debuglog("cho").enabled, true);
 });
 ```
+
+## standard_schema {#symbol-standard_schema}
+
+`standard_schema<Output, Input = unknown>(validate)` builds a Standard Schema fixture with vendor `test`. Supply a function that returns a value or issues, optionally in a promise.
+
+```ts
+import { standard_schema } from "@chojs/core/utils/test_utils";
+
+const nonEmpty = standard_schema<string, string>((value) =>
+  typeof value === "string" && value.length > 0
+    ? { value }
+    : { issues: [{ message: "Expected a nonempty string" }] }
+);
+```

@@ -1,6 +1,8 @@
 # Validate and transform input
 
-A request body or query parameter starts as external data. Give its reader a validator with a `parse(value)` method, then put [`validate()`](/api/web#symbol-validate) around the route. The value returned by `parse` becomes the method argument.
+A request body or query parameter starts as external data. Give its reader a Standard Schema or an object with a `parse(value)` method, then put [`validate()`](/api/web#symbol-validate) around the route. The value returned by `parse` becomes the method argument.
+
+For a schema-library example, see [Validate with Standard Schema](/guide/standard-schema). The example below uses the supported parse-based interface.
 
 ## Parse a page number
 
@@ -50,18 +52,18 @@ Async `parse` methods are supported. A parser should return the normalized value
 }))
 ```
 
-The default body contains `error: "Invalid request"`, `source`, optional `key` and an `issues` array. CHO preserves an exception's `issues` array when available. An `onInvalid` hook returning `undefined` selects this default.
+The default body contains `error: "Invalid request"`, `source`, optional `key` and an `issues` array. Each issue has a message and an optional path of string or numeric keys. An `onInvalid` hook returning `undefined` selects this default.
 
 ## Validate an entire document
 
 A field reader such as `Body("title", validator)` works for an independent field. Use a validator on [`Body`](/api/web#symbol-Body) itself when several fields must agree. This example normalizes whitespace and validates the relationship between two quantities.
 
 ```ts
-import type { ChoWebValidator } from "@chojs/web";
+import type { ChoParseValidator } from "@chojs/web";
 
 type Stock = { isbn: string; copies: number; reserved: number };
 
-const stock: ChoWebValidator<Stock> = {
+const stock: ChoParseValidator<Stock> = {
   parse(input) {
     if (typeof input !== "object" || input === null) throw new Error("Expected stock data");
     const { isbn, copies, reserved } = input as Record<string, unknown>;

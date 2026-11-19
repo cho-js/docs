@@ -396,3 +396,51 @@ A function
 ```ts
 set_env((key) => config.get(key));
 ```
+
+## is_validator {#symbol-is_validator}
+
+`is_validator(value: unknown)` narrows objects or callable schemas that expose a Standard Schema validator or a parse method.
+
+```ts
+if (is_validator(candidate)) {
+  const result = await run_validator(candidate, raw);
+  console.log(result);
+}
+```
+
+## run_validator {#symbol-run_validator}
+
+`run_validator(schema, value)` awaits validation and returns a `Validated<Output>`. Standard Schema takes precedence. Exceptions thrown by its validate function propagate.
+
+```ts
+const result = await run_validator(titleSchema, rawTitle);
+if (result.issues) console.warn(result.issues);
+else console.log(result.value);
+```
+
+## Validated {#symbol-Validated}
+
+The result union contains either the validated value or normalized issues with an optional original error.
+
+```ts
+function display(result: Validated<string>) {
+  return result.issues ? result.issues.map(i => i.message).join(", ") : result.value;
+}
+```
+
+## to_issues {#symbol-to_issues}
+
+`to_issues(issues: readonly unknown[]): ChoIssue[]` normalizes messages and paths. An empty list produces one issue with the message `Invalid value`.
+
+```ts
+to_issues([{ path: [{ key: "title" }], message: "Required" }]);
+// [{ message: "Required", path: ["title"] }]
+```
+
+## error_issues {#symbol-error_issues}
+
+`error_issues(error: unknown): ChoIssue[]` normalizes a thrown object's issues or obtains a single issue from its message.
+
+```ts
+error_issues(new Error("Missing ISBN")); // [{ message: "Missing ISBN" }]
+```

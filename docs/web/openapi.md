@@ -82,3 +82,7 @@ If generation fails with `CHO_OPENAPI_DUPLICATE_OPERATION_ID`, check the IDs on 
 ## Use the document from a client
 
 Open the JSON URL from the example directly and locate the operation for the catalog route under `paths`. Then load that same URL in Swagger UI or Scalar. When deploying behind a public path prefix, check the URL requested by the browser as well as the URL of the viewer page.
+
+## Document the accepted input and returned output
+
+For a transforming schema, the wire shape a client submits can differ from the value your handler uses internally. The generator asks the schema's `~standard.jsonSchema.input` or `.output` converter for the relevant direction with target `draft-2020-12`. If that converter is unavailable or cannot supply an object, the generator tries your `toJsonSchema(validator, io)` option. When neither supplies a schema, the document leaves the value unconstrained. Runtime validation still uses the validator you attached. [Standard Schema guide](/guide/standard-schema)

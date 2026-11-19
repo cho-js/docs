@@ -1367,3 +1367,86 @@ const API_URL = token<string>("API_URL");
 })
 class AppModule {}
 ```
+
+## ChoValidator {#symbol-ChoValidator}
+
+`ChoValidator<Output = unknown, Input = unknown>` accepts either `StandardSchemaV1<Input, Output>` or `ChoParseValidator<Output>`. Core, Web and Message export the shared validator types in this section. Use the schema directly with a reader or a contract. [Boundary validation walkthrough](/guide/standard-schema)
+
+```ts
+const page: ChoValidator<number, string> = z.string().regex(/^\d+$/).transform(Number);
+```
+
+## ChoParseValidator {#symbol-ChoParseValidator}
+
+A parse-based validator supplies `parse(value: unknown): Output | Promise<Output>`. Throw to report invalid data.
+
+```ts
+const title: ChoParseValidator<string> = {
+  parse(value) {
+    if (typeof value !== "string" || !value.trim()) throw new Error("Expected a title");
+    return value.trim();
+  },
+};
+```
+
+## ChoInput {#symbol-ChoInput}
+
+`ChoInput<V>` extracts the declared schema input. For parse-only validators it uses the awaited result of `parse`.
+
+```ts
+const Quantity = z.string().transform(Number);
+type WireQuantity = ChoInput<typeof Quantity>; // string
+```
+
+## ChoOutput {#symbol-ChoOutput}
+
+`ChoOutput<V>` extracts the value available after successful validation.
+
+```ts
+type QuantityValue = ChoOutput<typeof Quantity>; // number
+```
+
+## ChoIssue {#symbol-ChoIssue}
+
+A normalized issue has a string `message` and an optional readonly `path` of string or number keys. The argument's source and key are carried separately by the transport.
+
+```ts
+const issue: ChoIssue = { message: "Expected a title", path: ["books", 0, "title"] };
+```
+
+## StandardTypedV1 {#symbol-StandardTypedV1}
+
+The common V1 protocol exposes vendor, version and optional input/output type information under `~standard`. Its namespace includes `InferInput` and `InferOutput`.
+
+```ts
+function schemaVendor(schema: StandardTypedV1) {
+  return schema["~standard"].vendor;
+}
+```
+
+## StandardSchemaV1 {#symbol-StandardSchemaV1}
+
+Implement `StandardSchemaV1<Input, Output>` to supply a synchronous or asynchronous validation function directly. Return issues for invalid input.
+
+```ts
+const Title: StandardSchemaV1<string, string> = {
+  "~standard": {
+    version: 1, vendor: "catalog",
+    validate(value) {
+      return typeof value === "string" && value.trim()
+        ? { value: value.trim() }
+        : { issues: [{ message: "Expected a title" }] };
+    },
+  },
+};
+```
+
+## StandardJSONSchemaV1 {#symbol-StandardJSONSchemaV1}
+
+This companion protocol exposes input and output JSON Schema converters. A schema library may support validation without providing these converters.
+
+```ts
+function requestSchema(schema: StandardJSONSchemaV1) {
+  return schema["~standard"].jsonSchema.input({ target: "draft-2020-12" });
+}
+```

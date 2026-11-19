@@ -91,9 +91,9 @@ An argument from the body of the request, read and parsed as JSON.
 
 ```ts
 export function Body<T = unknown>(): ChoWebArg<T>;
-export function Body<T>(validator: ChoWebValidator<T>): ChoWebArg<T>;
+export function Body<T>(validator: ChoValidator<T>): ChoWebArg<T>;
 export function Body<T = unknown>(key: string): ChoWebArg<T>;
-export function Body<T>(key: string, validator: ChoWebValidator<T>): ChoWebArg<T>;
+export function Body<T>(key: string, validator: ChoValidator<T>): ChoWebArg<T>;
 ```
 
 ### Usage {#Body-usage}
@@ -484,7 +484,7 @@ or `Form`: enough to describe it in an OpenAPI document.
 export type ChoWebArgInfo = {
     readonly source: ChoWebArgSource;
     readonly key?: string;
-    readonly validator?: ChoWebValidator;
+    readonly validator?: ChoValidator;
 };
 ```
 
@@ -670,7 +670,7 @@ A response of a handler, as documented with `@Doc`.
 ```ts
 export type ChoWebDocResponse = {
     readonly description?: string;
-    readonly schema?: ChoWebValidator;
+    readonly schema?: ChoValidator;
     readonly contentType?: string;
 };
 ```
@@ -825,7 +825,8 @@ What failed the validation of a request: given to `onInvalid`.
 export type ChoWebInvalid = {
     readonly source: ChoWebArgSource;
     readonly key?: string;
-    readonly error: unknown;
+    readonly issues: readonly ChoIssue[];
+    readonly error?: unknown;
 };
 ```
 
@@ -833,13 +834,13 @@ export type ChoWebInvalid = {
 
 **`key`** Its key, when the argument is one key of the source.
 
-**`error`** What the validator threw, or the error of a body that cannot be parsed.
+**`error`** Optional original exception from parsing. Use `issues` for normalized validation failures.
 
 ### Usage {#ChoWebInvalid-usage}
 
 ```ts
 function describeInvalid(field: ChoWebInvalid) {
-  return { source: field.source, key: field.key, message: String(field.error) };
+  return { source: field.source, key: field.key, issues: field.issues };
 }
 ```
 
@@ -1159,32 +1160,6 @@ legacy(
 
 [Usage in web/http-error_test.ts](https://github.com/cho-js/cho/blob/30ad35bc87200c47e829d909c582887fc2c055aa/web/http-error_test.ts#L555)
 
-## ChoWebValidator {#symbol-ChoWebValidator}
-
-A validator: any object with a `parse` method that returns the value, or
-throws. It is the shape of a zod schema, so a zod schema is one.
-
-What `parse` returns is what the handler receives, so a validator can also
-convert a value. It can return a promise.
-
-```ts
-export type ChoWebValidator<T = unknown> = {
-    parse(value: unknown): T | Promise<T>;
-};
-```
-
-### Usage {#ChoWebValidator-usage}
-
-```ts
-const positive: ChoWebValidator<number> = {
-  parse(value) {
-    const n = Number(value);
-    if (!(n > 0)) throw new Error("expected a positive number");
-    return n;
-  },
-};
-```
-
 ## Controller {#symbol-Controller}
 
 Mark a class as a controller (see `@Controller` of `@chojs/core`): its
@@ -1343,9 +1318,9 @@ An argument from the body of the request, read as a URL-encoded form
 
 ```ts
 export function Form(): ChoWebArg<Readonly<Record<string, string>>>;
-export function Form<T>(validator: ChoWebValidator<T>): ChoWebArg<T>;
+export function Form<T>(validator: ChoValidator<T>): ChoWebArg<T>;
 export function Form(key: string): ChoWebArg<string | undefined>;
-export function Form<T>(key: string, validator: ChoWebValidator<T>): ChoWebArg<T>;
+export function Form<T>(key: string, validator: ChoValidator<T>): ChoWebArg<T>;
 ```
 
 ### Usage {#Form-usage}
@@ -1433,9 +1408,9 @@ An argument from the headers of the request.
 
 ```ts
 export function Header(): ChoWebArg<Readonly<Record<string, string>>>;
-export function Header<T>(validator: ChoWebValidator<T>): ChoWebArg<T>;
+export function Header<T>(validator: ChoValidator<T>): ChoWebArg<T>;
 export function Header(key: string): ChoWebArg<string | undefined>;
-export function Header<T>(key: string, validator: ChoWebValidator<T>): ChoWebArg<T>;
+export function Header<T>(key: string, validator: ChoValidator<T>): ChoWebArg<T>;
 ```
 
 ### Usage {#Header-usage}
@@ -1793,9 +1768,9 @@ An argument from the path parameters of the route, decoded.
 
 ```ts
 export function Param(): ChoWebArg<Readonly<Record<string, string>>>;
-export function Param<T>(validator: ChoWebValidator<T>): ChoWebArg<T>;
+export function Param<T>(validator: ChoValidator<T>): ChoWebArg<T>;
 export function Param(key: string): ChoWebArg<string>;
-export function Param<T>(key: string, validator: ChoWebValidator<T>): ChoWebArg<T>;
+export function Param<T>(key: string, validator: ChoValidator<T>): ChoWebArg<T>;
 ```
 
 ### Usage {#Param-usage}
@@ -1899,9 +1874,9 @@ An argument from the query string of the request.
 
 ```ts
 export function Query(): ChoWebArg<Readonly<Record<string, string>>>;
-export function Query<T>(validator: ChoWebValidator<T>): ChoWebArg<T>;
+export function Query<T>(validator: ChoValidator<T>): ChoWebArg<T>;
 export function Query(key: string): ChoWebArg<string | undefined>;
-export function Query<T>(key: string, validator: ChoWebValidator<T>): ChoWebArg<T>;
+export function Query<T>(key: string, validator: ChoValidator<T>): ChoWebArg<T>;
 ```
 
 ### Usage {#Query-usage}
@@ -2135,3 +2110,7 @@ validate({
 These declarations share their implementation with another entry point. Each link opens the full declaration.
 
 [`ChoCoreErrorCode`](/api/core#symbol-ChoCoreErrorCode), [`ChoError`](/api/core#symbol-ChoError), [`ConfigureOptions`](/api/core#symbol-ConfigureOptions), [`ControllerOptions`](/api/core#symbol-ControllerOptions), [`Injectable`](/api/core#symbol-Injectable), [`InjectableOptions`](/api/core#symbol-InjectableOptions), [`InjectionToken`](/api/core#symbol-InjectionToken), [`ModuleOptions`](/api/core#symbol-ModuleOptions), [`Provider`](/api/core#symbol-Provider), [`WithDependencies`](/api/core#symbol-WithDependencies), [`configure`](/api/core#symbol-configure), [`isChoError`](/api/core#symbol-isChoError), [`provider`](/api/core#symbol-provider), [`token`](/api/core#symbol-token)
+
+## Shared schema types
+
+These types are also importable directly from this package. [ChoValidator](/api/core#symbol-ChoValidator) · [ChoParseValidator](/api/core#symbol-ChoParseValidator) · [ChoIssue](/api/core#symbol-ChoIssue) · [ChoInput](/api/core#symbol-ChoInput) · [ChoOutput](/api/core#symbol-ChoOutput) · [StandardTypedV1](/api/core#symbol-StandardTypedV1) · [StandardSchemaV1](/api/core#symbol-StandardSchemaV1) · [StandardJSONSchemaV1](/api/core#symbol-StandardJSONSchemaV1)

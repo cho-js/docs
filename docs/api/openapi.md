@@ -592,7 +592,7 @@ function schemaTitle(io: SchemaIo) {
 Turns a validator into a JSON Schema: the `toJsonSchema` option.
 
 ```ts
-export type ToJsonSchema = (validator: ChoWebValidator, io: SchemaIo) => JsonSchema | undefined;
+export type ToJsonSchema = (validator: ChoValidator, io: SchemaIo) => JsonSchema | undefined;
 ```
 
 ### Usage {#ToJsonSchema-usage}
