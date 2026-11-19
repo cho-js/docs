@@ -9,6 +9,7 @@ const setup = {
     { text: "One catalog, three entry points", link: "/guide/three-entry-points" },
     { text: "Set up a project", link: "/guide/getting-started" },
     { text: "Runtime setup", link: "/guide/runtimes" },
+    { text: "Runtime compatibility", link: "/reference/compatibility" },
     { text: "Run on Cloudflare Workers", link: "/guide/cloudflare-workers" },
     { text: "Configure decorators", link: "/guide/decorators" },
   ],
@@ -55,6 +56,7 @@ const http = {
     { text: "Input validation", link: "/web/validation" },
     { text: "Responses", link: "/web/responses" },
     { text: "Server-sent events", link: "/web/sse" },
+    { text: "WebSocket connections", link: "/web/websockets" },
     { text: "Route middleware", link: "/web/middlewares" },
     { text: "Error handling", link: "/web/error-handling" },
     { text: "Application lifecycle", link: "/web/application" },
@@ -133,6 +135,7 @@ const reference = {
     { text: "Command API", link: "/reference/command" },
     { text: "Message API", link: "/reference/message" },
     { text: "Error diagnostics", link: "/reference/errors" },
+    { text: "Runtime compatibility", link: "/reference/compatibility" },
     { text: "Debug logging", link: "/reference/debugging" },
   ],
 };

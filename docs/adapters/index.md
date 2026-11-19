@@ -30,3 +30,5 @@ On all three adapters, put literal routes before parameter routes and use Web AP
 ## Move one endpoint between routers
 
 Create the catalog application with the built-in linker, then create a fresh instance with Hono. Send the same Fetch request to each handler and compare its status and body. Next try overlapping paths or unmatched requests to see where router-specific configuration takes effect.
+
+For bidirectional connections use the built-in or Hono linker. Fastify rejects WebSocket routes during application creation. [WebSocket guide](/web/websockets) · [Compatibility by host and linker](/reference/compatibility)

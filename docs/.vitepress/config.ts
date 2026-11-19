@@ -111,8 +111,5 @@ gtag('js', new Date());`,
       pattern: "https://github.com/cho-js/docs/edit/main/docs/:path",
       text: "Edit this page",
     },
-    footer: {
-      message: "Released under the MIT License.",
-    },
   },
 });

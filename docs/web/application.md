@@ -36,3 +36,5 @@ Await `server.close()` to stop accepting requests and drain active connections. 
 ## Choose a readiness boundary
 
 Await creation and register dynamic routes before opening the listener. Report the port returned by [`serve`](/api/web-serve#symbol-serve), which may differ from the requested port if the host allocated it. At shutdown, stop the listener before closing the application that supplies its providers.
+
+For [WebSocket routes](/web/websockets), pass the whole application to `serve(app)` so the listener has access to `app.upgrade`. Closing the application closes its sockets before disposing controller dependencies.

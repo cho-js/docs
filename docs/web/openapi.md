@@ -86,3 +86,5 @@ Open the JSON URL from the example directly and locate the operation for the cat
 ## Document the accepted input and returned output
 
 For a transforming schema, the wire shape a client submits can differ from the value your handler uses internally. The generator asks the schema's `~standard.jsonSchema.input` or `.output` converter for the relevant direction with target `draft-2020-12`. If that converter is unavailable or cannot supply an object, the generator tries your `toJsonSchema(validator, io)` option. When neither supplies a schema, the document leaves the value unconstrained. Runtime validation still uses the validator you attached. [Standard Schema guide](/guide/standard-schema)
+
+The generator omits routes declared with `@Ws`. Document their connection URL, event payloads and close behavior separately from the HTTP operations served to OpenAPI clients. [WebSocket example](/web/websockets)

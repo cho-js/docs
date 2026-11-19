@@ -4,7 +4,15 @@ lastUpdated: false
 
 # Documentation status
 
-The documentation covers CHO through **[913e964 · feat: change validation to support standardschema](https://github.com/cho-js/cho/commit/913e9647671af610473c7cd6f69e37a685749158)** on `main`.
+The documentation covers CHO through **[221b77c · feat: websocket support for cho/web (#28)](https://github.com/cho-js/cho/commit/221b77c264413c02f6db1370cadd46659e53984c)** on `main`.
+
+## November 19, 2026 · Contact and professional support
+
+The [contact](/contact) and [support](/support) pages now include a direct email address for general inquiries and professional support.
+
+## November 19, 2026 · WebSockets and runtime compatibility
+
+The [WebSocket guide](/web/websockets) covers controller events, connection state and hosting on all four runtimes. The [compatibility table](/reference/compatibility) reproduces the framework report, including its support marks and runtime-specific notes. The site footer also links to the new [about](/about), [contact](/contact) and [support](/support) pages. This update follows a static review of the framework changes. [Compare CHO revisions](https://github.com/cho-js/cho/compare/913e9647671af610473c7cd6f69e37a685749158...221b77c264413c02f6db1370cadd46659e53984c)
 
 ## November 19, 2026 · CHO blog
 

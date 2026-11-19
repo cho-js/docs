@@ -149,3 +149,5 @@ last one wins: the bytes, and every header, are in `ctx.native`.
 
 A handler that uses `ctx.native` runs on this adapter only, and not with
 `app.handle`, which has no native message.
+
+The [compatibility report](/reference/compatibility#note-16) distinguishes official Node.js support from broker-tested operation on Deno and Bun. CI runs the real-broker Kafka job on Node.js to save time.

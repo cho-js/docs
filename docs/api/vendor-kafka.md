@@ -4,7 +4,7 @@ outline: 2
 
 # @chojs/vendor-kafka
 
-Choose the consumer group, retry budget and dead-letter topic before starting consumption. The Kafka adapter supports Node.js, Deno and Bun. [Consume partitioned events](/message/kafka) · [Browse all packages](/api/)
+Choose the consumer group, retry budget and dead-letter topic before starting consumption. The Kafka adapter targets Node.js. Broker tests also pass on Deno and Bun through their Node compatibility layers. [Consume partitioned events](/message/kafka) · [Browse all packages](/api/)
 
 ## ChoKafkaErrorCode {#symbol-ChoKafkaErrorCode}
 

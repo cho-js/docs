@@ -113,3 +113,9 @@ Use `isChoError(error)` to read the code when several failures share one reporti
 ## Handle an expected failure
 
 Catch the error at the boundary that can act on it. Match a stable code with `isChoError` and let unexpected errors propagate. Preserve the original cause in server logs when a response exposes only a public message.
+
+| WebSocket code | Where to look |
+| --- | --- |
+| `CHO_WEB_INVALID_SOCKET` | Check that each controller with socket events has one upgrade route and at most one handler per event |
+| `CHO_WEB_INVALID_SOCKET_RESULT` | Check that the value sent to the client can be encoded as text, bytes or JSON |
+| `CHO_FASTIFY_NO_SOCKET` | Select the built-in or Hono linker for an application with `@Ws` routes |

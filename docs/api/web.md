@@ -310,6 +310,7 @@ export class ChoWeb<T = unknown> {
     readonly routes: readonly Route[];
     readonly injector: Injector;
     readonly handler: (req: Request) => Promise<Response>;
+    readonly upgrade: (req: Request) => Promise<ChoWebUpgrade | Response>;
     static create<T>(app: Ctr, options: ChoWebOptions<T> & {
         linker: Linker<T>;
     }): Promise<ChoWeb<T>>;
@@ -724,7 +725,7 @@ A mistake the core finds for a web application has a code of the core
 `CHO_CORE_UNKNOWN_OPTION`.
 
 ```ts
-export type ChoWebErrorCode = "CHO_WEB_CLOSED" | "CHO_WEB_CREATE_FAILED" | "CHO_WEB_DUPLICATE_DECORATOR" | "CHO_WEB_DUPLICATE_ROUTE" | "CHO_WEB_INVALID_ARGUMENT" | "CHO_WEB_INVALID_EVENT" | "CHO_WEB_INVALID_HANDLER" | "CHO_WEB_INVALID_METHOD" | "CHO_WEB_INVALID_MIDDLEWARE" | "CHO_WEB_INVALID_OPTION" | "CHO_WEB_INVALID_ROUTE" | "CHO_WEB_INVALID_SSE_RESULT" | "CHO_WEB_INVALID_STATUS" | "CHO_WEB_INVALID_TARGET" | "CHO_WEB_NO_SERVER" | "CHO_WEB_NO_URL_PATTERN" | "CHO_WEB_UNKNOWN_PARAM";
+export type ChoWebErrorCode = "CHO_WEB_CLOSED" | "CHO_WEB_CREATE_FAILED" | "CHO_WEB_DUPLICATE_DECORATOR" | "CHO_WEB_DUPLICATE_ROUTE" | "CHO_WEB_INVALID_ARGUMENT" | "CHO_WEB_INVALID_EVENT" | "CHO_WEB_INVALID_HANDLER" | "CHO_WEB_INVALID_METHOD" | "CHO_WEB_INVALID_MIDDLEWARE" | "CHO_WEB_INVALID_OPTION" | "CHO_WEB_INVALID_ROUTE" | "CHO_WEB_INVALID_SOCKET" | "CHO_WEB_INVALID_SOCKET_RESULT" | "CHO_WEB_INVALID_SSE_RESULT" | "CHO_WEB_INVALID_STATUS" | "CHO_WEB_INVALID_TARGET" | "CHO_WEB_NO_SERVER" | "CHO_WEB_NO_URL_PATTERN" | "CHO_WEB_UNKNOWN_PARAM";
 ```
 
 ### Usage {#ChoWebErrorCode-usage}
@@ -742,6 +743,8 @@ const CODES: Record<ChoWebErrorCode, true> = {
   CHO_WEB_INVALID_MIDDLEWARE: true,
   CHO_WEB_INVALID_OPTION: true,
   CHO_WEB_INVALID_ROUTE: true,
+  CHO_WEB_INVALID_SOCKET: true,
+  CHO_WEB_INVALID_SOCKET_RESULT: true,
   CHO_WEB_INVALID_SSE_RESULT: true,
   CHO_WEB_INVALID_STATUS: true,
   CHO_WEB_INVALID_TARGET: true,
@@ -1596,7 +1599,8 @@ export class MethodRef extends NodeRef {
     readonly args: readonly ChoWebArg[];
     readonly validated: boolean;
     readonly sse: ChoWebSseOptions | undefined;
-    constructor(name: string, route: string, method: string, middlewares: ChoWebMiddlewareFn[], errorHandler: ErrorHandlerRef, handler: ChoWebHandler, args?: readonly ChoWebArg[], doc?: ChoWebDoc, validated?: boolean, sse?: ChoWebSseOptions);
+    readonly socket: SocketRef | undefined;
+    constructor(name: string, route: string, method: string, middlewares: ChoWebMiddlewareFn[], errorHandler: ErrorHandlerRef, handler: ChoWebHandler, args?: readonly ChoWebArg[], doc?: ChoWebDoc, validated?: boolean, sse?: ChoWebSseOptions, socket?: SocketRef);
 }
 ```
 
@@ -1895,6 +1899,7 @@ A route of the application, ready to register on an HTTP runtime.
 
 ```ts
 export type Route = {
+    readonly socket?: true;
     readonly method: string;
     readonly path: string;
     readonly name: string;
@@ -2114,3 +2119,71 @@ These declarations share their implementation with another entry point. Each lin
 ## Shared schema types
 
 These types are also importable directly from this package. [ChoValidator](/api/core#symbol-ChoValidator) · [ChoParseValidator](/api/core#symbol-ChoParseValidator) · [ChoIssue](/api/core#symbol-ChoIssue) · [ChoInput](/api/core#symbol-ChoInput) · [ChoOutput](/api/core#symbol-ChoOutput) · [StandardTypedV1](/api/core#symbol-StandardTypedV1) · [StandardSchemaV1](/api/core#symbol-StandardSchemaV1) · [StandardJSONSchemaV1](/api/core#symbol-StandardJSONSchemaV1)
+
+## Ws {#symbol-Ws}
+
+`@Ws(route = "")` declares a GET upgrade route. Return a response to refuse the connection, a value to send an initial message, or nothing to accept silently. Middleware, argument readers, validation and HTTP error handling apply during the handshake. [Complete controller and browser example](/web/websockets)
+
+## WsOpen {#symbol-WsOpen}
+
+`@WsOpen()` runs after acceptance. Its method receives the connection, e.g. `opened(socket: ChoWebSocket) { this.clients.add(socket); }` when the controller owns a set of connected clients.
+
+## WsMessage {#symbol-WsMessage}
+
+`@WsMessage()` receives text or binary data followed by the socket. Returning the data echoes the message in its original format. Async handlers finish in arrival order per connection.
+
+## WsClose {#symbol-WsClose}
+
+`@WsClose()` receives the numeric code, reason and socket. Remove the connection from any shared collection here. The close handler runs once.
+
+## ChoWebSocket {#symbol-ChoWebSocket}
+
+The per-connection object exposes `ctx`, `open`, `native`, `send(data)` and `close(code?, reason?)`. For example, `socket.send({ room: socket.ctx.params.room })` sends a JSON text message.
+
+## ChoWebUpgrade {#symbol-ChoWebUpgrade}
+
+The accepted branch of `await app.upgrade(request)` exposes response headers and a one-time `accept(io)`. If the result is a Fetch response, return it to the caller. The server completes the host handshake before calling `accept`.
+
+## ChoWebSocketIo {#symbol-ChoWebSocketIo}
+
+Adapter implementations provide `send(string | Uint8Array)`, `close(code, reason)` and the native connection. Forward the host's events to the callbacks returned by CHO.
+
+## ChoWebSocketEvents {#symbol-ChoWebSocketEvents}
+
+```ts
+const decision = await app.upgrade(request);
+if (decision instanceof Response) return decision;
+const native = host.upgrade(request, decision.headers); // host-specific operation
+const io: ChoWebSocketIo = {
+  native,
+  send: (data) => native.send(data),
+  close: (code, reason) => native.close(code, reason),
+};
+const events: ChoWebSocketEvents = decision.accept(io);
+native.on("message", (data: string | Uint8Array) => events.message(data));
+native.on("close", (code: number, reason: string) => events.closed(code, reason));
+```
+
+## ChoWebWsEventDecorator {#symbol-ChoWebWsEventDecorator}
+
+Generic method decorator parameterized by the event's argument tuple. The three specialized types below describe the corresponding decorator factories. Handlers can omit trailing arguments.
+
+## ChoWebWsOpenDecorator {#symbol-ChoWebWsOpenDecorator}
+
+`const onConnect: ChoWebWsOpenDecorator = WsOpen();` creates a decorator for a method accepting the connection.
+
+## ChoWebWsMessageDecorator {#symbol-ChoWebWsMessageDecorator}
+
+`const onData: ChoWebWsMessageDecorator = WsMessage();` decorates a method accepting `string | Uint8Array` and optionally the connection.
+
+## ChoWebWsCloseDecorator {#symbol-ChoWebWsCloseDecorator}
+
+`const onDisconnect: ChoWebWsCloseDecorator = WsClose();` decorates a method accepting the close code, reason and connection.
+
+## SocketRef {#symbol-SocketRef}
+
+`MethodRef.socket` contains the controller's optional `open`, `message` and `close` event method references. It is undefined on ordinary HTTP operations. A compiled upgrade route carries `route.socket === true`.
+
+## SocketMethodRef {#symbol-SocketMethodRef}
+
+Each event method reference holds the method name and bound handler. For example, `method.socket?.message?.name` identifies the message callback when listing a controller's routes.

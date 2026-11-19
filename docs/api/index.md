@@ -6,7 +6,7 @@ Choose a guide to build a feature, or open the import path from your source file
 
 | Import path | Start with a guide | Exports |
 | --- | --- | ---: |
-| [`@chojs/web`](/api/web) | [Build and dispatch HTTP routes](/web/quick-start) | 88 |
+| [`@chojs/web`](/api/web) | [Build and dispatch HTTP routes](/web/quick-start) | 102 |
 | [`@chojs/command`](/api/command) | [Launch a CLI or embed a command](/command/application) | 34 |
 | [`@chojs/message`](/api/message) | [Publish, subscribe and request a reply](/message/contracts) | 83 |
 | [`@chojs/core`](/api/core) | [Construct and share services](/di/overview) | 51 |
@@ -29,9 +29,9 @@ Choose a guide to build a feature, or open the import path from your source file
 | [`@chojs/core/di`](/api/core-di) | [Implement decorators and resolve handlers](/advanced/cho-module) | 67 |
 | [`@chojs/core/utils`](/api/core-utils) | [Compose middleware and inspect the runtime](/advanced/core) | 22 |
 | [`@chojs/core/utils/test_utils`](/api/core-utils-test_utils) | [Exercise a framework extension](/advanced/cho-module) | 11 |
-| [`@chojs/web/serve`](/api/web-serve) | [Start and drain a network listener](/recipes/shutdown) | 7 |
+| [`@chojs/web/serve`](/api/web-serve) | [Start and drain a network listener](/recipes/shutdown) | 13 |
 | [`@chojs/web/linker`](/api/web-linker) | [Connect an HTTP router](/adapters/custom) | 3 |
-| [`@chojs/web/graph`](/api/web-graph) | [Inspect compiled HTTP operations](/web/api-docs) | 19 |
+| [`@chojs/web/graph`](/api/web-graph) | [Inspect compiled HTTP operations](/web/api-docs) | 21 |
 | [`@chojs/message/linker`](/api/message-linker) | [Connect a broker](/message/adapters) | 12 |
 | [`@chojs/message/graph`](/api/message-graph) | [Inspect compiled subscriptions](/message/application) | 17 |
 

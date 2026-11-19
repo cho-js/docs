@@ -15,7 +15,7 @@ A mistake the core finds for the package has a code of the core
 `CHO_CORE_UNKNOWN_OPTION`.
 
 ```ts
-export type ChoFastifyErrorCode = "CHO_FASTIFY_ALREADY_LINKED" | "CHO_FASTIFY_HOOK_FAILED" | "CHO_FASTIFY_MOUNT_TOO_LATE" | "CHO_FASTIFY_WRONG_ADAPTER";
+export type ChoFastifyErrorCode = "CHO_FASTIFY_ALREADY_LINKED" | "CHO_FASTIFY_HOOK_FAILED" | "CHO_FASTIFY_MOUNT_TOO_LATE" | "CHO_FASTIFY_NO_SOCKET" | "CHO_FASTIFY_WRONG_ADAPTER";
 ```
 
 ### Usage {#ChoFastifyErrorCode-usage}
@@ -25,6 +25,7 @@ const CODES: Record<ChoFastifyErrorCode, true> = {
   CHO_FASTIFY_ALREADY_LINKED: true,
   CHO_FASTIFY_HOOK_FAILED: true,
   CHO_FASTIFY_MOUNT_TOO_LATE: true,
+  CHO_FASTIFY_NO_SOCKET: true,
   CHO_FASTIFY_WRONG_ADAPTER: true,
 };
 ```

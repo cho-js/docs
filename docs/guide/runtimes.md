@@ -56,6 +56,8 @@ export default {
 
 Use lazy creation for providers that perform I/O. If providers only compute values or read binding configuration, create the app at module scope. The [Workers guide](/guide/cloudflare-workers) shows a complete entry point, bindings and a local verification request. It also explains which packages run in the dedicated `workerd` CI job.
 
+For support marks by package, WebSocket hosting details and version-specific exceptions, see the [complete runtime compatibility table](/reference/compatibility).
+
 ## Background consumers
 
 | Capability | Node.js | Deno | Bun | Cloudflare Workers |

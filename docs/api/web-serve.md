@@ -61,7 +61,7 @@ const echo: ServeHandler = async (req) =>
 The options of `serve`.
 
 ```ts
-export type ServeOptions = {
+export type ServeOptions = SocketOptions & {
     port?: number;
     hostname?: string;
     signal?: AbortSignal;
@@ -109,7 +109,7 @@ the `closeTimeout` option cuts what is still in flight after a grace
 period.
 
 ```ts
-export function serve(handler: ServeHandler, options?: ServeOptions): Promise<ChoWebServer>;
+export function serve(app: ServeHandler | ServeApp, options?: ServeOptions): Promise<ChoWebServer>;
 ```
 
 ### Usage {#serve-usage}
@@ -143,7 +143,7 @@ Serve a handler on the `node:http` server. It is the Node.js part of
 `serve`; it also runs on the runtimes that have `node:http`.
 
 ```ts
-export function serve_node(handler: ServeHandler, port: number, hostname?: string, close_timeout?: number): Promise<ChoWebServer>;
+export function serve_node(handler: ServeHandler, port: number, hostname?: string, close_timeout?: number, on_upgrade?: NodeUpgradeListener, cut?: () => void): Promise<ChoWebServer>;
 ```
 
 ### Usage {#serve_node-usage}
@@ -159,7 +159,7 @@ await server.close();
 Serve a handler on the server of a given runtime (see `serve`).
 
 ```ts
-export function serve_on(runtime: EngineType, handler: ServeHandler, options?: ServeOptions): Promise<ChoWebServer>;
+export function serve_on(runtime: EngineType, app: ServeHandler | ServeApp, options?: ServeOptions): Promise<ChoWebServer>;
 ```
 
 ### Usage {#serve_on-usage}
@@ -175,3 +175,45 @@ await server.close();
 These declarations share their implementation with another entry point. Each link opens the full declaration.
 
 [`EngineType`](/api/core-utils#symbol-EngineType)
+
+## ServeApp {#symbol-ServeApp}
+
+An application supplies a Fetch `handler` and an optional `upgrade(req)` function. Pass the whole application when hosting sockets.
+
+```ts
+const hosted: ServeApp = app;
+const server = await serve(hosted, { port: 3000 });
+```
+
+## SocketOptions {#symbol-SocketOptions}
+
+Set `maxPayload` in bytes to limit incoming WebSocket messages on Node.js and Bun. The default is 1 MiB.
+
+```ts
+const limits: SocketOptions = { maxPayload: 64 * 1024 };
+await serve(app, { ...limits, port: 3000 });
+```
+
+## bunOptions {#symbol-bunOptions}
+
+## BunOptions {#symbol-BunOptions}
+
+`bunOptions(app, options?)` returns the `fetch` handler and the `websocket` callbacks Bun needs when creating a listener.
+
+```ts
+import { bunOptions, type BunOptions } from "@chojs/web/serve";
+const handlers: BunOptions = bunOptions(app);
+Bun.serve({ ...handlers, port: 3000 });
+```
+
+## nodeUpgrade {#symbol-nodeUpgrade}
+
+## NodeUpgradeListener {#symbol-NodeUpgradeListener}
+
+`nodeUpgrade(app, options?)` creates the listener for the Node HTTP server's upgrade event. Keep the existing server's ordinary HTTP request handling in place.
+
+```ts
+import { nodeUpgrade, type NodeUpgradeListener } from "@chojs/web/serve";
+const onUpgrade: NodeUpgradeListener = nodeUpgrade(app, { maxPayload: 65536 });
+server.on("upgrade", onUpgrade);
+```

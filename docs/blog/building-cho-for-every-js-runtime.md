@@ -92,7 +92,7 @@ There’s also something more immediately useful if you’re building an API: CH
 
 ## What “every runtime” means today
 
-HTTP is where the promise is easiest to see. The built-in router and the Hono adapter can both serve a Fetch handler on Cloudflare Workers. If I need a Fastify plugin, I can use the Fastify adapter on Node.js. For a Kafka consumer, the supported choices today are Node.js, Deno, and Bun.
+HTTP is where the promise is easiest to see. The built-in router and the Hono adapter can both serve a Fetch handler on Cloudflare Workers. If I need a Fastify plugin, I can use the Fastify adapter on Node.js. For a Kafka consumer, the adapter targets Node.js and also passes broker tests on Deno and Bun.
 
 I want those boundaries to be clear **before** someone chooses a deployment target. A controller that uses standard web APIs is straightforward to move. A service that depends on a Worker binding, a native plugin, or a broker connection has a real requirement. CHO gives that dependency a place to live, and the [runtime guide](/guide/runtimes) documents which combinations are supported.
 
