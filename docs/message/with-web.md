@@ -12,10 +12,14 @@ Expect `{"received":true}`. Repeating the same shipment key leaves the set uncha
 
 ## Scope middleware to its transport
 
-Keep HTTP and message controllers separate. In a module that declares both kinds, place transport-specific `@Middlewares` and `@Catch` on the controllers or methods. A module-level declaration is visible to both pipelines, whose contexts and results differ.
+Keep HTTP and message controllers separate. In a module that declares both kinds, place transport-specific [`@Middlewares`](/api/message#symbol-Middlewares) and [`@Catch`](/api/message#symbol-Catch) on the controllers or methods. A module-level declaration is visible to both pipelines, whose contexts and results differ.
 
 ## Who owns the injector
 
 Configure provider overrides on `ChoWeb.create`. `ChoMessage.from` borrows the injector and accepts its own prefix, linker and fallback error handler. Closing the consumer drains its deliveries and leaves the shared dependencies available to the owner.
 
 With a real listener and a broker, stop accepting HTTP traffic and close the consumer before disposing the web application. Await both drains before closing shared storage. The example uses nested `finally` blocks so the owner also closes if consumer creation or processing fails.
+
+## Check instance ownership
+
+Deliver a shipment, request its status over HTTP and then close the message application. The HTTP owner should still have access to the same inventory. Close that owner last so provider disposal happens after both entry points finish using the store.

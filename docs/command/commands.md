@@ -1,6 +1,6 @@
 # Choose a command layout
 
-Decide what the first positional word means to the person running the tool. If `library "The Odyssey"` acts on a title, use `@Main`. If `library label "The Odyssey"` selects one of several operations, use `@Action("label")`.
+Decide what the first positional word means to the person running the tool. If `library "The Odyssey"` acts on a title, use [`@Main`](/api/command#symbol-Main). If `library label "The Odyssey"` selects one of several operations, use `@Action("label")`.
 
 ## One implicit command
 
@@ -26,6 +26,10 @@ A command application must declare either one `@Main` or one or more named actio
 
 ## Group and extend commands
 
-Controllers can group actions such as inventory and reporting. Give each controller a `@Help` heading to group those actions in global help. Separate modules can own their providers while contributing commands to the same executable.
+Controllers can group actions such as inventory and reporting. Give each controller a [`@Help`](/api/command#symbol-Help) heading to group those actions in global help. Separate modules can own their providers while contributing commands to the same executable.
 
 A subclass inherits decorated commands from its base class. An override can keep the command mapping or declare another one. Check global help after moving commands between controllers to verify the public names and grouping.
+
+## Decide whether to name the operation
+
+For a single-purpose executable, put the work in `@Main` and try an empty argument list. For a multi-command executable, declare named actions and pass the action name as its own argument. Give each action's positional arguments an example in help.

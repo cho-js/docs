@@ -33,4 +33,8 @@ const app = ChoCommand.create(Library, {
 
 Throw `MissingTitle` where the command detects that condition. For a local policy, attach `@Catch(handler)` to a method, controller or feature. CHO chooses the nearest handler in that order, then `onError`. The selected handler also sees failures in the command's middleware and lazy construction.
 
-A malformed module graph fails during `ChoCommand.create`. Use `isChoError(error, "CHO_COMMAND_DUPLICATE_ACTION")` from `@chojs/command` to identify a conflicting action during startup. Framework [diagnostic codes](/reference/errors) are strings. The numeric exit codes above apply when you run a command. An unknown action is reported by the dispatcher. Neither failure calls a command's `@Catch`. To verify the contract, [test `run` directly](/command/testing).
+A malformed module graph fails during `ChoCommand.create`. Use `isChoError(error, "CHO_COMMAND_DUPLICATE_ACTION")` from `@chojs/command` to identify a conflicting action during startup. Framework [diagnostic codes](/reference/errors) are strings. The numeric exit codes above apply when you run a command. An unknown action is reported by the dispatcher. Neither failure calls a command's [`@Catch`](/api/command#symbol-Catch). To verify the contract, [test `run` directly](/command/testing).
+
+## Keep exit policy at the boundary
+
+Invoke the action with valid input and with a missing required argument. In the launcher assign the result of `await app.run(argv)` to the process exit status. In an embedded caller, inspect that number directly and let the surrounding process continue.

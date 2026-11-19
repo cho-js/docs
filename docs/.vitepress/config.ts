@@ -52,7 +52,7 @@ gtag('js', new Date());`,
       { text: "Web", link: "/web/quick-start", activeMatch: "^/(web|adapters|recipes)/" },
       { text: "Command", link: "/command/quick-start", activeMatch: "^/command/" },
       { text: "Message", link: "/message/quick-start", activeMatch: "^/message/" },
-      { text: "Reference", link: "/reference/web", activeMatch: "^/(reference|advanced)/" },
+      { text: "API", link: "/api/", activeMatch: "^/(api|reference|advanced)/" },
       {
         text: "v3",
         items: [

@@ -49,7 +49,7 @@ docker exec cho-docs-kafka /opt/kafka/bin/kafka-consumer-groups.sh \
 
 For a fresh topic containing just these two records, wait for `CURRENT-OFFSET` to reach `2` and `LAG` to reach `0`. Stop the worker with Ctrl+C, then start it again with the same group. A new valid record should be handled once it arrives. The two earlier records already have committed offsets.
 
-If the dead-letter consumer waits indefinitely, check the worker's broker address, group membership and selected `@Catch` policy. A handler that settles an error with `true` or a fallback reply bypasses the adapter's retries and dead-letter publication. Enable `CHO_DEBUGLOG=cho:message,cho:kafka` before starting the worker to inspect that distinction.
+If the dead-letter consumer waits indefinitely, check the worker's broker address, group membership and selected [`@Catch`](/api/message#symbol-Catch) policy. A handler that settles an error with `true` or a fallback reply bypasses the adapter's retries and dead-letter publication. Enable `CHO_DEBUGLOG=cho:message,cho:kafka` before starting the worker to inspect that distinction.
 
 Stop the worker and run `docker stop cho-docs-kafka` to discard the local broker and its temporary data.
 
@@ -74,3 +74,7 @@ KAFKA_BROKERS=localhost:9092 bun test --timeout 120000 vendor/kafka/kafka_test.t
 :::
 
 Run `docker stop cho-kafka` to remove the test broker started by the helper. To save CI time, the project runs the Kafka integration suite against a real broker on Node.js only. The same suite runs locally on all three server runtimes. CI runs the broker-independent Kafka tests and the real NATS/JetStream suite on Node.js, Deno and Bun. Cloudflare Workers has its own [workerd test job](/guide/cloudflare-workers#what-runs-in-workerd).
+
+## Interpret group progress
+
+Compare the topic's last offset with the group's committed offset after the valid delivery. For a failed delivery, inspect the dead-letter record as well as the committed position. A moving offset alone cannot tell you whether the business write succeeded.

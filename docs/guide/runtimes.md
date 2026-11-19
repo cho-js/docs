@@ -29,7 +29,7 @@ Use an ESM project (`"type": "module"`). Install with `npx jsr add @chojs/web` a
 }
 ```
 
-Use Node.js 24 with the built-in router, or select Hono where `URLPattern` is unavailable. On Node, `serve` bridges the native HTTP server to Fetch. With [Fastify](/adapters/fastify), the Fastify instance can listen directly.
+Use Node.js 24 with the built-in router, or select Hono where `URLPattern` is unavailable. On Node, [`serve`](/api/web-serve#symbol-serve) bridges the native HTTP server to Fetch. With [Fastify](/adapters/fastify), the Fastify instance can listen directly.
 
 ## Bun
 
@@ -67,3 +67,7 @@ Use lazy creation for providers that perform I/O. If providers only compute valu
 | Fastify HTTP adapter | Yes | — | — | — |
 
 Kafka uses the Node compatibility layers on Deno and Bun. For installation, Deno permissions and broker verification, follow the [Kafka guide](/message/kafka). For NATS, supply the [transport for your runtime](/message/nats).
+
+## Choose entry points per deployment
+
+A service can expose HTTP from Cloudflare Workers and consume the same catalog's Kafka events from a Node.js, Bun or Deno process. Share the service code and contracts between deployments. Supply each deployment's connections and bindings in its own module configuration.

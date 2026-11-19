@@ -35,4 +35,8 @@ A middleware can return its own `Response` before calling `next()`. For example,
 class Books { /* route methods */ }
 ```
 
-A middleware that needs a provider can be an injectable class with `handle(ctx, next)`. Register the class in the declaring module's visible providers and pass the class itself to `@Middlewares`. Share per-request data through [`ctx.state`](/web/context).
+A middleware that needs a provider can be an injectable class with `handle(ctx, next)`. Register the class in the declaring module's visible providers and pass the class itself to [`@Middlewares`](/api/web#symbol-Middlewares). Share per-request data through [`ctx.state`](/web/context).
+
+## Observe nesting
+
+Append a label before and after `await next()` in two middleware functions. With A registered before B, a successful request records A-enter, B-enter, B-leave, A-leave. A middleware that returns a response immediately skips everything downstream.

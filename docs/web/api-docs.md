@@ -1,6 +1,6 @@
 # Describe an HTTP API for tooling
 
-`@Doc` records what clients need to know beyond the route and its argument readers. The [OpenAPI extra](/web/openapi) combines these declarations into a document, and can serve it with a browser UI. You can also read the metadata directly from `app.graph`.
+[`@Doc`](/api/web#symbol-Doc) records what clients need to know beyond the route and its argument readers. The [OpenAPI extra](/web/openapi) combines these declarations into a document, and can serve it with a browser UI. You can also read the metadata directly from `app.graph`.
 
 ## Document one operation
 
@@ -62,3 +62,7 @@ for (const feature of app.graph.features) {
 ```
 
 A custom argument reader may have no `info`. `method.validated` indicates whether CHO's validation middleware covers the method. Use `app.routes` for a complete runtime inventory, including endpoints added with [`app.mount`](/web/mounted-routes).
+
+## Inspect the operation a client will see
+
+Describe a route with a path parameter and a creation response. Inspect the resulting OpenAPI operation for its parameter name and response status. A descriptive tag groups operations in a viewer, while the runtime status still comes from the handler's response.

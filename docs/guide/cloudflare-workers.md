@@ -40,10 +40,14 @@ BRANCH = "central"
 
 The provider reads a binding at module initialization. If creating a provider opens a connection or performs other I/O, [create the application on the first request](/guide/runtimes#cloudflare-workers) and reuse its promise for that isolate. For work that should continue after returning a response, import `waitUntil` from `cloudflare:workers` and pass it the promise while handling the request. With Hono, the [native context](/adapters/hono#forward-worker-bindings) can also expose the bindings and execution context.
 
-Keeping class and function names during bundling preserves controller names in logs, diagnostics and generated OpenAPI tags. For CHO debug configuration, pass the relevant environment values to `set_env` from `@chojs/core/utils`. [Debug logging](/reference/debugging)
+Keeping class and function names during bundling preserves controller names in logs, diagnostics and generated OpenAPI tags. For CHO debug configuration, pass the relevant environment values to [`set_env`](/api/core-utils#symbol-set_env) from `@chojs/core/utils`. [Debug logging](/reference/debugging)
 
 ## What runs in workerd
 
 CHO's dedicated CI job runs the core, web, message, built-in HTTP middleware, Hono and OpenAPI tests inside Cloudflare's `workerd` runtime. The suite uses compatibility date `2025-09-01`. The test harness enables `nodejs_compat` for Node assertions. Separate application and binding tests run without the flag, as does the Worker above.
 
-On Workers, deliver messages locally with `app.handle`. Run Kafka and NATS broker connections in a Node.js, Deno or Bun process. The CLI, Fastify and process listeners such as `serve()` are outside the Workers test suite. To reproduce the runtime checks from the CHO checkout, run `tools/workerd/run.sh`. [Framework test harness](https://github.com/cho-js/cho/tree/main/tools/workerd)
+On Workers, deliver messages locally with `app.handle`. Run Kafka and NATS broker connections in a Node.js, Deno or Bun process. The CLI, Fastify and process listeners such as [`serve()`](/api/web-serve#symbol-serve) are outside the Workers test suite. To reproduce the runtime checks from the CHO checkout, run `tools/workerd/run.sh`. [Framework test harness](https://github.com/cho-js/cho/tree/main/tools/workerd)
+
+## Choose where to initialize a resource
+
+Cache application creation in module scope for reuse within one isolate. When the resource requires request-time I/O, initialize it from the fetch entry point and retain the promise. Durable state that must outlive an isolate belongs in an external binding or service.

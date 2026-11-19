@@ -45,3 +45,7 @@ class Books {
 - The body passes through as a stream. The proxy owns the outgoing headers. Omitting upstream `Content-Length` and `Content-Encoding` avoids describing a representation that Fetch may already have decoded.
 
 For a route that also accepts a large request body, decide which media types, methods and size limits it supports before forwarding the stream. [Request bodies](/web/arguments) · [HTTP middleware](/adapters/middlewares)
+
+## Propagate cancellation
+
+Start a slow lookup and disconnect the caller. Pass the incoming request's abort signal to the outbound fetch so the upstream request can stop too. Check which upstream status codes and headers the proxy exposes as part of its own API contract.

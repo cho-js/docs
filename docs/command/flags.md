@@ -48,3 +48,7 @@ With actions named `list` and `label`, `--profile list label` now selects `label
 ## Read the context
 
 `ctx.argv` preserves the input passed to `run`, `ctx.command` identifies the selected action, and `ctx.args._` contains positional words. `ctx.state` holds values shared within that run. CHO consumes the reserved long flags `--help` and `--version`. Short names such as `-h` and `-v` remain available to the application.
+
+## Protect identifiers during parsing
+
+Run the import twice, once with `--branch 007` and once with `--branch 7`. Both values remain strings when `branch` is declared in `string`. If those values identify different branches, keep that declaration in the common parser options whenever the flag can precede the action.

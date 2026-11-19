@@ -63,6 +63,10 @@ console.log(ack.stream, ack.seq);
 | Retries exhausted, or validation failed with `CHO_MESSAGE_INVALID_MESSAGE` | Publishes the dead letter, then terminates delivery. Without a dead-letter destination, it terminates delivery and continues to the next event |
 | Dead-letter publication fails | Leaves the original eligible for redelivery so publication can be tried again |
 
-The dead letter retains the original payload and headers. Inspect `cho-topic`, `cho-stream`, `cho-sequence`, `cho-consumer`, `cho-attempts` and `cho-error` to trace the failure. The package exports their names as `DEAD_LETTER_HEADERS`.
+The dead letter retains the original payload and headers. Inspect `cho-topic`, `cho-stream`, `cho-sequence`, `cho-consumer`, `cho-attempts` and `cho-error` to trace the failure. The package exports their names as [`DEAD_LETTER_HEADERS`](/api/vendor-nats#symbol-DEAD_LETTER_HEADERS).
 
 Each queue group shares one durable consumer per matching route across replicas. Delivery is at least once. Use an idempotent write and set `ackWait` (default `30000` ms) to cover normal handler duration. `concurrency` defaults to `1` per route and includes messages waiting for retry. Read `(ctx.native as NatsStreamNative).attempt` for the delivery count. On shutdown, CHO waits for active handlers and leaves received but unprocessed work available for redelivery.
+
+## Choose what a restart should recover
+
+Publish an event to the configured stream, stop the consumer and restart it with the same durable name. Observe which messages remain pending. Configure the delivery limit and dead-letter destination before using the consumer with data that can repeatedly fail validation.

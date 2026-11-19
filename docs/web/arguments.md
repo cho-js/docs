@@ -1,6 +1,6 @@
 # Bind request data to method arguments
 
-`@Args` describes a method's inputs in parameter order. For `PUT /books/42?notify=yes`, the following handler receives `"42"`, `"yes"` and the parsed request body. A final optional context parameter still gives access to request-local state.
+[`@Args`](/api/web#symbol-Args) describes a method's inputs in parameter order. For `PUT /books/42?notify=yes`, the following handler receives `"42"`, `"yes"` and the parsed request body. A final optional context parameter still gives access to request-local state.
 
 ```ts
 @Put(":id")
@@ -24,9 +24,9 @@ Call a reader with no arguments for the whole source. Pass a string key for one 
 
 ## Work with repeated values and bodies
 
-Use `ctx.url.searchParams.getAll("tag")` for every query value. For multipart forms, use `await ctx.req.formData()`. `Form` parses URL-encoded text. The chosen body reader determines how CHO interprets the body, independently of the request's content type.
+Use `ctx.url.searchParams.getAll("tag")` for every query value. For multipart forms, use `await ctx.req.formData()`. [`Form`](/api/web#symbol-Form) parses URL-encoded text. The chosen body reader determines how CHO interprets the body, independently of the request's content type.
 
-Multiple `Body` arguments can use the same cached JSON parse. `Body` and `Form` share the underlying text read and cache their own parsed representations. Choose the reader that matches the input your endpoint accepts. Calling `req.json()` yourself after `Body()` has already consumed the stream also fails.
+Multiple [`Body`](/api/web#symbol-Body) arguments can use the same cached JSON parse. `Body` and `Form` share the underlying text read and cache their own parsed representations. Choose the reader that matches the input your endpoint accepts. Calling `req.json()` yourself after `Body()` has already consumed the stream also fails.
 
 ## Define a custom reader
 
@@ -44,3 +44,7 @@ class Search {
 ```
 
 Readers may return promises. CHO evaluates them sequentially after route middleware calls through. An earlier failure prevents later reads and skips the handler. TypeScript checks the declared input types. Two parameters with the same type can still be accidentally transposed.
+
+## Choose between a named field and a context
+
+For an endpoint that only needs the book ID, use `@Args(Param("id"))`. If it also uses a response negotiation header, add a header reader in the next position. Keep the trailing request context for operations that need the original Fetch request, such as forwarding it.

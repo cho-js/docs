@@ -72,11 +72,11 @@ The inventory tutorial throws its own `TypeError` for an invalid ISBN, so that e
 
 A successful application write can precede a failed offset commit. Use a stable event identifier for writes that must tolerate repeated delivery. Increasing concurrency allows different partitions to progress independently. Records in the same partition remain ordered, including during retries.
 
-The adapter exposes `{ message, attempt }` through `ctx.native` as `KafkaNative`. The first attempt is `1`. Use the native message for raw key or repeated header bytes. For publishing, the linked client exposes `app.linked.instance.producer.send({ messages })`. Direct `app.handle` tests bypass Kafka. For a reproducible two-record exercise, [verify Kafka delivery and retries](/message/kafka-check).
+The adapter exposes `{ message, attempt }` through `ctx.native` as [`KafkaNative`](/api/vendor-kafka#symbol-KafkaNative). The first attempt is `1`. Use the native message for raw key or repeated header bytes. For publishing, the linked client exposes `app.linked.instance.producer.send({ messages })`. Direct `app.handle` tests bypass Kafka. For a reproducible two-record exercise, [verify Kafka delivery and retries](/message/kafka-check).
 
 ## Publish with the linked producer
 
-For a [typed event](/message/contracts), retain the `KafkaLinker` passed to `ChoMessage.create` and use `new ChoMessageClient(linker.sender)` from `@chojs/message`. For example, given a `BookReceived` contract, call `await client.publish(BookReceived, { isbn }, { key: copyId })`. The Kafka sender is ready once the application is created. The producer connects on first use. Calling `request` rejects with `CHO_MESSAGE_NO_REPLIES`.
+For a [typed event](/message/contracts), retain the [`KafkaLinker`](/api/vendor-kafka#symbol-KafkaLinker) passed to `ChoMessage.create` and use `new ChoMessageClient(linker.sender)` from `@chojs/message`. For example, given a `BookReceived` contract, call `await client.publish(BookReceived, { isbn }, { key: copyId })`. The Kafka sender is ready once the application is created. The producer connects on first use. Calling `request` rejects with `CHO_MESSAGE_NO_REPLIES`.
 
 To publish a follow-up event from the worker process, use the producer on the started application. The following fragment sends the same shape that the inventory handler accepts:
 
@@ -93,3 +93,59 @@ await app.linked.instance.producer.send({
 ```
 
 Successful `send` reports publication. For an end-to-end check, separately observe the consumer's side effect or committed offset. The linked producer is also used for dead letters. Closing the started application closes its Kafka clients.
+
+## Preserve ordering for a record
+
+Publish several updates for the same copy with its ID as the Kafka key. Keep the consumer's write idempotent, since a failure between a successful write and an offset commit can redeliver the event. Monitor commits and the dead-letter destination separately.
+
+## Handle a fatal consumer failure
+
+The consumer stops by itself in three cases: a dead message with no `deadLetter`
+topic, a dead letter that cannot be sent, and a connection the client library
+could not restore. It then finishes the messages in hand, closes its clients,
+and calls `onFatal` with the error (its `cause` is the error of the handler, or
+of the client). The error of the first two cases, and of a consumer that cannot
+read its topics again, is a [`ChoError`](/api/core#symbol-ChoError) with a code: `CHO_KAFKA_NO_DEAD_LETTER`,
+`CHO_KAFKA_DEAD_LETTER_FAILED`, `CHO_KAFKA_CONSUME_FAILED`.
+
+Without `onFatal`, the error is thrown: an uncaught exception, which ends the
+process, so that what runs the application starts it again. Give `onFatal` to do
+something else:
+
+```ts
+new KafkaLinker({
+  brokers,
+  groupId: "mailer",
+  onFatal: async (error) => {
+    logger.fatal(error);
+    await app.close(); // the adapter is stopped already: this ends the rest
+    process.exit(1);
+  },
+});
+```
+
+## Inspect the current partition and offset
+
+`ctx.native` is a `KafkaNative`: the message of the client library, and the
+number of the attempt.
+
+```ts
+import type { KafkaNative } from "@chojs/vendor-kafka";
+
+@Subscribe("created")
+created(ctx: ChoMessageContext) {
+  const { message, attempt } = ctx.native as KafkaNative;
+  message.partition; //     number
+  message.offset; //        bigint
+  message.timestamp; //     bigint, in milliseconds
+  message.key; //           the bytes of the key
+  message.headerEntries; // every header, as bytes, repeated ones included
+}
+```
+
+`ctx.key` and `ctx.headers` are strings. A key or a header that is not valid
+UTF-8 is decoded with replacement characters, and when a header is repeated the
+last one wins: the bytes, and every header, are in `ctx.native`.
+
+A handler that uses `ctx.native` runs on this adapter only, and not with
+`app.handle`, which has no native message.

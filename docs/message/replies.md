@@ -2,7 +2,7 @@
 
 A caller can ask which shelf holds a book and read the answer from the same delivery. Return a value from the subscription, then await `app.handle(topic, delivery)` to receive its bytes. An event consumer that only updates inventory can keep returning nothing.
 
-This API was added after 3.4.0. To try it from the CHO checkout, follow the [development setup](/guide/getting-started#run-examples-against-the-development-version).
+Message replies are available in 3.5.0. To try it from the CHO checkout, follow the [development setup](/guide/getting-started#run-examples-against-the-development-version).
 
 ## Run a shelf lookup
 
@@ -26,11 +26,11 @@ These rules apply to a subscription declared with a topic string. A [contract su
 | An `ArrayBuffer`, typed array or `DataView` | Binary data. For a view, only the bytes in its range are included |
 | A JSON value such as an object, array, boolean, number or `null` | UTF-8 JSON. Decode and parse it as in the example |
 
-A `Reply` carries encoded bytes in `value` and optional string `headers`. A zero-length byte array or empty string produces a reply with zero bytes. Check `reply === undefined` when the distinction matters. If serialization fails, for example because a returned object contains a cycle, CHO sends `CHO_MESSAGE_INVALID_REPLY` to the selected [error handler](/message/error-handling).
+A [`Reply`](/api/message#symbol-Reply) carries encoded bytes in `value` and optional string `headers`. A zero-length byte array or empty string produces a reply with zero bytes. Check `reply === undefined` when the distinction matters. If serialization fails, for example because a returned object contains a cycle, CHO sends `CHO_MESSAGE_INVALID_REPLY` to the selected [error handler](/message/error-handling).
 
 ## Attach headers to a reply
 
-Import `ChoMessageReply` from `@chojs/message` when the caller also needs metadata. In the shelf lookup above, replace the successful return with the following.
+Import [`ChoMessageReply`](/api/message#symbol-ChoMessageReply) from `@chojs/message` when the caller also needs metadata. In the shelf lookup above, replace the successful return with the following.
 
 ```ts
 return new ChoMessageReply({ found: true, shelf }, {
@@ -38,8 +38,12 @@ return new ChoMessageReply({ found: true, shelf }, {
 });
 ```
 
-The caller reads `reply.headers?.["Content-Type"]` and decodes `reply.value` as before. The wrapper works in both subscriptions and `@Catch` handlers. For a header-only acknowledgment, return `new ChoMessageReply(undefined, { headers: { "X-Result": "accepted" } })`. The caller receives a present reply with zero payload bytes. A plain object such as `{ value, headers }` is encoded as ordinary JSON.
+The caller reads `reply.headers?.["Content-Type"]` and decodes `reply.value` as before. The wrapper works in both subscriptions and [`@Catch`](/api/message#symbol-Catch) handlers. For a header-only acknowledgment, return `new ChoMessageReply(undefined, { headers: { "X-Result": "accepted" } })`. The caller receives a present reply with zero payload bytes. A plain object such as `{ value, headers }` is encoded as ordinary JSON.
 
 ## Receive the reply through a broker
 
 Direct delivery returns the reply to the local caller. With the [NATS adapter](/message/nats), a remote caller uses `nc.request` and receives both the bytes and the headers. The [Kafka adapter](/message/kafka) consumes events and ignores returned replies. Use its producer to publish a follow-up event when another consumer needs the result.
+
+## Decide whether a header belongs in the contract
+
+Return a plain value when the caller only needs the decoded result. For transport metadata, return a `ChoMessageReply` with headers. Inspect the raw broker reply when you need those headers. The typed client's request method returns the decoded payload.

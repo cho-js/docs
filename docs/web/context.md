@@ -1,6 +1,6 @@
 # Read the request context
 
-A handler without `@Args` receives one `ChoWebContext`. The same route context flows through middleware, the handler and its error handler. Use it when the decision depends on several parts of the request.
+A handler without [`@Args`](/api/web#symbol-Args) receives one [`ChoWebContext`](/api/web#symbol-ChoWebContext). The same route context flows through middleware, the handler and its error handler. Use it when the decision depends on several parts of the request.
 
 ```ts
 @Get("search")
@@ -45,3 +45,7 @@ The symbol keeps independently written middleware from overwriting the same key.
 ## Read a body once
 
 `ctx.req` follows Fetch body-consumption rules. After a middleware consumes `req.text()`, a handler cannot independently read `req.json()` from that request. Choose one reader and pass its result through `state`, or use CHO's cached [body arguments](/web/arguments).
+
+## Keep concurrent requests independent
+
+Send two requests with different correlation IDs. Copy each ID from the incoming header into `ctx.state` in middleware, then read it in the handler. Each handler should see its own ID. Writing that value to a field on the controller would share it across requests.

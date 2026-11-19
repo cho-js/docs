@@ -41,3 +41,7 @@ Change `value` to `'{"isbn":17}'` and run the program again. The handler throws 
 Once the handler works in memory, pass a linker to `ChoMessage.create` and call `await app.start()`. The linker subscribes to the compiled topics and forwards deliveries into the same handlers. To have another service ask for a result over the network, follow the [NATS request/reply guide](/message/nats). To consume Kafka events with retries and dead letters on Node.js, Deno or Bun, follow the [Kafka guide](/message/kafka). On [Cloudflare Workers](/guide/cloudflare-workers), use `app.handle` for local delivery.
 
 On NATS, use [JetStream](/message/jetstream) to retain shipments published while the inventory worker is offline. To validate each shipment before the handler runs, adapt the [message arguments example](/message/arguments).
+
+## Observe the delivery contract
+
+Deliver the same topic once with the valid ISBN payload and once with a missing ISBN. Await each call. The fulfilled call means the handler completed, while the rejected call exposes the failure to its caller. A broker adapter can then apply its own retry or reply policy.

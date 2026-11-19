@@ -4,7 +4,15 @@ lastUpdated: false
 
 # Documentation status
 
-The documentation covers CHO through **[b93db0a · ci: add all envs to ci with real brokers tests](https://github.com/cho-js/cho/commit/b93db0abc304a1e4d938b9de545ec723efadaa51)** on `main`. This commit follows the 3.4.0 release tags. To run the examples against this version, use the [development setup](/guide/getting-started#run-examples-against-the-development-version).
+The documentation covers CHO through **[30ad35b · feature: modules configuration](https://github.com/cho-js/cho/commit/30ad35bc87200c47e829d909c582887fc2c055aa)** on `main`.
+
+## November 19, 2026 · Application guides and public API
+
+Start with the [application model](/guide/introduction) to follow a declaration through dependency resolution and dispatch. The [public API](/api/) covers all 18 package entry points, including adapter options, extension interfaces and utility subpaths. Re-exported symbols link to their shared documentation.
+
+Release 3.5.0 includes the Kafka and Worker support described below. The subsequent module configuration change lets an application supply its own providers and imports to a library module. [Configure a library module](/di/configured-modules) · [Framework changes since b93db0a](https://github.com/cho-js/cho/compare/b93db0abc304a1e4d938b9de545ec723efadaa51...30ad35bc87200c47e829d909c582887fc2c055aa)
+
+Documentation checks included building the VitePress site and checking the API inventory and internal links.
 
 ## November 18, 2026 · Cloudflare Workers and Kafka runtime support
 

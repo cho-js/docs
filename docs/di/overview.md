@@ -30,7 +30,7 @@ export class Library {}
 
 ## Trace the dependency
 
-- `providers: [Catalog]` gives the module a declaration it can instantiate. `@Injectable()` describes how to build the class.
+- `providers: [Catalog]` gives the module a declaration it can instantiate. [`@Injectable()`](/api/core#symbol-Injectable) describes how to build the class.
 - `dependencies: [Catalog]` tells CHO which token to resolve for the first constructor argument. The compiler checks the constructor against that list.
 - `controllers: [Books]` registers the HTTP entry point. When creating `Books`, CHO looks up `Catalog` in the module that declares `Books`.
 
@@ -46,3 +46,7 @@ Within an application, callers resolving the same declaration receive the same i
 | Use one catalog across features | [Export it from a module](/di/modules) |
 | Release a client or replace it during a test | [Provider lifecycle and overrides](/di/lifecycle) |
 | Share instances between HTTP and message handlers | [Use one injector](/message/with-web) |
+
+## Choose the owner of a dependency
+
+Put the catalog provider in the feature module that owns its state. When another feature needs it, export the token from the owner and import that module. This gives both controllers access to the same instance through their respective scopes.

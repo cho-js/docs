@@ -42,3 +42,7 @@ Use `CHO_DEBUGLOG='cho:*'` for matching context names or `CHO_DEBUG=1` for all c
 4. **A CLI returns a surprising status.** Check which action `cho:command` selected. Then compare the command, middleware and error-handler return values with the [exit-code table](/command/errors).
 
 For setup failures grouped by phase, see [error diagnostics](/reference/errors).
+
+## Narrow the trace
+
+Enable logging before creating the application and exercise a single route or command. Compare the logged selection with the application's compiled routes or generated help. This distinguishes a mismatch during dispatch from a dependency problem during creation.

@@ -32,3 +32,7 @@ After creation, call `app.mount` to register endpoints that depend on the initia
 ## Shut down the listener
 
 Await `server.close()` to stop accepting requests and drain active connections. Then await `app.close()` to dispose providers. Subsequent requests passed to `app.handler` receive `503`. Use `closeTimeout` when a long-lived stream could keep a listener open. [Graceful shutdown](/recipes/shutdown)
+
+## Choose a readiness boundary
+
+Await creation and register dynamic routes before opening the listener. Report the port returned by [`serve`](/api/web-serve#symbol-serve), which may differ from the requested port if the host allocated it. At shutdown, stop the listener before closing the application that supplies its providers.

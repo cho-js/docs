@@ -1,6 +1,6 @@
 # Read and handle a delivery
 
-A method declared with `@Subscribe("topic")` receives a `ChoMessageContext` by default. To receive selected fields as parameters, use [argument readers](/message/arguments). To share a typed payload and reply with the caller, subscribe to a [contract](/message/contracts). Await any write that must succeed before a durable consumer acknowledges the event.
+A method declared with `@Subscribe("topic")` receives a [`ChoMessageContext`](/api/message#symbol-ChoMessageContext) by default. To receive selected fields as parameters, use [argument readers](/message/arguments). To share a typed payload and reply with the caller, subscribe to a [contract](/message/contracts). Await any write that must succeed before a durable consumer acknowledges the event.
 
 | Member | Value for one delivery |
 | --- | --- |
@@ -19,6 +19,10 @@ For an image or encoded payload, use `ctx.value` directly. For plain text, use `
 
 ## Finish, fail or publish
 
-Return nothing to finish an event, or return a value to answer the caller. For example, returning `false` from a subscription sends the JSON value `false`. Throw or reject to report failure. See [Return a reply](/message/replies) for encoding and [Failed deliveries](/message/error-handling) for the separate meaning of a boolean returned by `@Catch`.
+Return nothing to finish an event, or return a value to answer the caller. For example, returning `false` from a subscription sends the JSON value `false`. Throw or reject to report failure. See [Return a reply](/message/replies) for encoding and [Failed deliveries](/message/error-handling) for the separate meaning of a boolean returned by [`@Catch`](/api/message#symbol-Catch).
 
 To publish a follow-up event, inject a producer that your application owns, or use the broker adapter's publishing API. `app.handle` invokes a local handler directly. To reach another application, use the [NATS connection](/message/nats) or the [Kafka producer](/message/kafka#publish-with-the-linked-producer).
+
+## Inspect a delivery without guessing the encoding
+
+For a text producer, read `ctx.text()`. For a JSON producer, decode with `ctx.json<unknown>()` and validate the result. Preserve the raw bytes for a binary producer. Treat the message key as a separate input even when its text looks like the record identifier.

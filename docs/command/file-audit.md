@@ -20,7 +20,7 @@ deno run --allow-read=catalog.txt cli.ts
 echo $?
 ```
 
-The first invocation prints `Checked 2 identifiers`. The second reports `Duplicate identifier: A17` and exits with status `1`. `@Main` receives the invocation directly, so there is no `audit` action word.
+The first invocation prints `Checked 2 identifiers`. The second reports `Duplicate identifier: A17` and exits with status `1`. [`@Main`](/api/command#symbol-Main) receives the invocation directly, so there is no `audit` action word.
 
 ## 3. Replace disk access in a test
 
@@ -47,3 +47,7 @@ Deno.test("a duplicate identifier fails the audit", async () => {
 ```
 
 To reuse the command on Node or Bun, provide a reader for that runtime under the same token and use its process entry point. Neither duplicate detection nor the test depends on the filesystem API.
+
+## Separate file access from the audit
+
+Give the input provider a fake that returns a small catalog with one invalid record. Run the same action used by the process launcher and inspect its exit code. Change only the fake's data for the success case. Both cases exercise the real parser and audit logic.

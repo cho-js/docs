@@ -30,4 +30,8 @@ In this controller fragment, `titleValidator` runs under [`validate()`](/web/val
 
 ## Stream or download a body
 
-Wrap a byte stream in `new Response(stream, { headers })` to choose its media type. For a browser download, also set `Content-Disposition`. For typed event streams, `@Sse` handles event framing and response headers. [Stream bytes](/recipes/streaming) · [Download a file](/recipes/downloads) · [Server-sent events](/web/sse)
+Wrap a byte stream in `new Response(stream, { headers })` to choose its media type. For a browser download, also set `Content-Disposition`. For typed event streams, [`@Sse`](/api/web#symbol-Sse) handles event framing and response headers. [Stream bytes](/recipes/streaming) · [Download a file](/recipes/downloads) · [Server-sent events](/web/sse)
+
+## Return a deliberate empty result
+
+For a successful delete, return `undefined` and check the client receives status `204` and an empty body. For a missing book, return a `Response` with status `404`. Testing both outcomes makes the distinction part of your endpoint contract.

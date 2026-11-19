@@ -1,6 +1,6 @@
 # Translate route failures into HTTP responses
 
-Throw an `HttpError` when the route knows what the client should receive. In the [catalog example](/web/example), import `HttpError` from `@chojs/web` and replace the body of `Books.find` with these three lines. Request `GET /api/books/missing` to see the result.
+Throw an [`HttpError`](/api/web#symbol-HttpError) when the route knows what the client should receive. In the [catalog example](/web/example), import `HttpError` from `@chojs/web` and replace the body of `Books.find` with these three lines. Request `GET /api/books/missing` to see the result.
 
 ```ts
 const book = this.catalog.find(id);
@@ -27,7 +27,7 @@ Using 3.4.0? See the [development setup](/guide/getting-started#run-examples-aga
 
 ## Set a policy for a route or application
 
-For a controller route, CHO selects the closest `@Catch` on the method, controller or declaring feature module, falling back to the application's `onError`. A mounted route uses the application's `onError`. Exactly one handler receives the exception, including an `HttpError`. A handler class with `handle(error, ctx)` must be a visible provider.
+For a controller route, CHO selects the closest [`@Catch`](/api/web#symbol-Catch) on the method, controller or declaring feature module, falling back to the application's `onError`. A mounted route uses the application's `onError`. Exactly one handler receives the exception, including an `HttpError`. A handler class with `handle(error, ctx)` must be a visible provider.
 
 ```ts
 import { ChoWeb, isHttpError } from "@chojs/web";
@@ -44,7 +44,7 @@ const app = await ChoWeb.create(Library, {
 });
 ```
 
-`isHttpError` recognizes errors thrown by another copy of the web package. `toResponse()` builds a fresh JSON response with the error's status and headers. A handler can also translate a domain failure by throwing an `HttpError`. Returning `undefined` preserves the original error. CHO converts an outstanding `HttpError` automatically and passes other unhandled exceptions to the adapter. To choose a response yourself, return a `Response`. Ordinary returned objects follow the [response conversion rules](/web/responses).
+[`isHttpError`](/api/web#symbol-isHttpError) recognizes errors thrown by another copy of the web package. `toResponse()` builds a fresh JSON response with the error's status and headers. A handler can also translate a domain failure by throwing an `HttpError`. Returning `undefined` preserves the original error. CHO converts an outstanding `HttpError` automatically and passes other unhandled exceptions to the adapter. To choose a response yourself, return a `Response`. Ordinary returned objects follow the [response conversion rules](/web/responses).
 
 ## Handle failures outside the route
 
@@ -54,3 +54,7 @@ const app = await ChoWeb.create(Library, {
 | No route matches the URL and verb | Configure the [adapter's not-found hook](/adapters/) |
 | An SSE iterator fails after the headers were sent | Handle the failure in the [stream producer](/web/sse) |
 | A route declaration or provider prevents startup | Catch the failure from `ChoWeb.create` and inspect its [framework error code](/reference/errors) |
+
+## Choose the response seen by the client
+
+Throw `new HttpError(404, "Unknown book")` for a missing record. Repeat with an unexpected storage failure. Check the status, public body and server log separately. This preserves a useful domain message for the caller while keeping internal failure details on the server.

@@ -76,3 +76,5 @@ class EditionsModule {}
 ```
 
 A consuming module can import `EditionsModule` and inject `CompareEditions`. Keeping the client tokens private lets the owning module change the connection details without changing every importer. If an importer needs a different configuration, declare a separate provider for it and use that provider's token explicitly.
+
+When a library module owns a default provider, use [module configuration](/di/configured-modules) to supply deployment settings and share the configured instance across consumers.

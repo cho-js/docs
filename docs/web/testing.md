@@ -36,3 +36,7 @@ try {
 ## Select the test boundary
 
 Use the ordinary application and linker when testing route precedence or a not-found response. Use the adapter's native test facility when asserting native plugin behavior. Use a listening server for transport concerns such as client disconnects and connection draining. [Fastify tests](/adapters/fastify) · [Shutdown](/recipes/shutdown)
+
+## Assert the public contract
+
+Read the response body once and assert the status and the parsed value. Add a request for a missing record as a second case. Reuse the same application when checking a write followed by a read, and create a fresh one for a case that needs an empty store.

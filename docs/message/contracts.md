@@ -14,7 +14,7 @@ A validator's `parse` result supplies its TypeScript type. For an event, omit `r
 
 <<< @/examples/message/contracts.ts#service
 
-`@Subscribe(LocateCopy)` supplies the decoded request, followed by an optional delivery context. It already declares how to read the payload, so adding `@Args` to the same method is an error. `validate()` runs the request validator on the receiving route. A client checks the reply validator when it reads the answer.
+`@Subscribe(LocateCopy)` supplies the decoded request, followed by an optional delivery context. It already declares how to read the payload, so adding [`@Args`](/api/message#symbol-Args) to the same method is an error. [`validate()`](/api/message#symbol-validate) runs the request validator on the receiving route. A client checks the reply validator when it reads the answer.
 
 Use the whole topic in the contract. The declaring feature and controller topics must match its leading segments. If the application uses a deployment prefix such as `staging`, put that prefix in the application's options and the client's options. Both then address `staging.books.locate` using the same contract.
 
@@ -49,3 +49,7 @@ Supply `prefix` and a default request timeout on the client. Individual calls ac
 | The answer is malformed JSON or the reply validator rejects it | Inspect `CHO_MESSAGE_UNEXPECTED_REPLY` and its cause |
 
 An empty answer is decoded as `undefined` before the reply validator runs. For callers that need raw bytes or reply headers, use the [native NATS request](/message/nats).
+
+## Move from an in-process client to NATS
+
+Keep the contract and the subscriber unchanged. Replace the local sender with the started NATS linker's sender and set a request timeout. Compare a domain error returned by the service with a request sent when nobody is listening. A caller can handle these failures differently.

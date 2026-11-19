@@ -67,3 +67,7 @@ bun run cli.ts label
 The first invocation prints `[classics] The Odyssey`. The second lists the shelf option, its alias and its default. The last prints `Supply a book title.` to stderr. In a POSIX shell, run `echo $?` immediately afterwards to see status `2`.
 
 Use [`@Main`](/command/commands) for a tool with one implicit command. For a complete single-command project with an injected file reader, [build a catalog audit](/command/file-audit). For additional named actions, see [flag parsing](/command/flags) and [help output](/command/help).
+
+## Use the command from another program
+
+Pass `["label", "The Odyssey", "--shelf", "classics"]` directly to `run`. Keep the space inside the title in a single array element. Store the returned exit status separately from the text the action prints so a caller can branch on success.

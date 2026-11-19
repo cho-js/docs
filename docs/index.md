@@ -66,7 +66,7 @@ onUnmounted(() => {
 <h1 id="hero-title">One framework.<br><span class="cho-grad">Every runtime.</span></h1>
 <p class="cho-lead">Build enterprise applications in TypeScript. Share business logic across HTTP APIs, command-line tools and message workers, with explicit module boundaries and dependency checks at startup.</p>
 <div class="cho-actions">
-<a class="cho-btn primary" :href="withBase('/guide/getting-started')">Get started <span>→</span></a>
+<a class="cho-btn primary" :href="withBase('/guide/introduction')">How CHO works <span>→</span></a>
 <a class="cho-btn" href="https://github.com/cho-js/cho" target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">↗</span></a>
 </div>
 <div class="cho-install">

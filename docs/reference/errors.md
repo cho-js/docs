@@ -4,7 +4,7 @@ Identify the operation that failed before choosing where to handle it. A rejecte
 
 ## Match a framework error by code
 
-A `ChoError` has a stable string `code`. Log the message for the person fixing the problem and match the code in tests and recovery logic. Import `ChoError` and `isChoError` from `@chojs/core` or the web, command or message entry point. If your project is pinned to 3.4.0, see the [development setup](/guide/getting-started#run-examples-against-the-development-version). The guard also recognizes errors created by another copy of the package.
+A [`ChoError`](/api/core#symbol-ChoError) has a stable string `code`. Log the message for the person fixing the problem and match the code in tests and recovery logic. Import `ChoError` and [`isChoError`](/api/core#symbol-isChoError) from `@chojs/core` or the web, command or message entry point. If your project is pinned to 3.4.0, see the [development setup](/guide/getting-started#run-examples-against-the-development-version). The guard also recognizes errors created by another copy of the package.
 
 ```ts
 import { ChoWeb, isChoError } from "@chojs/web";
@@ -109,3 +109,7 @@ Use `isChoError(error)` to read the code when several failures share one reporti
 | Help works but executing the action fails | Inspect the lazy provider or middleware construction for that action |
 
 [Command selection](/command/commands) · [Flag parsing](/command/flags) · [Debug contexts](/reference/debugging)
+
+## Handle an expected failure
+
+Catch the error at the boundary that can act on it. Match a stable code with `isChoError` and let unexpected errors propagate. Preserve the original cause in server logs when a response exposes only a public message.

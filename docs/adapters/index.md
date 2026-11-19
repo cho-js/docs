@@ -26,3 +26,7 @@ The linker receives each route with its full path and method. CHO already handle
 | Register routes with `app.mount` | Also accepts mounts after a request | Before the first request | Before `ready()`, `listen()` or the first injected request |
 
 On all three adapters, put literal routes before parameter routes and use Web APIs in controllers when you want to keep a choice of host. [Built-in router](/adapters/cho) · [Hono](/adapters/hono) · [Fastify](/adapters/fastify) · [Implement a linker](/adapters/custom)
+
+## Move one endpoint between routers
+
+Create the catalog application with the built-in linker, then create a fresh instance with Hono. Send the same Fetch request to each handler and compare its status and body. Next try overlapping paths or unmatched requests to see where router-specific configuration takes effect.

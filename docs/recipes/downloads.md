@@ -51,3 +51,7 @@ async archive() {
 ```
 
 The file's readable stream owns the open handle and closes it on completion or cancellation. For a user-selected export, look up an application-owned path by identifier. Choose a download name independently of the storage path. Use the native listener when testing a [Fastify](/adapters/fastify) download.
+
+## Check the browser-facing contract
+
+Request the file and inspect `Content-Disposition`, `Content-Type` and the actual bytes. Test a name containing spaces. If the browser displays the file inline, check the disposition before changing the stream implementation.

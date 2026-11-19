@@ -53,3 +53,7 @@ try {
   await app.close();
 }
 ```
+
+## Track a value across two requests
+
+Send two requests through the same application with different correlation IDs. Keep the database client on the shared provider and each ID in the request state. A handler can use both by passing the ID to a method on the client.

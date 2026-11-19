@@ -32,3 +32,7 @@ Create the application and await `start()` before reporting that the consumer is
 `close()` waits for a pending start, stops the linked consumer if started, drains tracked deliveries and disposes the injector if the application owns it. Repeated closes share the shutdown promise. New manual deliveries are refused once closing begins.
 
 Use `app.linked.instance` for the adapter's client, `app.graph` for the feature tree, and `app.routes` for complete topics and handler names. If another application already owns the providers, use [`ChoMessage.from`](/message/with-web).
+
+## Start only when the transport is ready
+
+Use manual delivery when embedding a consumer in a local process. For a connected consumer, await `app.start()` before advertising readiness and await `app.close()` during shutdown. This gives the adapter time to finish in-flight deliveries.

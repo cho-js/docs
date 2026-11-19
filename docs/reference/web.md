@@ -1,6 +1,6 @@
 # HTTP API reference
 
-Import application classes, decorators and argument readers from `@chojs/web`. Separate entry points cover listener startup (`@chojs/web/serve`), the router contract (`@chojs/web/linker`) and graph nodes (`@chojs/web/graph`). [Generated signatures on JSR](https://jsr.io/@chojs/web/doc)
+Import application classes, decorators and argument readers from `@chojs/web`. Separate entry points cover listener startup (`@chojs/web/serve`), the router contract (`@chojs/web/linker`) and graph nodes (`@chojs/web/graph`). [All web exports and usage examples](/api/web)
 
 ## Application and listener
 
@@ -16,7 +16,7 @@ Import application classes, decorators and argument readers from `@chojs/web`. S
 | `await app.close()` | Disposes dependencies and causes subsequent `app.handler` calls to return `503` |
 | `await serve(app.handler, options?)` | Starts a listener on Deno, Bun or Node and returns `{ runtime, hostname, port, close }` |
 
-`serve` accepts `port` (default `3000`, `0` for an allocated port), `hostname`, `signal` and `closeTimeout` in milliseconds. Await `server.close()` before `app.close()`. [Application lifecycle](/web/application)
+[`serve`](/api/web-serve#symbol-serve) accepts `port` (default `3000`, `0` for an allocated port), `hostname`, `signal` and `closeTimeout` in milliseconds. Await `server.close()` before `app.close()`. [Application lifecycle](/web/application)
 
 ## Declarations
 
@@ -48,7 +48,7 @@ A normal method may return a value or a promise. An SSE method returns an async 
 
 ## Router contract
 
-`Linker<T>.link(routes)` returns a `Linked<T>` with `instance`, `handler` and `mount(route)`. `ChoLinker` accepts `{ notFound?, middlewares? }`. Its `ChoRouter` exposes `routes`, `mount(route)`, `match(method, pathname)` and `fetch(request)`. [Adapter comparison](/adapters/) · [Implement a linker](/adapters/custom)
+`Linker<T>.link(routes)` returns a `Linked<T>` with `instance`, `handler` and `mount(route)`. [`ChoLinker`](/api/web#symbol-ChoLinker) accepts `{ notFound?, middlewares? }`. Its [`ChoRouter`](/api/web#symbol-ChoRouter) exposes `routes`, `mount(route)`, `match(method, pathname)` and `fetch(request)`. [Adapter comparison](/adapters/) · [Implement a linker](/adapters/custom)
 
 ## OpenAPI extra
 

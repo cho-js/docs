@@ -21,6 +21,10 @@ A middleware may complete early by returning a non-negative integer. For example
 
 ## Inject a dependency
 
-Use an injectable class with a `handle(ctx, next)` method when the check needs configuration or a service. Register that class as a provider visible in the feature module. Pass the class to `@Middlewares`. The pipeline resolves it on first use. Help and version output bypass the pipeline entirely.
+Use an injectable class with a `handle(ctx, next)` method when the check needs configuration or a service. Register that class as a provider visible in the feature module. Pass the class to [`@Middlewares`](/api/command#symbol-Middlewares). The pipeline resolves it on first use. Help and version output bypass the pipeline entirely.
 
 For exceptions in the check, use [command error handling](/command/errors).
+
+## Keep one run's state local
+
+Place a start timestamp in `ctx.state` before calling `next`. Read it after the action finishes to report elapsed time. Calling `run` a second time supplies a fresh context, even when both calls share the same initialized application.

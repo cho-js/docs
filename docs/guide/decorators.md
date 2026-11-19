@@ -38,3 +38,7 @@ This reads `GET /42?edition=second` as the pair `"42"` and `"second"`. [Handler 
 ## Order and inheritance
 
 Use a single `@Middlewares(first, second)` when execution order matters. Put routing and input declarations together on public instance methods. A derived controller can reuse a decorated base method. An override can keep the inherited route or supply a new route decorator. Check the final method and path in `app.routes` after refactoring a base class.
+
+## Move a controller between runtimes
+
+Keep the decorators and explicit constructor dependency list in the shared source file. Put runtime-specific listener or process APIs in the launcher. When the launcher changes from Deno to Node.js, make sure its TypeScript toolchain still transforms the chosen decorator syntax.

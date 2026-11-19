@@ -1,6 +1,6 @@
 # Command API reference
 
-Import the application factory, decorators and context types from `@chojs/command`. The package re-exports the dependency injection declarations used to build a command module. [Generated signatures on JSR](https://jsr.io/@chojs/command/doc)
+Import the application factory, decorators and context types from `@chojs/command`. The package re-exports the dependency injection declarations used to build a command module. [All command exports and usage examples](/api/command)
 
 ## Application
 
@@ -27,7 +27,7 @@ Options are `name` (default `"chojs"`), `version`, `parseOptions`, `overrides` a
 
 ## Arguments and handlers
 
-`CommandFlags` supports `boolean`, `string`, `collect`, `negatable`, `alias`, `default` and `describe`. `ParserOptions` configures the application parser, including options such as `stopEarly` and `"--"`. Local flag definitions are merged for the selected action. [Flag semantics](/command/flags)
+[`CommandFlags`](/api/command#symbol-CommandFlags) supports `boolean`, `string`, `collect`, `negatable`, `alias`, `default` and [`describe`](/api/core-utils#symbol-describe). [`ParserOptions`](/api/command#symbol-ParserOptions) configures the application parser, including options such as `stopEarly` and `"--"`. Local flag definitions are merged for the selected action. [Flag semantics](/command/flags)
 
 | `ChoCommandContext` member | Value |
 | --- | --- |
@@ -36,7 +36,7 @@ Options are `name` (default `"chojs"`), `version`, `parseOptions`, `overrides` a
 | `command` | `"main"` or the selected action name |
 | `state` | Per-run `Map<PropertyKey, unknown>` |
 
-Use `ChoCommandMiddlewareFn` and `ChoCommandNext` for function middleware. `ChoCommandMiddleware` also accepts a class with `handle`. The analogous error-handler types are `ChoCommandErrorHandlerFn` and `ChoCommandErrorHandler`.
+Use [`ChoCommandMiddlewareFn`](/api/command#symbol-ChoCommandMiddlewareFn) and [`ChoCommandNext`](/api/command#symbol-ChoCommandNext) for function middleware. [`ChoCommandMiddleware`](/api/command#symbol-ChoCommandMiddleware) also accepts a class with `handle`. The analogous error-handler types are [`ChoCommandErrorHandlerFn`](/api/command#symbol-ChoCommandErrorHandlerFn) and [`ChoCommandErrorHandler`](/api/command#symbol-ChoCommandErrorHandler).
 
 ## Exit codes
 

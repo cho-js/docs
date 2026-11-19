@@ -40,3 +40,7 @@ process.once("SIGTERM", stop);
 Start a request, send the process `SIGTERM` and watch the client. Work that completes within the deadline can return normally. For long-lived connections, have the handler observe `ctx.req.signal` and release subscriptions or cursors when the client disconnects.
 
 With Fastify, await `app.linked.instance.close()` to stop its native listener. If a message consumer borrows the web injector, close it and wait for its active deliveries before calling `app.close()`. [Provider disposal](/di/lifecycle) · [Sharing HTTP and message services](/message/with-web)
+
+## Choose a drain timeout
+
+Start a request that takes longer than an ordinary catalog lookup, then initiate shutdown. Record whether it finishes before the configured timeout. Set the process supervisor's shutdown allowance to leave time for listener draining and provider disposal.

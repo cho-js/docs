@@ -31,4 +31,8 @@ Returning before `next()` skips the remaining chain and **settles the delivery s
 
 ## Share dependencies and state
 
-A middleware class can request services through `@Injectable([Service])` and expose `handle(ctx, next)`. Register it in providers and pass the class to `@Middlewares`. Use `ctx.state` for data computed for this delivery. The class instance can serve concurrent deliveries, even though each delivery has its own state map.
+A middleware class can request services through `@Injectable([Service])` and expose `handle(ctx, next)`. Register it in providers and pass the class to [`@Middlewares`](/api/message#symbol-Middlewares). Use `ctx.state` for data computed for this delivery. The class instance can serve concurrent deliveries, even though each delivery has its own state map.
+
+## Distinguish a filtered event from a failed one
+
+Deliver an event that a filter deliberately skips and one whose handler fails. A filter can finish successfully without calling `next`. Let the processing error escape when the broker should apply its failure policy. Turning that error into success can acknowledge the delivery.

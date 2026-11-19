@@ -32,3 +32,7 @@ Supply one string per shell argument. A quoted title is one array element. Omit 
 ## Release resources
 
 Close the application after the last run finishes. The injector disposes only instances it created. In particular, printing help does not open a connection whose factory is only needed by an action. Use [debug logging](/reference/debugging) to see command selection and initialization.
+
+## Choose what survives multiple runs
+
+Initialize a catalog provider once, then run an import action followed by a listing action on the same application. The second action can observe changes made to the provider. A per-run value such as a verbose flag belongs in that run's arguments or state.

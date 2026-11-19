@@ -29,9 +29,9 @@ Request `/api/books/42` and look for the request in Fastify's log. For shutdown,
 
 ## Using Fastify options, plugins and hooks
 
-Configure application-wide plugins and hooks on `native` before passing it to the linker. Set its not-found and error handlers there. For a hook that should run only on a CHO controller or method, use `fromFastify(hook)` in `@Middlewares`. The wrapper supports a pre-handler check. For changes after a response has been produced, use an appropriate native hook.
+Configure application-wide plugins and hooks on `native` before passing it to the linker. Set its not-found and error handlers there. For a hook that should run only on a CHO controller or method, use `fromFastify(hook)` in [`@Middlewares`](/api/web#symbol-Middlewares). The wrapper supports a pre-handler check. For changes after a response has been produced, use an appropriate native hook.
 
-In an adapter-specific controller, narrow `ctx.native` to `FastifyNative` from `@chojs/vendor-fastify` to use its `request` and `reply`. Use `ctx.req` to read the body of a CHO route.
+In an adapter-specific controller, narrow `ctx.native` to [`FastifyNative`](/api/vendor-fastify#symbol-FastifyNative) from `@chojs/vendor-fastify` to use its `request` and `reply`. Use `ctx.req` to read the body of a CHO route.
 
 ## Test without a socket
 
@@ -64,3 +64,23 @@ class Imports {
 ```
 
 Register `Imports` with the module and test it through Fastify. A `text/plain` request should receive `415` without calling `create`. A request with the JSON media type should reach the controller. A transport-independent version of this check could read `ctx.req.headers` in a CHO middleware.
+
+## Register before the instance becomes ready
+
+Register native plugins and hooks and mount dynamic routes before calling `ready`, `listen` or `inject`. Send the first request through Fastify's injection interface. When serving a streaming endpoint, use the native network listener so clients receive the stream as it is produced.
+
+## Read native Fastify request metadata
+
+Handlers, middlewares and error handlers receive a [`ChoWebContext`](/api/web#symbol-ChoWebContext), with a
+standard `Request` built from Fastify's. Fastify's request and reply are its
+`native` property, for what only Fastify can do. A handler that uses it only
+runs on this adapter.
+
+```ts
+import type { FastifyNative } from "@chojs/vendor-fastify";
+
+@Get("ip")
+ip(ctx: ChoWebContext) {
+  return (ctx.native as FastifyNative).request.ip;
+}
+```

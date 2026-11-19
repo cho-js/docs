@@ -43,3 +43,7 @@ export() {
 Run `curl -N http://127.0.0.1:3000/export`. Expect two lines, each parseable independently. Network chunks can split a line or contain several lines. A client should buffer incomplete lines between reads.
 
 For a database cursor, pass `ctx.req.signal` into operations that can block and release the cursor in the producer's `finally`. Check permissions and acquire resources that may fail before returning the streaming response if the client needs a meaningful HTTP error status. Once the body starts, a producer error ends the stream.
+
+## Observe incremental output
+
+Add a short delay between two source records and request the endpoint with a client that displays bytes as they arrive. The first complete record should be readable while the producer is still waiting for the second.

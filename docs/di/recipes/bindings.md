@@ -1,6 +1,6 @@
 # Supply a value, class, alias or factory
 
-CHO accepts an `@Injectable` class directly in `providers` when consumers look it up by class. For an explicit binding, CHO has one provider object shape. `provide` is the token consumers request, `deps` lists the inputs in order and `factory` returns the value they receive.
+CHO accepts an [`@Injectable`](/api/core#symbol-Injectable) class directly in `providers` when consumers look it up by class. For an explicit binding, CHO has one provider object shape. `provide` is the token consumers request, `deps` lists the inputs in order and `factory` returns the value they receive.
 
 | If you usually reach for… | In CHO |
 | --- | --- |
@@ -67,3 +67,7 @@ const allPrintersProvider = provider({
 ```
 
 Inject `ALL_PRINTERS` to iterate over the devices in the declared order. Registering the same token twice in one module is a duplicate declaration. When contributions live in separate modules, export each token and import those modules where you declare the collection. [Module visibility](/di/modules)
+
+## Choose an alias or a second instance
+
+Resolve a client through its class token and through an alias whose factory returns the injected client. The two references should be identical. To supply a second client, use a new token with a factory that constructs it using the second configuration.

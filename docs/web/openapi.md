@@ -28,7 +28,7 @@ If you are working from the CHO repository, you can also run `deno run --allow-n
 
 ## 2. Serve the catalog and its documentation
 
-Save this entry point as `openapi.ts` beside `app.ts`. Call `openApi` after creating the application and before starting the listener. The `info.version` value identifies your catalog API.
+Save this entry point as `openapi.ts` beside `app.ts`. Call [`openApi`](/api/openapi#symbol-openApi) after creating the application and before starting the listener. The `info.version` value identifies your catalog API.
 
 <<< @/examples/catalog/openapi.ts
 
@@ -75,6 +75,10 @@ try {
 }
 ```
 
-If generation fails with `CHO_OPENAPI_DUPLICATE_OPERATION_ID`, check the IDs on visible operations. For `CHO_OPENAPI_UNKNOWN_SECURITY_SCHEME`, compare the security requirements with the keys in `securitySchemes`. Tests can match either [framework code](/reference/errors) with `isChoError` from `@chojs/web`.
+If generation fails with `CHO_OPENAPI_DUPLICATE_OPERATION_ID`, check the IDs on visible operations. For `CHO_OPENAPI_UNKNOWN_SECURITY_SCHEME`, compare the security requirements with the keys in `securitySchemes`. Tests can match either [framework code](/reference/errors) with [`isChoError`](/api/core#symbol-isChoError) from `@chojs/web`.
 
-`openApiDocument` returns a fresh object on each call. To generate HTML for an already hosted document, use `docsPage({ url: "/openapi.json", title: "Library catalog", ui: "redoc" })`. For operation IDs, response media types, inherited security and schema conversion, see [describe an HTTP API](/web/api-docs).
+[`openApiDocument`](/api/openapi#symbol-openApiDocument) returns a fresh object on each call. To generate HTML for an already hosted document, use `docsPage({ url: "/openapi.json", title: "Library catalog", ui: "redoc" })`. For operation IDs, response media types, inherited security and schema conversion, see [describe an HTTP API](/web/api-docs).
+
+## Use the document from a client
+
+Open the JSON URL from the example directly and locate the operation for the catalog route under `paths`. Then load that same URL in Swagger UI or Scalar. When deploying behind a public path prefix, check the URL requested by the browser as well as the URL of the viewer page.

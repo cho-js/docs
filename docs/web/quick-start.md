@@ -57,3 +57,7 @@ try {
 ```
 
 Next, [build a catalog that accepts writes](/web/example), [test the endpoint](/web/testing) or [serve a Fetch handler on Cloudflare Workers](/guide/cloudflare-workers).
+
+## Trace a request
+
+Change the application prefix to `v2` and request `/v2/books/42`. The same method still receives `"42"`. The prefix belongs to the application, so every controller moves together. To move only the books endpoints, change the controller route instead.

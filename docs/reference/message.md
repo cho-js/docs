@@ -1,6 +1,6 @@
 # Message API reference
 
-Use `@chojs/message` for consumers, `@chojs/message/linker` for broker contracts and `@chojs/message/graph` for compiled feature, controller and method nodes. [Generated signatures on JSR](https://jsr.io/@chojs/message/doc)
+Use `@chojs/message` for consumers, `@chojs/message/linker` for broker contracts and `@chojs/message/graph` for compiled feature, controller and method nodes. [All message exports and usage examples](/api/message)
 
 ## Application
 
@@ -18,7 +18,7 @@ Both factories accept `prefix`, `linker` and `onError`. Only `create` accepts `o
 
 ## Subscription declarations
 
-`@Subscribe(topic)` marks a method. Use `topic` on `@Controller` and `@Module` to group related subscriptions. `@Middlewares`, `@Catch`, `@Injectable`, `token<T>` and `provider` are available from the same package. [Topic syntax](/message/topics)
+`@Subscribe(topic)` marks a method. Use `topic` on [`@Controller`](/api/message#symbol-Controller) and [`@Module`](/api/message#symbol-Module) to group related subscriptions. [`@Middlewares`](/api/message#symbol-Middlewares), [`@Catch`](/api/message#symbol-Catch), [`@Injectable`](/api/core#symbol-Injectable), `token<T>` and [`provider`](/api/core#symbol-provider) are available from the same package. [Topic syntax](/message/topics)
 
 | Type | Contract |
 | --- | --- |
@@ -48,4 +48,4 @@ A `Linker<T>` has `link(routes): Linked<T>`. A `Linked<T>` exposes `instance`, `
 
 For request/reply over Core NATS, import `NatsLinker` and `ERROR_HEADERS` from `@chojs/vendor-nats`. After `await app.start()`, `app.linked.instance` is the active connection. [NATS setup and delivery behavior](/message/nats)
 
-`Sender` exposes `publish(topic, delivery)` and optional `request(topic, delivery, options?)` for typed clients. NATS implements both and Kafka implements publishing. With the NATS linker's `jetstream` option, matched event routes use durable consumers. [JetStream setup and acknowledgment](/message/jetstream)
+[`Sender`](/api/message#symbol-Sender) exposes `publish(topic, delivery)` and optional `request(topic, delivery, options?)` for typed clients. NATS implements both and Kafka implements publishing. With the NATS linker's `jetstream` option, matched event routes use durable consumers. [JetStream setup and acknowledgment](/message/jetstream)

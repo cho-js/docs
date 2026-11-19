@@ -10,4 +10,6 @@ Each recipe adds one behavior to a controller or entry point from the [HTTP quic
 | Expose a fixed upstream service through a route | [Forward a request](/recipes/proxy) | Upstream status and body |
 | Drain connections before disposing resources | [Shut down gracefully](/recipes/shutdown) | A request active during shutdown |
 
+For request policies that apply across endpoints, follow the [middleware recipes](/adapters/middlewares) for preflight handling, authentication, body limits and response compression.
+
 For browser subscriptions with named events and automatic reconnection, use the [SSE guide](/web/sse).

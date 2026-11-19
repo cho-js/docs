@@ -1,6 +1,6 @@
 # Configure the built-in router
 
-`ChoWeb.create(Library)` uses `ChoLinker` by default. It compiles routes into `URLPattern` objects when the application starts. It requires no additional router package.
+`ChoWeb.create(Library)` uses [`ChoLinker`](/api/web#symbol-ChoLinker) by default. It compiles routes into `URLPattern` objects when the application starts. It requires no additional router package.
 
 ## Customize unmatched requests
 
@@ -19,7 +19,7 @@ const app = await ChoWeb.create(Library, {
 });
 ```
 
-Request `/missing` to check your not-found response. Throwing from an existing method is a different path and follows [route error handling](/web/error-handling). By default a miss returns `404 Not Found`, and a thrown `HttpError` uses its declared status. Other unhandled route failures are logged and answered with `500`. The built-in router also renders `HttpError` from its router-wide middleware and not-found hook.
+Request `/missing` to check your not-found response. Throwing from an existing method is a different path and follows [route error handling](/web/error-handling). By default a miss returns `404 Not Found`, and a thrown [`HttpError`](/api/web#symbol-HttpError) uses its declared status. Other unhandled route failures are logged and answered with `500`. The built-in router also renders `HttpError` from its router-wide middleware and not-found hook.
 
 ## Inspect a match
 
@@ -33,3 +33,7 @@ console.log(match?.route.name, match?.params); // Books.find, { id: "42" }
 ## Wrap the router
 
 Supply `middlewares` to `new ChoLinker({ middlewares })` for behavior that applies even when no route matches. Use this scope for CORS preflight, request IDs or access logging. The router shares request state with the selected route. [Configure HTTP middleware](/adapters/middlewares)
+
+## Distinguish a miss from a handler error
+
+Request a path absent from the route list and inspect the router's fallback. Then request an existing route whose handler deliberately throws. Put fallback behavior on the linker and the matched-route error policy on the application or declaring feature.

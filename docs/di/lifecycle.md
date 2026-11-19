@@ -34,3 +34,7 @@ Stop the external source of work, allow active operations to finish, then releas
 Pass `overrides: [provider({ provide: TOKEN, factory: () => fake })]` at application creation. This replaces every provider declaration for that token. Override dependencies resolve in the original declaration's scope. A token without a matching provider is a setup error. Apply overrides to the owning application when sharing an injector.
 
 A fresh application per test isolates cached instances. Close it in `finally` so failed assertions also release resources.
+
+## Release a dependent before its dependency
+
+Give a repository a connection-pool dependency and register disposal callbacks for both. On application close, the repository can finish its work while the pool is still available. Let the injector own cleanup for resources its providers create.

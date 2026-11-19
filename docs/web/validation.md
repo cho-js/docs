@@ -1,6 +1,6 @@
 # Validate and transform input
 
-A request body or query parameter starts as external data. Give its reader a validator with a `parse(value)` method, then put `validate()` around the route. The value returned by `parse` becomes the method argument.
+A request body or query parameter starts as external data. Give its reader a validator with a `parse(value)` method, then put [`validate()`](/api/web#symbol-validate) around the route. The value returned by `parse` becomes the method argument.
 
 ## Parse a page number
 
@@ -54,7 +54,7 @@ The default body contains `error: "Invalid request"`, `source`, optional `key` a
 
 ## Validate an entire document
 
-A field reader such as `Body("title", validator)` works for an independent field. Use a validator on `Body` itself when several fields must agree. This example normalizes whitespace and validates the relationship between two quantities.
+A field reader such as `Body("title", validator)` works for an independent field. Use a validator on [`Body`](/api/web#symbol-Body) itself when several fields must agree. This example normalizes whitespace and validates the relationship between two quantities.
 
 ```ts
 import type { ChoWebValidator } from "@chojs/web";
@@ -79,3 +79,7 @@ const stock: ChoWebValidator<Stock> = {
 ```
 
 Attach `@Args(Body(stock))` to a POST handler under `@Middlewares(validate())`. A request with two copies and three reservations now fails before the write. A schema library can provide the same `parse` contract. If its asynchronous API is named `parseAsync`, adapt it as `{ parse: (value) => schema.parseAsync(value) }`.
+
+## Check the boundary before writing
+
+Send a valid numeric query parameter, a missing value and a nonnumeric string. Record the value and type seen by the handler on success. On rejection, record the status and body seen by the client. This distinguishes a reader that extracts a string from a validator that converts it into a number.

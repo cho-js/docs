@@ -4,6 +4,7 @@ const setup = {
   text: "Get started",
   items: [
     { text: "How CHO fits together", link: "/guide/introduction" },
+    { text: "One catalog, three entry points", link: "/guide/three-entry-points" },
     { text: "Set up a project", link: "/guide/getting-started" },
     { text: "Runtime setup", link: "/guide/runtimes" },
     { text: "Run on Cloudflare Workers", link: "/guide/cloudflare-workers" },
@@ -26,6 +27,7 @@ const injection = {
     { text: "Inject a service", link: "/di/overview" },
     { text: "Tokens and factories", link: "/di/providers" },
     { text: "Share providers across modules", link: "/di/modules" },
+    { text: "Configure a library module", link: "/di/configured-modules" },
     { text: "Initialization and disposal", link: "/di/lifecycle" },
   ],
 };
@@ -124,6 +126,7 @@ const reference = {
   text: "Reference",
   items: [
     { text: "Documentation status", link: "/reference/status" },
+    { text: "All public entry points", link: "/api/" },
     { text: "HTTP API", link: "/reference/web" },
     { text: "Command API", link: "/reference/command" },
     { text: "Message API", link: "/reference/message" },
@@ -145,7 +148,35 @@ const guide = [setup, tutorials, injection, diRecipes];
 const web = [http, adapters, recipes];
 const api = [reference, extensions];
 
+const packages = [
+  { text: "Applications", items: [
+    { text: "@chojs/web", link: "/api/web" },
+    { text: "@chojs/command", link: "/api/command" },
+    { text: "@chojs/message", link: "/api/message" },
+  ] },
+  { text: "Adapters and OpenAPI", items: [
+    { text: "@chojs/vendor-cho", link: "/api/vendor-cho" },
+    { text: "@chojs/vendor-hono", link: "/api/vendor-hono" },
+    { text: "@chojs/vendor-fastify", link: "/api/vendor-fastify" },
+    { text: "@chojs/vendor-nats", link: "/api/vendor-nats" },
+    { text: "@chojs/vendor-kafka", link: "/api/vendor-kafka" },
+    { text: "@chojs/openapi", link: "/api/openapi" },
+  ] },
+  { text: "Framework and extension APIs", items: [
+    { text: "@chojs/core", link: "/api/core" },
+    { text: "@chojs/core/di", link: "/api/core-di" },
+    { text: "@chojs/core/utils", link: "/api/core-utils" },
+    { text: "@chojs/core/utils/test_utils", link: "/api/core-utils-test_utils" },
+    { text: "@chojs/web/linker", link: "/api/web-linker" },
+    { text: "@chojs/web/graph", link: "/api/web-graph" },
+    { text: "@chojs/web/serve", link: "/api/web-serve" },
+    { text: "@chojs/message/linker", link: "/api/message-linker" },
+    { text: "@chojs/message/graph", link: "/api/message-graph" },
+  ] },
+];
+
 export const sidebar: DefaultTheme.Sidebar = {
+  "/api/": [reference, ...packages],
   "/guide/": guide,
   "/di/": guide,
   "/web/": web,

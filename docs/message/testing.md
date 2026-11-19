@@ -39,3 +39,7 @@ When the producer and handler share a contract, create a `ChoMessageClient(local
 Use `overrides` to replace a declared mailer, writer or store with a recording implementation. Await delivery, then assert on its calls. To test that HTTP sees the write, [share the web injector](/message/with-web) and request the HTTP endpoint after delivery.
 
 A local `handle` test exercises one attempt. Verify broker-specific behavior, such as commits, redelivery and partition assignment, with the chosen adapter and a broker integration test.
+
+## Choose the test input
+
+Call `app.handle` to exercise an exact topic, raw payload and key. Use a typed client with `localSender(app)` to include the contract's encoding and reply decoding. Both approaches let you replace external providers while keeping the subscription and middleware active.

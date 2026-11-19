@@ -27,3 +27,7 @@ Use the full topic from this table for `app.handle` or your producer. The delive
 A segment accepts ASCII letters, digits, underscore and hyphen. Use dots between segments. Empty segments, a leading or trailing dot, wildcards and parameters are invalid. CHO accepts one handler per fully assembled topic. A duplicate at creation often means a controller was registered by two modules or two features supplied the same prefix.
 
 When several independent systems need the same events, configure their broker subscriptions or consumer groups. CHO's route table within one application still maps each topic to one method.
+
+## Compare the published and subscribed names
+
+Log the full topic from `app.routes` and use that exact string with `app.handle`. Then change the application's prefix. A producer must address the new full topic too. For typed clients set the deployment prefix on the client while keeping the shared contract stable.

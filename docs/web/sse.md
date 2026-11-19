@@ -1,6 +1,6 @@
 # Send server-sent events
 
-Use `@Sse` when a client should receive several events over one HTTP response. An async generator is a convenient producer. Each `yield` writes one event, and completing the iterator ends the response.
+Use [`@Sse`](/api/web#symbol-Sse) when a client should receive several events over one HTTP response. An async generator is a convenient producer. Each `yield` writes one event, and completing the iterator ends the response.
 
 ## Observe the event stream
 
@@ -63,3 +63,7 @@ assert.ok(frames[1]?.includes('data: {"rows":50}'));
 ```
 
 For a subscription that stays open, read only the events under test and cancel the reader in `finally`. Calling `response.text()` on such a stream waits for the subscription to end. When using Fastify, test an open subscription on its native listener because the in-memory injection path buffers the response.
+
+## Observe a disconnect
+
+Open the event endpoint with `curl -N`, wait for two events and interrupt the client. Put resource cleanup in the generator's `finally` block. If the producer is waiting on external work, connect that work to the request signal so a disconnected client can release it promptly.

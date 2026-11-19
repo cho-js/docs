@@ -19,7 +19,7 @@ class Catalog {
 }
 ```
 
-With `name: "library"`, `library --help` groups `label` under **Catalog** and shows the first line of its description. `library label --help` displays the full description and the action's declared flags. Flags must be listed in `boolean`, `string` or `collect` to appear in that table. A `describe` entry alone does not add a row.
+With `name: "library"`, `library --help` groups `label` under **Catalog** and shows the first line of its description. `library label --help` displays the full description and the action's declared flags. Flags must be listed in `boolean`, `string` or `collect` to appear in that table. A [`describe`](/api/core-utils#symbol-describe) entry alone does not add a row.
 
 ## Check the public interface
 
@@ -31,3 +31,7 @@ With `name: "library"`, `library --help` groups `label` under **Catalog** and sh
 | `library --version` | `library version 1.0.0` when configured with that version |
 
 In single-command mode, use controller help for the program description and method help for usage details. In action mode, give each method a first line that makes sense in the command list. Run the actual help command when reviewing aliases, defaults and argument examples.
+
+## Read the interface as a caller
+
+Run the program with `--help`, then run one action with `--help`. Use the first output to discover the action and the second to discover its flags. If a flag's purpose is unclear, add its explanation to the action's `describe` map.

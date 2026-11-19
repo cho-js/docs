@@ -4,7 +4,7 @@ A custom router only needs to select a route and translate the request. `route.h
 
 ## Connect an existing router
 
-This example adapts the built-in `ChoRouter` as a minimal implementation of the contract. It also records which compiled paths were registered. Replace the `ChoRouter` construction and dispatch with your router's registration API when adding a new integration.
+This example adapts the built-in [`ChoRouter`](/api/web#symbol-ChoRouter) as a minimal implementation of the contract. It also records which compiled paths were registered. Replace the `ChoRouter` construction and dispatch with your router's registration API when adding a new integration.
 
 ```ts
 import { ChoRouter } from "@chojs/web";
@@ -38,3 +38,7 @@ Handle unmatched requests and unhandled route rejections in the adapter. When th
 Exercise `/books/featured` and `/books/:id` together, a percent-encoded path parameter, an unknown path, an unhandled method exception and a `HEAD` response. Include one streaming route when the adapter promises streaming. The [adapter comparison](/adapters/) describes the behavior of the supplied integrations.
 
 Before sending the first request, add a `GET` route with `app.mount` and verify it receives decoded parameters and returns the same response for a given input as a controller route. Check that a `HEAD` request to it returns the expected status and headers with an empty body.
+
+## Define a minimal adapter contract
+
+Register one literal route and one parameterized route. Dispatch a Fetch request to each and assert the context contains the expected path parameters. Exercise a miss and a response with custom headers before adding native middleware support.

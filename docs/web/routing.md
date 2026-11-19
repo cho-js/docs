@@ -1,6 +1,6 @@
 # Map methods to URLs
 
-A route identifies a public instance method by HTTP verb and path. Use `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Head` or `@Options`. Pass `""` for the current path. With all levels empty, `@Get("")` serves `/`.
+A route identifies a public instance method by HTTP verb and path. Use [`@Get`](/api/web#symbol-Get), [`@Post`](/api/web#symbol-Post), [`@Put`](/api/web#symbol-Put), [`@Patch`](/api/web#symbol-Patch), [`@Delete`](/api/web#symbol-Delete), [`@Head`](/api/web#symbol-Head) or [`@Options`](/api/web#symbol-Options). Pass `""` for the current path. With all levels empty, `@Get("")` serves `/`.
 
 ## Assemble the full path
 
@@ -42,3 +42,7 @@ Declare fixed paths before parameterized siblings. The built-in router and Hono 
 ```ts
 console.table(app.routes.map(({ method, path, name }) => ({ method, path, name })));
 ```
+
+## Find a route that never runs
+
+Print `app.routes.map(({ method, path }) => [method, path])` immediately after creation. If the expected method and path are present, send the same request through `app.handler` and inspect the response. With an overlapping literal and parameter route, try the literal first. The selected linker determines matching precedence.

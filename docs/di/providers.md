@@ -48,3 +48,7 @@ For three constructor parameters, list all three tokens in the same order. TypeS
 To replace one of these declarations for a test, pass a provider with the original `provide` token in [`overrides`](/di/lifecycle).
 
 For working equivalents of `useValue`, `useClass`, `useExisting`, `useFactory` and multi-providers, follow the [provider recipes](/di/recipes/bindings).
+
+## Substitute a value without changing its consumers
+
+Keep the same typed token in the constructor dependency list and replace the provider's factory with one that reads deployment settings. If obtaining settings requires I/O, return a promise from that factory. Consumers receive the resolved value.

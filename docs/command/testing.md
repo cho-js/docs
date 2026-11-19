@@ -30,3 +30,7 @@ For Node.js, register the same test with `test` from `node:test` and run with a 
 When printing or persistence is part of the contract, make the destination a provider. Supply an in-memory implementation through `overrides` and inspect what it recorded. This lets tests run without patching a process-wide console. Use a subprocess when the behavior under test is the executable itself, including how it forwards a status to the shell.
 
 A help test can also use a factory that would throw if invoked. Help should succeed while leaving the factory untouched. A real command that depends on it should follow the configured [error policy](/command/errors).
+
+## Exercise shell quoting without a shell
+
+Pass a book title containing a space as one array element. In a second call, deliberately split it across two elements. The resulting positional values show which behavior belongs to shell tokenization and which belongs to the CHO command.
