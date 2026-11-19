@@ -6,6 +6,10 @@ lastUpdated: false
 
 The documentation covers CHO through **[913e964 · feat: change validation to support standardschema](https://github.com/cho-js/cho/commit/913e9647671af610473c7cd6f69e37a685749158)** on `main`.
 
+## November 19, 2026 · CHO blog
+
+The [blog](/blog/) opens with [Building CHO, a TypeScript framework for every JavaScript runtime](/blog/building-cho-for-every-js-runtime), an article about moving an HTTP endpoint between a server process and Cloudflare Workers.
+
 ## November 19, 2026 · Standard Schema and migration from NestJS
 
 Web and Message now accept Standard Schema V1 validators alongside parse-based validators. The documentation covers normalized issues, transforming message contracts and OpenAPI schema conversion. The NestJS migration guide ports a complete catalog lookup and maps DI, request handling and transport choices. This update was reviewed against the framework source without executing code, tests or a site build. [Standard Schema](/guide/standard-schema) · [Migrate from NestJS](/guide/migration-from-nestjs) · [Framework changes since 30ad35b](https://github.com/cho-js/cho/compare/30ad35bc87200c47e829d909c582887fc2c055aa...913e9647671af610473c7cd6f69e37a685749158)

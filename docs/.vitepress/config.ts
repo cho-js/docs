@@ -90,6 +90,7 @@ gtag('js', new Date());`,
       { text: "Command", link: "/command/quick-start", activeMatch: "^/command/" },
       { text: "Message", link: "/message/quick-start", activeMatch: "^/message/" },
       { text: "API", link: "/api/", activeMatch: "^/(api|reference|advanced)/" },
+      { text: "Blog", link: "/blog/", activeMatch: "^/blog/" },
       {
         text: "v3",
         items: [
