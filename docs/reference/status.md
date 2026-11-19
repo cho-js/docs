@@ -6,6 +6,10 @@ lastUpdated: false
 
 The documentation covers CHO through **[30ad35b · feature: modules configuration](https://github.com/cho-js/cho/commit/30ad35bc87200c47e829d909c582887fc2c055aa)** on `main`.
 
+## November 19, 2026 · Social previews
+
+Shared links use the page title and a butterfly banner for the relevant documentation section. The homepage has its own framework banner. Open Graph and X card metadata are included in the statically generated HTML.
+
 ## November 19, 2026 · Application guides and public API
 
 Start with the [application model](/guide/introduction) to follow a declaration through dependency resolution and dispatch. The [public API](/api/) covers all 18 package entry points, including adapter options, extension interfaces and utility subpaths. Re-exported symbols link to their shared documentation.
