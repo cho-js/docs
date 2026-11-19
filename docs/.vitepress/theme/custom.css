@@ -7,6 +7,7 @@
  */
 
 :root {
+  --vp-font-family-base: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
   /* text and links, their hover, and solid backgrounds */
   --vp-c-brand-1: #b83c0a;
   --vp-c-brand-2: #c2410c;

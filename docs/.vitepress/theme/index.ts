@@ -1,6 +1,6 @@
 // The default VitePress theme, with the CHO colors, and the styles of the
 // home page (docs/index.md).
-import DefaultTheme from "vitepress/theme";
+import DefaultTheme from "vitepress/theme-without-fonts";
 import { h } from "vue";
 import SiteFooter from "./SiteFooter.vue";
 // @ts-ignore

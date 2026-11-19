@@ -25,6 +25,8 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: true,
   head: [
+    ["link", { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "anonymous" }],
+    ["link", { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" }],
     ["link", { rel: "icon", href: `${base}favicon.ico` }],
     // Google Tag Manager (analytics): the snippet Google gives, on every page.
     [

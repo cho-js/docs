@@ -8,6 +8,8 @@ The documentation covers CHO through **[221b77c · feat: websocket support for c
 
 ## November 19, 2026 · Contact and professional support
 
+The site now uses IBM Plex Sans for articles, guides and navigation.
+
 The [contact](/contact) and [support](/support) pages now include a direct email address for general inquiries and professional support.
 
 ## November 19, 2026 · WebSockets and runtime compatibility
