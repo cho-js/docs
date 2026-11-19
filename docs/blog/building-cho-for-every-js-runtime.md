@@ -1,5 +1,8 @@
 ---
 description: CHO runs on Node.js, Deno, Bun, and Cloudflare Workers today. Here’s what moving an HTTP endpoint between them looks like, and what we’re still working toward.
+cover:
+  src: /social/building-cho-four-runtimes.png
+  alt: Building CHO — one endpoint, four runtimes. The CHO butterfly with the Node.js, Deno, Bun, and Cloudflare Workers logos.
 head:
   - - link
     - rel: canonical
@@ -9,6 +12,8 @@ head:
 # Building CHO, a TypeScript framework for every JavaScript runtime
 
 November 19, 2026
+
+![Building CHO — one endpoint, four runtimes. The CHO butterfly with the Node.js, Deno, Bun, and Cloudflare Workers logos.](/social/building-cho-four-runtimes.png)
 
 I’m building CHO with a goal: you should be able to choose where your TypeScript application runs *after* you’ve written it.
 

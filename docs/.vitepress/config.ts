@@ -55,8 +55,9 @@ gtag('js', new Date());`,
     const route = page.replace(/(^|\/)index\.md$/, "$1").replace(/\.md$/, "");
     const banner = sectionBanners[route.split("/")[0]] ?? "framework";
     const url = new URL(route, origin).href;
-    const image = new URL(`/social/${banner}.png`, origin).href;
-    const alt = `CHO — ${bannerLabels[banner]}, with the orange butterfly logo`;
+    const cover = pageData.frontmatter.cover;
+    const image = new URL(cover?.src ?? `/social/${banner}.png`, origin).href;
+    const alt = cover?.alt ?? `CHO — ${bannerLabels[banner]}, with the orange butterfly logo`;
     return [
       ["meta", { property: "og:type", content: route ? "article" : "website" }],
       ["meta", { property: "og:site_name", content: "CHO" }],
