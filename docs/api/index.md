@@ -22,11 +22,21 @@ Choose a guide to build a feature, or open the import path from your source file
 | [`@chojs/vendor-kafka`](/api/vendor-kafka) | [Consume partitioned events](/message/kafka) | 17 |
 | [`@chojs/openapi`](/api/openapi) | [Give clients an API description](/web/openapi) | 26 |
 
+## Developer tools
+
+| Package or entry point | Guide and API examples |
+| --- | --- |
+| `@chojs/cli` executable | [Generate a workspace and configure cho.json](/guide/create-workspace) |
+| `@chojs/dev` | [List endpoints, inspect dependencies and mount the graph viewer](/advanced/inspect-application) |
+| `@chojs/prompt` | [Ask and validate terminal questions](/command/prompts) |
+| `@chojs/prompt/testing` | [Script key presses and inspect the screen](/command/prompts#script-a-terminal) |
+
+
 ## Listeners, graphs and extension utilities
 
 | Import path | Start with a guide | Exports |
 | --- | --- | ---: |
-| [`@chojs/core/di`](/api/core-di) | [Implement decorators and resolve handlers](/advanced/cho-module) | 67 |
+| [`@chojs/core/di`](/api/core-di) | [Implement decorators and resolve handlers](/advanced/cho-module) | 69 |
 | [`@chojs/core/utils`](/api/core-utils) | [Compose middleware and inspect the runtime](/advanced/core) | 22 |
 | [`@chojs/core/utils/test_utils`](/api/core-utils-test_utils) | [Exercise a framework extension](/advanced/cho-module) | 11 |
 | [`@chojs/web/serve`](/api/web-serve) | [Start and drain a network listener](/recipes/shutdown) | 13 |

@@ -1,5 +1,8 @@
 # Set up a CHO project
 
+To generate a web or command-line application, follow [Create a workspace with the CHO CLI](/guide/create-workspace). For an existing project or a different entry point, use the setup below.
+
+
 Choose the package that owns your entry point. You can add another package later when the application gains a second interface.
 
 | Build | Install | First working example |
@@ -45,7 +48,7 @@ Each tutorial supplies its own `app.ts` and entry point. Use those contents for 
 
 ### Run examples against the development version
 
-CHO 3.5.0 includes typed message contracts, JetStream, HTTP errors and Worker support. Use the framework checkout for features added since that release, including [module configuration](/di/configured-modules) and [Standard Schema validation](/guide/standard-schema). To try these examples with Deno, clone the [CHO repository](https://github.com/cho-js/cho), save the example under its `examples/` directory and run it from the repository root. Deno resolves `@chojs/*` imports against the local workspace. For the [typed shelf lookup](/message/contracts), run `deno run examples/contracts.ts`.
+CHO 3.6.0 includes [module configuration](/di/configured-modules), [Standard Schema validation](/guide/standard-schema) and [WebSockets](/web/websockets). To try the repository examples with Deno, clone the [CHO repository](https://github.com/cho-js/cho), save the example under its `examples/` directory and run it from the repository root. Deno resolves `@chojs/*` imports against the local workspace. For the [typed shelf lookup](/message/contracts), run `deno run examples/contracts.ts`.
 
 ## Check the environment
 

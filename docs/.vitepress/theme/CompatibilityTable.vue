@@ -1,4 +1,4 @@
-<!-- Table, legend and notes from CHO's compatibility.html at 221b77c. -->
+<!-- Table, legend and notes from CHO's compatibility.html at 45bb787. -->
 <template>
   <section class="compatibility" aria-label="CHO runtime support">
       <p class="lead">
@@ -39,7 +39,7 @@
             </tr>
             <tr>
               <th scope="row">
-                <a href="https://github.com/cho-js/cho/blob/221b77c264413c02f6db1370cadd46659e53984c/core/README.md"><code>@chojs/core</code></a>
+                <a href="https://github.com/cho-js/cho/blob/45bb7873ab669f452a80e94f11a4c5fc7b561043/core/README.md"><code>@chojs/core</code></a>
                 <small>Dependency injection, modules, errors</small>
               </th>
               <td><span class="mark yes" role="img" aria-label="Yes">✓</span></td>
@@ -78,7 +78,7 @@
             </tr>
             <tr>
               <th scope="row">
-                <a href="https://github.com/cho-js/cho/blob/221b77c264413c02f6db1370cadd46659e53984c/web/README.md"><code>@chojs/web</code></a>
+                <a href="https://github.com/cho-js/cho/blob/45bb7873ab669f452a80e94f11a4c5fc7b561043/web/README.md"><code>@chojs/web</code></a>
                 <small>Controllers, routes, middlewares, validation</small>
               </th>
               <td><span class="mark yes" role="img" aria-label="Yes">✓</span></td>
@@ -165,7 +165,7 @@
             </tr>
             <tr>
               <th scope="row">
-                <a href="https://github.com/cho-js/cho/blob/221b77c264413c02f6db1370cadd46659e53984c/vendor/cho/README.md"><code
+                <a href="https://github.com/cho-js/cho/blob/45bb7873ab669f452a80e94f11a4c5fc7b561043/vendor/cho/README.md"><code
                   >@chojs/vendor-cho</code></a>
                 <small>Middlewares: CORS, auth, compression, …</small>
               </th>
@@ -176,9 +176,25 @@
             </tr>
             <tr>
               <th scope="row">
-                <a href="https://github.com/cho-js/cho/blob/221b77c264413c02f6db1370cadd46659e53984c/extras/openapi/README.md"><code
+                <a href="https://github.com/cho-js/cho/blob/45bb7873ab669f452a80e94f11a4c5fc7b561043/extras/openapi/README.md"><code
                   >@chojs/openapi</code></a>
                 <small>The OpenAPI document, and its page</small>
+              </th>
+              <td><span class="mark yes" role="img" aria-label="Yes">✓</span></td>
+              <td><span class="mark yes" role="img" aria-label="Yes">✓</span></td>
+              <td><span class="mark yes" role="img" aria-label="Yes">✓</span></td>
+              <td>
+                <span class="mark yes" role="img" aria-label="Yes">✓</span><sup><a
+                    href="#note-3"
+                    aria-label="Note 3"
+                  >3</a></sup>
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">
+                <a href="https://github.com/cho-js/cho/blob/45bb7873ab669f452a80e94f11a4c5fc7b561043/extras/dev/README.md"><code
+                  >@chojs/dev</code></a>
+                <small>The endpoints of an application, and its graph</small>
               </th>
               <td><span class="mark yes" role="img" aria-label="Yes">✓</span></td>
               <td><span class="mark yes" role="img" aria-label="Yes">✓</span></td>
@@ -196,7 +212,7 @@
             </tr>
             <tr>
               <th scope="row">
-                <a href="https://github.com/cho-js/cho/blob/221b77c264413c02f6db1370cadd46659e53984c/vendor/hono/README.md"><code
+                <a href="https://github.com/cho-js/cho/blob/45bb7873ab669f452a80e94f11a4c5fc7b561043/vendor/hono/README.md"><code
                   >@chojs/vendor-hono</code></a>
                 <small>Routes on Hono</small>
               </th>
@@ -207,7 +223,7 @@
             </tr>
             <tr>
               <th scope="row">
-                <a href="https://github.com/cho-js/cho/blob/221b77c264413c02f6db1370cadd46659e53984c/vendor/fastify/README.md"><code
+                <a href="https://github.com/cho-js/cho/blob/45bb7873ab669f452a80e94f11a4c5fc7b561043/vendor/fastify/README.md"><code
                   >@chojs/vendor-fastify</code></a>
                 <small>Routes on Fastify</small>
               </th>
@@ -242,8 +258,39 @@
             </tr>
             <tr>
               <th scope="row">
-                <a href="https://github.com/cho-js/cho/blob/221b77c264413c02f6db1370cadd46659e53984c/command/README.md"><code>@chojs/command</code></a>
+                <a href="https://github.com/cho-js/cho/blob/45bb7873ab669f452a80e94f11a4c5fc7b561043/command/README.md"><code>@chojs/command</code></a>
                 <small>Command-line applications</small>
+              </th>
+              <td><span class="mark yes" role="img" aria-label="Yes">✓</span></td>
+              <td><span class="mark yes" role="img" aria-label="Yes">✓</span></td>
+              <td><span class="mark yes" role="img" aria-label="Yes">✓</span></td>
+              <td>
+                <span class="mark no" role="img" aria-label="No">✕</span><sup><a
+                    href="#note-12"
+                    aria-label="Note 12"
+                  >12</a></sup>
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">
+                <a href="https://github.com/cho-js/cho/blob/45bb7873ab669f452a80e94f11a4c5fc7b561043/cli/README.md"><code>@chojs/cli</code></a>
+                <small><code>cho</code>, the tool of the framework</small>
+              </th>
+              <td><span class="mark yes" role="img" aria-label="Yes">✓</span></td>
+              <td><span class="mark yes" role="img" aria-label="Yes">✓</span></td>
+              <td><span class="mark yes" role="img" aria-label="Yes">✓</span></td>
+              <td>
+                <span class="mark no" role="img" aria-label="No">✕</span><sup><a
+                    href="#note-12"
+                    aria-label="Note 12"
+                  >12</a></sup>
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">
+                <a href="https://github.com/cho-js/cho/blob/45bb7873ab669f452a80e94f11a4c5fc7b561043/extras/prompt/README.md"><code
+                  >@chojs/prompt</code></a>
+                <small>Questions in a terminal</small>
               </th>
               <td><span class="mark yes" role="img" aria-label="Yes">✓</span></td>
               <td><span class="mark yes" role="img" aria-label="Yes">✓</span></td>
@@ -261,7 +308,7 @@
             </tr>
             <tr>
               <th scope="row">
-                <a href="https://github.com/cho-js/cho/blob/221b77c264413c02f6db1370cadd46659e53984c/message/README.md"><code>@chojs/message</code></a>
+                <a href="https://github.com/cho-js/cho/blob/45bb7873ab669f452a80e94f11a4c5fc7b561043/message/README.md"><code>@chojs/message</code></a>
                 <small>Handlers of messages, contracts, the client</small>
               </th>
               <td><span class="mark yes" role="img" aria-label="Yes">✓</span></td>
@@ -276,7 +323,7 @@
             </tr>
             <tr>
               <th scope="row">
-                <a href="https://github.com/cho-js/cho/blob/221b77c264413c02f6db1370cadd46659e53984c/vendor/nats/README.md"><code
+                <a href="https://github.com/cho-js/cho/blob/45bb7873ab669f452a80e94f11a4c5fc7b561043/vendor/nats/README.md"><code
                   >@chojs/vendor-nats</code></a>
                 <small>NATS, with JetStream</small>
               </th>
@@ -307,7 +354,7 @@
             </tr>
             <tr>
               <th scope="row">
-                <a href="https://github.com/cho-js/cho/blob/221b77c264413c02f6db1370cadd46659e53984c/vendor/kafka/README.md"><code
+                <a href="https://github.com/cho-js/cho/blob/45bb7873ab669f452a80e94f11a4c5fc7b561043/vendor/kafka/README.md"><code
                   >@chojs/vendor-kafka</code></a>
                 <small>Kafka</small>
               </th>
@@ -359,8 +406,9 @@
         <li id="note-3">
           <strong>A bundle keeps the names.</strong> A Worker is bundled, and
           the bundler compiles the decorators. CHO puts the names of classes
-          and functions in error messages, in logs and in the tags of an
-          OpenAPI document: a bundle that renames them changes those.
+          and functions in error messages, in logs, in the tags of an
+          OpenAPI document and in the graph of <code>@chojs/dev</code>: a
+          bundle that renames them changes those.
         </li>
         <li id="note-4">
           <strong>The built-in router needs the global
@@ -416,7 +464,9 @@
         </li>
         <li id="note-12">
           <strong>A Worker has no command line.</strong> The tests of
-          <code>@chojs/command</code> do not run there.
+          <code>@chojs/command</code> and of <code>@chojs/cli</code> do not run
+          there. <code>@chojs/prompt</code> loads there, and has no
+          terminal to ask on: a question is refused.
         </li>
         <li id="note-13">
           <strong>Messages on a Worker.</strong> The package itself runs
@@ -465,7 +515,7 @@
         </li>
         <li>
           <strong>The Autobahn test suite</strong> is run by hand:
-          <a href="https://github.com/cho-js/cho/blob/221b77c264413c02f6db1370cadd46659e53984c/tools/autobahn/README.md"><code>tools/autobahn</code></a>.
+          <a href="https://github.com/cho-js/cho/blob/45bb7873ab669f452a80e94f11a4c5fc7b561043/tools/autobahn/README.md"><code>tools/autobahn</code></a>.
         </li>
         <li>
           Each package says more in the "Runtime support" section of its

@@ -669,3 +669,27 @@ read_metadata_object(Foo); // { a: 1 }
 These declarations share their implementation with another entry point. Each link opens the full declaration.
 
 [`Any`](/api/core#symbol-Any), [`Catch`](/api/core#symbol-Catch), [`ChoClassOrMethodDecorator`](/api/core#symbol-ChoClassOrMethodDecorator), [`ChoErrorHandler`](/api/core#symbol-ChoErrorHandler), [`ChoInjectableDecorator`](/api/core#symbol-ChoInjectableDecorator), [`ChoMiddleware`](/api/core#symbol-ChoMiddleware), [`ConfigureOptions`](/api/core#symbol-ConfigureOptions), [`Controller`](/api/core#symbol-Controller), [`ControllerMetadata`](/api/core#symbol-ControllerMetadata), [`ControllerOptions`](/api/core#symbol-ControllerOptions), [`Ctr`](/api/core#symbol-Ctr), [`Dependency`](/api/core#symbol-Dependency), [`DependencyGraph`](/api/core#symbol-DependencyGraph), [`DependencyNode`](/api/core#symbol-DependencyNode), [`ExtraOptions`](/api/core#symbol-ExtraOptions), [`HandlersMetadata`](/api/core#symbol-HandlersMetadata), [`Injectable`](/api/core#symbol-Injectable), [`InjectableMetadata`](/api/core#symbol-InjectableMetadata), [`InjectableOptions`](/api/core#symbol-InjectableOptions), [`InjectedArgs`](/api/core#symbol-InjectedArgs), [`InjectionToken`](/api/core#symbol-InjectionToken), [`Injector`](/api/core#symbol-Injector), [`InjectorOptions`](/api/core#symbol-InjectorOptions), [`MetadataGraph`](/api/core#symbol-MetadataGraph), [`MethodMetadata`](/api/core#symbol-MethodMetadata), [`Middlewares`](/api/core#symbol-Middlewares), [`Module`](/api/core#symbol-Module), [`ModuleMetadata`](/api/core#symbol-ModuleMetadata), [`ModuleOptions`](/api/core#symbol-ModuleOptions), [`ModuleScope`](/api/core#symbol-ModuleScope), [`NoExtraOptions`](/api/core#symbol-NoExtraOptions), [`OptionsMetadata`](/api/core#symbol-OptionsMetadata), [`Provider`](/api/core#symbol-Provider), [`ProviderMetadata`](/api/core#symbol-ProviderMetadata), [`Target`](/api/core#symbol-Target), [`Token`](/api/core#symbol-Token), [`WithDependencies`](/api/core#symbol-WithDependencies), [`configure`](/api/core#symbol-configure), [`provider`](/api/core#symbol-provider), [`token`](/api/core#symbol-token)
+
+## build_meta_graph {#symbol-build_meta_graph}
+
+Read the declarations reachable from a root module. Pass a second argument containing provider overrides to inspect the metadata for that configuration. This synchronous step does not instantiate providers.
+
+```ts
+import { build_meta_graph } from "@chojs/core/di";
+import { AppModule } from "./app.ts";
+
+const metadata = build_meta_graph(AppModule);
+console.log(metadata.modules.size);
+```
+
+## build_dependency_graph {#symbol-build_dependency_graph}
+
+Link the module scopes of a `MetadataGraph` into a `DependencyGraph`. Use this when an extension needs to resolve declarations to provider nodes before constructing an injector. Invalid dependencies throw during linking. For a report that can display unresolved dependencies, use the [application inspector](/advanced/inspect-application).
+
+```ts
+import { build_dependency_graph, build_meta_graph } from "@chojs/core/di";
+import { AppModule } from "./app.ts";
+
+const dependencies = build_dependency_graph(build_meta_graph(AppModule));
+console.log([...dependencies.root.visible.keys()]);
+```

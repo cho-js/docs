@@ -1,6 +1,6 @@
 # Configure a library module for an application
 
-A label printer used by several libraries needs a branch name. Let the library own the printer and its default settings, and let each application supply the settings for its deployment. The [`configure`](/api/core#symbol-configure) helper is available from CHO commit `30ad35b`. For a checkout of this revision, follow the [development setup](/guide/getting-started#run-examples-against-the-development-version).
+A label printer used by several libraries needs a branch name. Let the library own the printer and its default settings, and let each application supply the settings for its deployment. The [`configure`](/api/core#symbol-configure) helper is included in CHO 3.6.0.
 
 ## Publish a default
 

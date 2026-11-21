@@ -8,6 +8,7 @@ const setup = {
     { text: "Validate with Standard Schema", link: "/guide/standard-schema" },
     { text: "One catalog, three entry points", link: "/guide/three-entry-points" },
     { text: "Set up a project", link: "/guide/getting-started" },
+    { text: "Create a workspace with the CLI", link: "/guide/create-workspace" },
     { text: "Runtime setup", link: "/guide/runtimes" },
     { text: "Runtime compatibility", link: "/reference/compatibility" },
     { text: "Run on Cloudflare Workers", link: "/guide/cloudflare-workers" },
@@ -96,6 +97,7 @@ const command = {
     { text: "Audit a catalog file", link: "/command/file-audit" },
     { text: "Command layouts", link: "/command/commands" },
     { text: "Flags and positional arguments", link: "/command/flags" },
+    { text: "Interactive prompts", link: "/command/prompts" },
     { text: "Generated help", link: "/command/help" },
     { text: "Command middleware", link: "/command/middlewares" },
     { text: "Errors and exit codes", link: "/command/errors" },
@@ -145,6 +147,7 @@ const extensions = {
   items: [
     { text: "Use the injector directly", link: "/advanced/core" },
     { text: "Build a job runner", link: "/advanced/cho-module" },
+    { text: "Inspect an application", link: "/advanced/inspect-application" },
     { text: "From declaration to dispatch", link: "/advanced/internals" },
   ],
 };

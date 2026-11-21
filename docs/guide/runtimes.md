@@ -58,6 +58,10 @@ Use lazy creation for providers that perform I/O. If providers only compute valu
 
 For support marks by package, WebSocket hosting details and version-specific exceptions, see the [complete runtime compatibility table](/reference/compatibility).
 
+## Developer tools
+
+The [application inspector](/advanced/inspect-application) reads metadata on all four runtimes, including inside a Worker. The [workspace CLI](/guide/create-workspace) and [interactive questions](/command/prompts) run in a terminal on Deno, Node.js or Bun. When targeting Workers, create the project locally and use a [Worker fetch entry point](/guide/cloudflare-workers).
+
 ## Background consumers
 
 | Capability | Node.js | Deno | Bun | Cloudflare Workers |

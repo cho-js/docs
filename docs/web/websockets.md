@@ -1,6 +1,6 @@
 # Add a WebSocket endpoint
 
-Use a WebSocket when a client needs to send messages and receive events over one long-lived connection. For a one-way feed that a browser consumes with `EventSource`, use [server-sent events](/web/sse). The WebSocket APIs below are present in the [framework checkout at 221b77c](https://github.com/cho-js/cho/commit/221b77c264413c02f6db1370cadd46659e53984c).
+Use a WebSocket when a client needs to send messages and receive events over one long-lived connection. For a one-way feed that a browser consumes with `EventSource`, use [server-sent events](/web/sse). The WebSocket APIs below are included in CHO 3.6.0.
 
 ## Declare a room and its connection events
 
