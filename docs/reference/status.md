@@ -6,6 +6,10 @@ lastUpdated: false
 
 The documentation covers CHO through **[45bb787 · fix(cli): release config (#32)](https://github.com/cho-js/cho/commit/45bb7873ab669f452a80e94f11a4c5fc7b561043)** on `main`.
 
+## November 21, 2026 · Portability and decorators
+
+The [new blog article](/blog/portable-applications-explicit-dependencies) explains how deployment-specific providers and explicit, type-checked tokens keep application code portable.
+
 ## November 21, 2026 · Workspace CLI, terminal prompts and application inspection
 
 New guides cover [generating a workspace](/guide/create-workspace), [asking terminal questions](/command/prompts) and [inspecting endpoints and dependencies](/advanced/inspect-application). The [DI reference](/api/core-di#symbol-build_meta_graph) documents both graph builders. The [compatibility table](/reference/compatibility) includes the three developer tools. This update follows the framework source and comments. [Compare CHO revisions](https://github.com/cho-js/cho/compare/221b77c264413c02f6db1370cadd46659e53984c...45bb7873ab669f452a80e94f11a4c5fc7b561043)
